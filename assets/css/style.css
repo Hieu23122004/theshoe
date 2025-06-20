@@ -1,0 +1,208 @@
+.top-bar {
+    background-color: #000;
+    color: white;
+    font-size: 14px;
+    padding: 5px 0;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1030;
+}
+
+.navbar {
+    position: fixed;
+    top: 30px;
+    left: 0;
+    width: 100%;
+    z-index: 1020;
+}
+
+#content-area {
+    padding: 20px;
+    margin-top: 112px;
+}
+
+
+.navbar-brand img {
+    height: auto;
+    width: 70px;
+    margin-left: 10px;
+}
+
+.nav-link {
+    color: #000 !important;
+    font-weight: 500;
+}
+
+.icon-btn {
+    background: none;
+    border: none;
+    margin-left: 15px;
+}
+
+.cart-count {
+    position: absolute;
+    top: -5px;
+    right: -10px;
+    background-color: black;
+    color: white;
+    font-size: 12px;
+    padding: 2px 5px;
+    border-radius: 50%;
+}
+
+footer {
+  background-color: #222;
+  color: #ddd;
+  padding: 40px 20px 40px 10px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 14px;
+}
+
+.footer-content {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 30px;
+  max-width: 1200px;
+  margin-top: 100px;
+  margin: 0 auto;
+  border-bottom: 1px solid #444;
+}
+
+.footer-column {
+  flex: 1 1 200px;
+  min-width: 180px;
+}
+
+.footer-column h3 {
+  color: #fff;
+  margin-bottom: 15px;
+  font-weight: 600;
+  font-size: 18px;
+}
+
+.footer-column ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.footer-column ul li {
+  margin-bottom: 10px;
+  line-height: 1.5;
+}
+
+.footer-column ul li a {
+  color: #bbb;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+
+.footer-column ul li a:hover {
+  color: #ff7a00;
+}
+
+.footer-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1200px;
+  margin: 20px auto 0 auto;
+  flex-wrap: wrap;
+  gap: 15px;
+  color: #aaa;
+  font-size: 13px;
+}
+
+.footer-bottom .certifications {
+    margin-right: 30px;
+
+}
+.company-info {
+  flex: 1 1 400px;
+  line-height: 1.6;
+}
+
+.certifications {
+  flex: 1 1 200px;
+  text-align: right;
+}
+
+.certifications img {
+  max-height: 50px;
+  margin-left: 10px;
+  vertical-align: middle;
+  object-fit: contain;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.certifications img:hover {
+  transform: scale(1.1);
+}
+
+footer p {
+  text-align: center;
+  margin-top: 25px;
+  color: #555;
+  font-size: 13px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .footer-content {
+    flex-direction: column;
+  }
+  .footer-bottom {
+    flex-direction: column;
+    text-align: center;
+  }
+  .certifications {
+    text-align: center;
+  }
+}
+
+.payment-logos {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 5px;
+}
+
+.logo-row {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+ .nav-link {
+            position: relative;
+            padding-bottom: 2px;
+            transition: color 0.3s ease;
+        }
+        .nav-link.active {
+            color: #000 !important;
+            font-weight: 500;
+        }
+        .nav-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background-color: #000;
+        }
+        .nav-link:hover {
+            color: #000;
+        }
+        .nav-link:hover::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background-color: rgba(0,0,0,0.3);
+        }
