@@ -6,13 +6,43 @@ $current_page = basename($_SERVER['PHP_SELF']);
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title><?php echo isset($pageTitle) ? $pageTitle . ' - The Shoes' : 'The Shoes'; ?></title>
-    <?php if (isset($additionalHead)) echo $additionalHead; ?>
+    <title>The Shoes</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     <link rel="stylesheet" href="/assets/css/style.css">
-
+    <style>
+        .nav-link {
+            position: relative;
+            padding-bottom: 2px;
+            transition: color 0.3s ease;
+        }
+        .nav-link.active {
+            color: #000 !important;
+            font-weight: 500;
+        }
+        .nav-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background-color: #000;
+        }
+        .nav-link:hover {
+            color: #000;
+        }
+        .nav-link:hover::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background-color: rgba(0,0,0,0.3);
+        }
+    </style>
 </head>
 <body>
     <!-- Top bar -->
@@ -23,8 +53,23 @@ $current_page = basename($_SERVER['PHP_SELF']);
     <!-- Main Navbar -->
     <nav class="navbar navbar-expand-lg bg-white shadow-sm py-2">
         <div class="container-fluid px-4">
-            <a class="navbar-brand" href="#">
-                <img src="/assets/images/logo.png" alt="The Shoes">
+            <a class="navbar-brand" href="#" style="margin-left: 20px;">
+                <div class="d-flex align-items-center gap-2" style="color:#8C7E71;">
+                  <svg viewBox="0 0 100 100" fill="none" stroke="#8C7E71" stroke-width="5" stroke-linejoin="round" style="width:40px;height:40px;">
+                    <path d="M10 50 L30 20 L70 20 L90 50 L50 90 Z" />
+                    <path d="M30 55 L40 35 L50 55 L60 35 L70 55" />
+                    <path d="M60 65 Q50 75 40 65 L40 60 L50 60 L50 68" />
+                  </svg>
+                  <div class="d-flex flex-column align-items-center" style="line-height:1;">
+                    <span style="font-family:'Montserrat',Arial,sans-serif;font-size:1.5rem;font-weight:600;letter-spacing:2px;">
+                        MULGATI
+                        <sup style="font-size:0.7em; position: relative; top: 3px; margin-left: 2px;">®</sup>
+                    </span>
+                    <span style="display:block;width:100%;height:1px;background:#8C7E71;margin:2px 0 2px 0;"></span>
+                    <span style="font-size:0.8rem;letter-spacing:8px;">RUSSIA</span>
+                    </div>
+
+                </div>
             </a>
 
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar">
