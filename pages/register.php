@@ -4,44 +4,45 @@ include '../includes/database.php';
 $message = '';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['register'])) {
-    $full_name = trim($_POST['full_name']);
-    $email = trim($_POST['email']);
-    $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
-    $phone = trim($_POST['phone']);
-    $address = trim($_POST['address']);
-    $role = 'customer'; // Default role is customer
+  $full_name = trim($_POST['full_name']);
+  $email = trim($_POST['email']);
+  $password = password_hash($_POST['password'], PASSWORD_DEFAULT);
+  $phone = trim($_POST['phone']);
+  $address = trim($_POST['address']);
+  $role = 'customer'; // Default role is customer
 
-    // Check for allowed email domains
-    $allowed_domains = ['gmail.com', 'hotmail.com', 'outlook.com', 'microsoft.com', 'fpt.edu.vn'];
-    $email_domain = explode('@', $email)[1] ?? '';
+  // Check for allowed email domains
+  $allowed_domains = ['gmail.com', 'hotmail.com', 'outlook.com', 'microsoft.com', 'fpt.edu.vn'];
+  $email_domain = explode('@', $email)[1] ?? '';
 
-    if (!in_array($email_domain, $allowed_domains)) {
-        $message = "Email domain is not allowed!";
-    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $message = "Invalid email format.";
+  if (!in_array($email_domain, $allowed_domains)) {
+    $message = "Email domain is not allowed!";
+  } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    $message = "Invalid email format.";
+  } else {
+    // Prepare SQL statement
+    $stmt = $conn->prepare("INSERT INTO users (fullname, email, password_hash, phone, address, role) VALUES (?, ?, ?, ?, ?, ?)");
+    if (!$stmt) {
+      $message = "Database error: " . $conn->error;
     } else {
-        // Prepare SQL statement
-        $stmt = $conn->prepare("INSERT INTO users (fullname, email, password_hash, phone, address, role) VALUES (?, ?, ?, ?, ?, ?)");
-        if (!$stmt) {
-            $message = "Database error: " . $conn->error;
+      $stmt->bind_param("ssssss", $full_name, $email, $password, $phone, $address, $role);
+      if ($stmt->execute()) {
+        $message = "Registration successful! Please login.";
+      } else {
+        if ($conn->errno == 1062) {
+          $message = "Email already exists!";
         } else {
-            $stmt->bind_param("ssssss", $full_name, $email, $password, $phone, $address, $role);
-            if ($stmt->execute()) {
-                $message = "Registration successful! Please login.";
-            } else {
-                if ($conn->errno == 1062) {
-                    $message = "Email already exists!";
-                } else {
-                    $message = "Error inserting data: " . $conn->error;
-                }
-            }
+          $message = "Error inserting data: " . $conn->error;
         }
+      }
     }
+  }
 }
 ?>
 
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -52,26 +53,37 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['register'])) {
   <link rel="stylesheet" href="/assets/css/login_register.css">
 </head>
 
-<body class="d-flex align-items-center justify-content-center min-vh-100 bg-light">
-    <a href="home.php" class="back-to-home">
-        <i class="fas fa-home me-2"></i>
-        Home
-    </a>
-
-    <div class="container-fluid  bg-gradient vh-100 d-flex align-items-center justify-content-center">
-    <div class="row w-100">
-        <!-- Logo và slogan bên trái -->
-        <div class="col-md-6 d-none d-md-flex flex-column align-items-center justify-content-center text-white">
-            <a href="" target="_blank">
-                <img src="/assets/images/logo.png" alt="" style="width: 250px; height: auto;">
-            </a>
-            <h4 class="text-center fw-bold text-dark"> Alf TheShoe – Fashion Shoe World<br>
-        For Your Style</h4>
+<body class="d-flex align-items-stretch min-vh-100 bg-light">
+  <a href="home.php" class="back-to-home">
+    <i class="fas fa-home me-2"></i>
+    Home
+  </a>
+  <div class="d-flex flex-row flex-grow-1 w-100" style="min-height:100vh;">
+    <!-- Logo và slogan bên trái cố định -->
+    <div class="d-none d-md-flex flex-column align-items-center justify-content-center bg-white" style="width:50vw;min-width:400px;">
+      <a class="navbar-brand d-block mb-3" href="#">
+        <div class="d-flex align-items-center gap-3" style="color:#8C7E71;">
+          <svg viewBox="0 0 100 100" fill="none" stroke="#8C7E71" stroke-width="5" stroke-linejoin="round" style="width:60px;height:60px;">
+            <path d="M10 50 L30 20 L70 20 L90 50 L50 90 Z" />
+            <path d="M30 55 L40 35 L50 55 L60 35 L70 55" />
+            <path d="M60 65 Q50 75 40 65 L40 60 L50 60 L50 68" />
+          </svg>
+          <div class="d-flex flex-column align-items-center" style="line-height:1; margin-right: 16px;">
+            <span style="font-family:'Montserrat',Arial,sans-serif;font-size:2.2rem;font-weight:700;letter-spacing:3px;">
+              MULGATI
+              <sup style="font-size:0.9em; position: relative; top: 4px; margin-left: 3px;">®</sup>
+            </span>
+            <span style="display:block;width:100%;height:2px;background:#8C7E71;margin:3px 0;"></span>
+            <span style="font-size:1rem;letter-spacing:6px;">RUSSIA</span>
+          </div>
         </div>
-
-
-    <div class="col-md-6 d-flex align-items-center justify-content-center">
-      <div class="bg-white rounded-3 shadow p-4 w-100" style="max-width: 400px;">
+      </a>
+      <h4 class="text-center text-dark m-1 mt-1" style="margin-top: 400px;">MULGATI® – Timeless Style, Russian Soul</h4>
+    </div>
+    <!-- Form đăng ký bên phải -->
+   
+        <div class="flex-grow-1 d-flex align-items-center justify-content-center">
+      <div class="bg-white rounded-3 shadow p-4 w-100" style="max-width: 400px; min-height: 480px;">
         <h4 class="text-center text-dark fw-bold mb-4">REGISTER</h4>
 
         <?php if ($message): ?>
@@ -103,7 +115,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['register'])) {
       </div>
     </div>
   </div>
-</div>
 </body>
 
 </html>
