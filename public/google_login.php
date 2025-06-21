@@ -9,7 +9,7 @@ $dotenv->load();
 $client = new Google_Client();
 $client->setClientId($_ENV['GOOGLE_CLIENT_ID']);
 $client->setClientSecret($_ENV['GOOGLE_CLIENT_SECRET']);
-$client->setRedirectUri('http://localhost/app_test/public/google_login.php');
+$client->setRedirectUri('http://localhost/app/public/google_login.php');
 $client->addScope('email');
 $client->addScope('profile');
 
@@ -57,7 +57,7 @@ if (!isset($_GET['code'])) {
             $_SESSION["full_name"] = $full_name;
             $_SESSION["user_role"] = $user["role"] ?? 'customer';
 
-            header('Location: http://localhost/app_test/index.php');
+           header('Location: ../app/pages/new_products.php');
             exit();
         } else {
             echo 'Xác thực Google thất bại!';

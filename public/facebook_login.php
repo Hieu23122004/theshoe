@@ -2,9 +2,13 @@
 session_start();
 require_once __DIR__ . '/../vendor/autoload.php';
 
+// Load environment variables from .env file
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../');
+$dotenv->load();
+
 // Facebook configuration
 $config = [
-    'callback' => 'http://localhost/app_test/public/facebook_login.php',
+    'callback' => 'http://localhost/app/public/facebook_login.php',
     'providers' => [
         'Facebook' => [
             'enabled' => true,
