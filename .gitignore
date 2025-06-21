@@ -1,4 +1,5 @@
 # Ignore sensitive and environment files
 .env
 /vendor/
+db.txt
 

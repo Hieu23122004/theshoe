@@ -27,15 +27,84 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['login'])) {
                     'email' => $user['email'],
                     'role' => $user['role']
                 ];
-
+                $_SESSION['user_id'] = $user['user_id']; // for cart logic
+                $_SESSION['is_logged_in'] = true; // đánh dấu đã đăng nhập
+                $_SESSION['last_activity'] = time(); // lưu thời gian hoạt động cuối
                 // Gán thông báo đăng nhập thành công
                 $message = "Login successful!";
+
+                // --- Đồng bộ cart session vào database sau khi đăng nhập ---
+                if (isset($_SESSION['cart']) && !empty($_SESSION['cart'])) {
+                    $user_id = $user['user_id'];
+                    foreach ($_SESSION['cart'] as $product_id => $item) {
+                        $color = $item['color'] ?? '';
+                        $size = $item['size'] ?? '';
+                        $quantity = (int)($item['quantity'] ?? 1);
+                        // Kiểm tra đã có sản phẩm này trong cart_items chưa
+                        $stmt_check = $conn->prepare("SELECT quantity FROM cart_items WHERE user_id = ? AND product_id = ?");
+                        $stmt_check->bind_param("ii", $user_id, $product_id);
+                        $stmt_check->execute();
+                        $result_check = $stmt_check->get_result();
+                        if ($result_check && $result_check->num_rows > 0) {
+                            // Đã có, cộng dồn số lượng
+                            $row = $result_check->fetch_assoc();
+                            $new_qty = $row['quantity'] + $quantity;
+                            $stmt_update = $conn->prepare("UPDATE cart_items SET quantity = ? WHERE user_id = ? AND product_id = ?");
+                            $stmt_update->bind_param("iii", $new_qty, $user_id, $product_id);
+                            $stmt_update->execute();
+                            $stmt_update->close();
+                        } else {
+                            // Chưa có, insert mới
+                            $stmt_insert = $conn->prepare("INSERT INTO cart_items (user_id, product_id, quantity) VALUES (?, ?, ?)");
+                            $stmt_insert->bind_param("iii", $user_id, $product_id, $quantity);
+                            $stmt_insert->execute();
+                            $stmt_insert->close();
+                        }
+                        $stmt_check->close();
+                    }
+                    // Xóa cart session sau khi đồng bộ (tùy chọn)
+                    unset($_SESSION['cart']);
+                }
+                // --- Đồng bộ sản phẩm yêu thích nếu có pending_favorite ---
+                if (isset($_SESSION['pending_favorite']) && $_SESSION['pending_favorite']) {
+                    $pending_fav = (int)$_SESSION['pending_favorite'];
+                    $user_id = $user['user_id'];
+                    // Kiểm tra đã có chưa
+                    $stmt = $conn->prepare("SELECT 1 FROM favorites WHERE user_id = ? AND product_id = ?");
+                    $stmt->bind_param("ii", $user_id, $pending_fav);
+                    $stmt->execute();
+                    $stmt->store_result();
+                    if ($stmt->num_rows == 0) {
+                        $stmt_insert = $conn->prepare("INSERT INTO favorites (user_id, product_id) VALUES (?, ?)");
+                        $stmt_insert->bind_param("ii", $user_id, $pending_fav);
+                        $stmt_insert->execute();
+                        $stmt_insert->close();
+                    }
+                    $stmt->close();
+                    unset($_SESSION['pending_favorite']);
+                }
+                // Redirect về trang sản phẩm mới sau khi đăng nhập thành công
+                header('Location: /pages/new_products.php');
+                exit;
             }
         } else {
             $_SESSION['login_error'] = "Tài khoản không tồn tại.";
         }
     } else {
         $_SESSION['login_error'] = "Lỗi hệ thống. Vui lòng thử lại.";
+    }
+}
+// Kiểm tra timeout session (15 phút không hoạt động)
+if (isset($_SESSION['user']) && isset($_SESSION['last_activity'])) {
+    if (time() - $_SESSION['last_activity'] > 900) { // 900s = 15 phút
+        session_unset();
+        session_destroy();
+        session_start();
+        $_SESSION['login_error'] = 'Session expired. Please log in again.';
+        header('Location: login.php');
+        exit;
+    } else {
+        $_SESSION['last_activity'] = time(); // cập nhật lại thời gian hoạt động
     }
 }
 ?>
@@ -79,7 +148,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['login'])) {
           </div>
         </div>
       </a>
-      <h4 class="text-center text-dark m-1">MULGATI® – Timeless Style, Russian Soul</h4>
+      <h4 class="text-center text-dark" >MULGATI® – Timeless Style, Russian Soul</h4>
     </div>
     <!-- Form đăng nhập bên phải -->
     <div class="flex-grow-1 d-flex align-items-center justify-content-center">
