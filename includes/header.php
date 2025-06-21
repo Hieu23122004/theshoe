@@ -11,49 +11,28 @@ $current_page = basename($_SERVER['PHP_SELF']);
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     <link rel="stylesheet" href="/assets/css/style.css">
-    <style>
-        .nav-link {
-            position: relative;
-            padding-bottom: 2px;
-            transition: color 0.3s ease;
-        }
-        .nav-link.active {
-            color: #000 !important;
-            font-weight: 500;
-        }
-        .nav-link.active::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 2px;
-            background-color: #000;
-        }
-        .nav-link:hover {
-            color: #000;
-        }
-        .nav-link:hover::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 2px;
-            background-color: rgba(0,0,0,0.3);
-        }
-    </style>
+    <link rel="stylesheet" href="/assets/css/header.css">
 </head>
 <body>
     <!-- Top bar -->
-    <div class="top-bar text-end px-4">
-        THE SHOES STORE &nbsp;&nbsp;|&nbsp;&nbsp; Hotline: 1900 6868 &nbsp;&nbsp;|&nbsp;&nbsp; theshoe@gmail.com
+    <div class="top-bar d-flex justify-content-between align-items-center px-4">
+        <div class="d-flex align-items-center gap-3">
+            <?php if (isset($_SESSION['is_logged_in']) && $_SESSION['is_logged_in']): ?>
+                <span style="color:white;font-weight:600;font-size:14px;">
+                    <i class="bi bi-person-circle me-1" style="font-size:20px;"></i>
+                    Hello, <?php echo htmlspecialchars($_SESSION['user']['fullname'] ?? $_SESSION['user']['email'] ?? $_SESSION['username'] ?? ''); ?> !
+                </span>
+            <?php endif; ?>
+        </div>
+        <div>
+            THE SHOES STORE &nbsp;&nbsp;|&nbsp;&nbsp; Hotline: 1900 6868 &nbsp;&nbsp;|&nbsp;&nbsp; theshoe@gmail.com
+        </div>
     </div>
 
     <!-- Main Navbar -->
     <nav class="navbar navbar-expand-lg bg-white shadow-sm py-2">
         <div class="container-fluid px-4">
-            <a class="navbar-brand" href="#" style="margin-left: 20px;">
+            <a class="navbar-brand" href="#" style="margin-left: 20px; margin-top: 2px;">
                 <div class="d-flex align-items-center gap-2" style="color:#8C7E71;">
                   <svg viewBox="0 0 100 100" fill="none" stroke="#8C7E71" stroke-width="5" stroke-linejoin="round" style="width:40px;height:40px;">
                     <path d="M10 50 L30 20 L70 20 L90 50 L50 90 Z" />
@@ -87,7 +66,12 @@ $current_page = basename($_SERVER['PHP_SELF']);
                 </ul>
                 <div class="d-flex align-items-center position-relative">
                     <button class="icon-btn"><i class="bi bi-search fs-5"></i></button>
-                    <button class="icon-btn"><i class="bi bi-cart fs-5"></i></button>
+                   <a href="/pages/cart.php">
+                        <button class="icon-btn position-relative">
+                            <i class="bi bi-cart fs-5"></i>
+                        </button>
+                    </a>
+        
                     <button class="icon-btn"><i class="bi bi-heart fs-5"></i></button>
                     <a href="/pages/register.php"><button class="icon-btn"><i class="bi bi-box-arrow-in-right fs-4"></i></button></a>
                 </div>
