@@ -4,38 +4,38 @@ function filterProducts(page = 1) {
     const productsContainer = document.querySelector('.row.gy-3.gx-3');
     const paginationContainer = document.querySelector('.row.mt-3');
     const loadingIndicator = document.getElementById('loading');
-    
+
     // Show loading indicator
     loadingIndicator.style.display = 'block';
-    
+
     // Get form data
     const formData = new FormData(form);
     formData.append('page', page);
     formData.append('ajax', 'true');
-    
+
     // Convert FormData to URL parameters
     const params = new URLSearchParams(formData);
-    
+
     // Update URL without reloading
     window.history.pushState({}, '', `?${params.toString()}`);
-    
+
     // Fetch filtered products
     fetch(`/public/filter_new_products.php?${params.toString()}`)
         .then(response => response.text())
         .then(html => {
             // Hide loading indicator
             loadingIndicator.style.display = 'none';
-            
+
             // Parse the response HTML
             const parser = new DOMParser();
             const doc = parser.parseFromString(html, 'text/html');
-            
+
             // Update products
             const newProducts = doc.querySelector('.row.gy-3.gx-3');
             if (newProducts) {
                 productsContainer.innerHTML = newProducts.innerHTML;
             }
-            
+
             // Update pagination
             const newPagination = doc.querySelector('.row.mt-3');
             if (paginationContainer) {
@@ -45,7 +45,7 @@ function filterProducts(page = 1) {
                     paginationContainer.innerHTML = '';
                 }
             }
-            
+
             // Initialize any needed tooltips or other Bootstrap components
             initializeComponents();
         })
@@ -83,7 +83,7 @@ function initializeComponents() {
 }
 
 // Handle pagination clicks
-document.addEventListener('click', function(e) {
+document.addEventListener('click', function (e) {
     if (e.target.closest('.pagination a')) {
         e.preventDefault();
         const page = new URLSearchParams(e.target.closest('a').href.split('?')[1]).get('page');
@@ -98,14 +98,50 @@ function handleFavorite(event, productId) {
     event.stopPropagation();
     // Check if user is logged in
     if (!isLoggedIn) {
-        // Lưu productId vào session bằng redirect kèm GET
-        window.location.href = '/pages/login.php?pending_favorite=' + productId;
+        // Lấy thông tin sản phẩm từ DOM
+        const card = event.currentTarget.closest('.product-card');
+        const img = card.querySelector('.product-image')?.src || '';
+        const name = card.querySelector('.product-title')?.textContent || '';
+        const price = card.querySelector('.current-price')?.textContent || '';
+        Swal.fire({
+            title: '',
+            html: `
+                <div style="background:#fff;border-radius:12px;box-shadow:0 2px 16px rgba(44,62,80,0.10);padding:18px 12px 14px 12px;max-width:270px;margin:0 auto;">
+                    <div style="font-size:16px;font-weight:700;color:#222;text-align:center;margin-bottom:10px;letter-spacing:0.2px;">Sign in required</div>
+                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+                        <img src="${img}" style="width:54px;height:54px;object-fit:cover;border-radius:8px;border:1px solid #eee;background:#fafafa;">
+                        <div style="text-align:left;max-width:140px;">
+                            <div style="font-size:14px;font-weight:700;margin-bottom:2px;line-height:1.2;word-break:break-word;color:#222;">${name}</div>
+                            <div style="color:#222;font-weight:700;font-size:13px;">${price}</div>
+                        </div>
+                    </div>
+                    <div style="font-size:13px;color:#444;margin-bottom:12px;text-align:left;">Please log in to add this product to your favorites.</div>
+                    <div style="display:flex;gap:8px;">
+                        <button id="loginFavBtn" style="flex:1;background:#222;color:#fff;font-weight:600;font-size:13px;padding:7px 0;border:none;border-radius:7px;box-shadow:0 1px 4px rgba(44,62,80,0.08);cursor:pointer;">Log in</button>
+                        <button id="cancelFavBtn" style="flex:1;background:#f3f3f3;color:#444;font-weight:500;font-size:13px;padding:7px 0;border:none;border-radius:7px;cursor:pointer;">Later</button>
+                    </div>
+                </div>
+            `,
+            showConfirmButton: false,
+            showCancelButton: false,
+            background: 'transparent',
+            customClass: { popup: 'swal2-login-fav-popup' },
+            width: 290,
+            didOpen: () => {
+                document.getElementById('loginFavBtn').onclick = function () {
+                    window.location.href = '/pages/login.php?pending_favorite=' + productId;
+                };
+                document.getElementById('cancelFavBtn').onclick = function () {
+                    Swal.close();
+                };
+            }
+        });
         return;
     }
 
     const btn = event.currentTarget;
     const icon = btn.querySelector('i');
-    
+
     fetch('new_products.php', {
         method: 'POST',
         headers: {
@@ -113,32 +149,26 @@ function handleFavorite(event, productId) {
         },
         body: `toggle_favorite=1&product_id=${productId}`
     })
-    .then(response => response.json())
-    .then(data => {
-        if(data.success) {
-            icon.classList.toggle('far');
-            icon.classList.toggle('fas');
-            
-            // Show success message
-            const isFavorited = icon.classList.contains('fas');
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                icon.classList.toggle('far');
+                icon.classList.toggle('fas');
+                // Gọi AJAX lấy lại số lượng yêu thích và cập nhật badge
+                fetch('/public/get_favorite_count.php')
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success) updateFavoriteBadge(data.count);
+                    });
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
             Swal.fire({
-                title: isFavorited ? 'Đã thêm vào yêu thích' : 'Đã xóa khỏi yêu thích',
-                icon: 'success',
-                toast: true,
-                position: 'top-end',
-                showConfirmButton: false,
-                timer: 1500,
-                timerProgressBar: true
+                title: 'Lỗi',
+                text: 'Có lỗi xảy ra, vui lòng thử lại sau',
+                icon: 'error',
+                timer: 1500
             });
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        Swal.fire({
-            title: 'Lỗi',
-            text: 'Có lỗi xảy ra, vui lòng thử lại sau',
-            icon: 'error',
-            timer: 1500
         });
-    });
 }
