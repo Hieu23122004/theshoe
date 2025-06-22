@@ -1,5 +1,6 @@
 <?php
 session_start();
+header('Content-Type: application/json');
 require_once __DIR__ . '/../includes/database.php';
 require_once __DIR__ . '/../vendor/autoload.php';
 
@@ -8,14 +9,22 @@ use PHPMailer\PHPMailer\Exception;
 
 $response = ["status" => "error", "message" => "Lỗi không xác định."];
 
-function sendEmail($toEmail, $subject, $body) {
+
+if (!isset($conn) || !$conn) {
+    $response["message"] = "Không thể kết nối cơ sở dữ liệu.";
+    echo json_encode($response);
+    exit;
+}
+
+function sendEmail($toEmail, $subject, $body)
+{
     $mail = new PHPMailer(true);
     try {
         $mail->isSMTP();
         $mail->Host = 'smtp.gmail.com';
         $mail->SMTPAuth = true;
         $mail->Username = 'theshoe6868@gmail.com';
-        $mail->Password = 'zgcsvetmozzbyoek'; // App Password
+        $mail->Password = 'zgcsvetmozzbyoek';
         $mail->SMTPSecure = 'tls';
         $mail->Port = 587;
 
@@ -37,7 +46,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     $action = $_POST['action'] ?? '';
     $email = $_POST['email'] ?? '';
 
-    // Kiểm tra đầu vào
+
     if (empty($email) || empty($action)) {
         $response["message"] = "Thiếu action hoặc email.";
         echo json_encode($response);
@@ -50,10 +59,19 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         exit;
     }
 
-    // Tìm người dùng trong CSDL
+
     $stmt = $conn->prepare("SELECT * FROM users WHERE email = ?");
+    if (!$stmt) {
+        $response["message"] = "Lỗi truy vấn CSDL: " . $conn->error;
+        echo json_encode($response);
+        exit;
+    }
     $stmt->bind_param("s", $email);
-    $stmt->execute();
+    if (!$stmt->execute()) {
+        $response["message"] = "Không thể thực hiện truy vấn.";
+        echo json_encode($response);
+        exit;
+    }
     $result = $stmt->get_result();
     $user = $result->fetch_assoc();
 
@@ -63,12 +81,11 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         exit;
     }
 
-    // Gửi mã xác nhận
     if ($action === "send_code") {
         $code = rand(100000, 999999);
         $_SESSION["reset_code"] = $code;
         $_SESSION["reset_email"] = $email;
-        $_SESSION["reset_code_expiry"] = time() + 120; 
+        $_SESSION["reset_code_expiry"] = time() + 120;
 
         $full_name = $user['fullname'] ?? 'Customer';
 
@@ -90,8 +107,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
         } else {
             $response["message"] = "Không thể gửi email. Vui lòng thử lại sau.";
         }
-
-    // Xác nhận mã và tạo mật khẩu mới
     } elseif ($action === "verify_code") {
         $code_input = $_POST["code"] ?? '';
         $currentTime = time();
@@ -103,15 +118,24 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             isset($_SESSION["reset_code_expiry"]) &&
             $currentTime <= $_SESSION["reset_code_expiry"]
         ) {
-            // Tạo mật khẩu ngẫu nhiên
+
             $newPassword = substr(str_shuffle("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"), 0, 10);
             $hash = password_hash($newPassword, PASSWORD_DEFAULT);
 
             $stmt = $conn->prepare("UPDATE users SET password_hash = ? WHERE email = ?");
+            if (!$stmt) {
+                $response["message"] = "Lỗi truy vấn CSDL: " . $conn->error;
+                echo json_encode($response);
+                exit;
+            }
             $stmt->bind_param("ss", $hash, $email);
-            $stmt->execute();
+            if (!$stmt->execute()) {
+                $response["message"] = "Không thể cập nhật mật khẩu.";
+                echo json_encode($response);
+                exit;
+            }
 
-            // Gửi mật khẩu mới qua email
+
             $body = "
                 <html>
                 <head><style>body { font-family: Arial; }</style></head>
@@ -122,19 +146,17 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                 </html>
             ";
 
-            if (sendEmail($email, "Mật khẩu mới của bạn", $body)) {
+            if (sendEmail($email, "Your new password", $body)) {
                 $response["status"] = "success";
                 $response["message"] = "Mật khẩu mới đã được gửi tới email của bạn.";
                 unset($_SESSION["reset_code"], $_SESSION["reset_email"], $_SESSION["reset_code_expiry"]);
             } else {
                 $response["message"] = "Không thể gửi email mật khẩu mới.";
             }
-
         } else {
             $response["status"] = "expired";
             $response["message"] = "Mã xác nhận không đúng hoặc đã hết hạn.";
         }
-
     } else {
         $response["message"] = "Action không hợp lệ.";
     }
@@ -143,4 +165,3 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 }
 
 echo json_encode($response);
-?>
