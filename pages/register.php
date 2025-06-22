@@ -78,11 +78,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['register'])) {
           </div>
         </div>
       </a>
-      <h4 class="text-center text-dark m-1 mt-1" style="margin-top: 400px;">MULGATI® – Timeless Style, Russian Soul</h4>
+      <h4 class="text-center text-dark m-1 mt-1">MULGATI® – Timeless Style, Russian Soul</h4>
     </div>
     <!-- Form đăng ký bên phải -->
-   
-        <div class="flex-grow-1 d-flex align-items-center justify-content-center">
+
+    <div class="flex-grow-1 d-flex align-items-center justify-content-center">
       <div class="bg-white rounded-3 shadow p-4 w-100" style="max-width: 400px; min-height: 480px;">
         <h4 class="text-center text-dark fw-bold mb-4">REGISTER</h4>
 

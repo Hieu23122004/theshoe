@@ -1,9 +1,12 @@
-<!-- includes/header.php -->
 <?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 $current_page = basename($_SERVER['PHP_SELF']);
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>The Shoes</title>
@@ -13,6 +16,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
     <link rel="stylesheet" href="/assets/css/style.css">
     <link rel="stylesheet" href="/assets/css/header.css">
 </head>
+
 <body>
     <!-- Top bar -->
     <div class="top-bar d-flex justify-content-between align-items-center px-4">
@@ -32,20 +36,20 @@ $current_page = basename($_SERVER['PHP_SELF']);
     <!-- Main Navbar -->
     <nav class="navbar navbar-expand-lg bg-white shadow-sm py-2">
         <div class="container-fluid px-4">
-            <a class="navbar-brand" href="#" style="margin-left: 20px; margin-top: 2px;">
+            <a class="navbar-brand" href="#" style="margin-left: 20px; margin-top: 8px;">
                 <div class="d-flex align-items-center gap-2" style="color:#8C7E71;">
-                  <svg viewBox="0 0 100 100" fill="none" stroke="#8C7E71" stroke-width="5" stroke-linejoin="round" style="width:40px;height:40px;">
-                    <path d="M10 50 L30 20 L70 20 L90 50 L50 90 Z" />
-                    <path d="M30 55 L40 35 L50 55 L60 35 L70 55" />
-                    <path d="M60 65 Q50 75 40 65 L40 60 L50 60 L50 68" />
-                  </svg>
-                  <div class="d-flex flex-column align-items-center" style="line-height:1;">
-                    <span style="font-family:'Montserrat',Arial,sans-serif;font-size:1.5rem;font-weight:600;letter-spacing:2px;">
-                        MULGATI
-                        <sup style="font-size:0.7em; position: relative; top: 3px; margin-left: 2px;">®</sup>
-                    </span>
-                    <span style="display:block;width:100%;height:1px;background:#8C7E71;margin:2px 0 2px 0;"></span>
-                    <span style="font-size:0.8rem;letter-spacing:8px;">RUSSIA</span>
+                    <svg viewBox="0 0 100 100" fill="none" stroke="#8C7E71" stroke-width="5" stroke-linejoin="round" style="width:40px;height:40px;">
+                        <path d="M10 50 L30 20 L70 20 L90 50 L50 90 Z" />
+                        <path d="M30 55 L40 35 L50 55 L60 35 L70 55" />
+                        <path d="M60 65 Q50 75 40 65 L40 60 L50 60 L50 68" />
+                    </svg>
+                    <div class="d-flex flex-column align-items-center" style="line-height:1;">
+                        <span style="font-family:'Montserrat',Arial,sans-serif;font-size:1.5rem;font-weight:600;letter-spacing:2px;">
+                            MULGATI
+                            <sup style="font-size:0.7em; position: relative; margin-left: 1px;">®</sup>
+                        </span>
+                        <span style="display:block;width:100%;height:1px;background:#8C7E71;margin:2px 0 2px 0;"></span>
+                        <span style="font-size:0.8rem;letter-spacing:8px;">RUSSIA</span>
                     </div>
 
                 </div>
@@ -57,24 +61,417 @@ $current_page = basename($_SERVER['PHP_SELF']);
 
             <div class="collapse navbar-collapse" id="mainNavbar">
                 <ul class="navbar-nav mx-auto mb-2 mb-lg-0 gap-3">
-                    <li class="nav-item"><a class="nav-link <?php if($current_page == 'new_products.php') echo 'active'; ?>" href="/pages/new_products.php">NEW</a></li>
-                    <li class="nav-item"><a class="nav-link <?php if($current_page == 'sale_products.php') echo 'active'; ?>" href="/pages/sale_products.php">SALE</a></li>
-                    <li class="nav-item"><a class="nav-link <?php if($current_page == 'type_products.php') echo 'active'; ?>" href="/pages/type_products.php">MEN'S SHOES</a></li>
-                    <li class="nav-item"><a class="nav-link <?php if($current_page == 'type_accessories.php') echo 'active'; ?>" href="/pages/type_accessories.php">ACCESSORIES</a></li>
-                    <li class="nav-item"><a class="nav-link <?php if($current_page == 'introduction.php') echo 'active'; ?>" href="/pages/introduction.php">INTRODUCTION</a></li>
-                    <li class="nav-item"><a class="nav-link <?php if($current_page == 'new_promotions.php') echo 'active'; ?>" href="/pages/new_promotions.php">PROMOTIONS</a></li>
+                    <li class="nav-item"><a class="nav-link <?php if ($current_page == 'new_products.php') echo 'active'; ?>" href="/pages/new_products.php">NEW</a></li>
+                    <li class="nav-item"><a class="nav-link <?php if ($current_page == 'sale_products.php') echo 'active'; ?>" href="/pages/sale_products.php">SALE</a></li>
+                    <li class="nav-item"><a class="nav-link <?php if ($current_page == 'type_products.php') echo 'active'; ?>" href="/pages/type_products.php">MEN'S SHOES</a></li>
+                    <li class="nav-item"><a class="nav-link <?php if ($current_page == 'type_accessories.php') echo 'active'; ?>" href="/pages/type_accessories.php">ACCESSORIES</a></li>
+                    <li class="nav-item"><a class="nav-link <?php if ($current_page == 'introduction.php') echo 'active'; ?>" href="/pages/introduction.php">INTRODUCTION</a></li>
+                    <li class="nav-item"><a class="nav-link <?php if ($current_page == 'new_promotions.php') echo 'active'; ?>" href="/pages/new_promotions.php">PROMOTIONS</a></li>
                 </ul>
                 <div class="d-flex align-items-center position-relative">
                     <button class="icon-btn"><i class="bi bi-search fs-5"></i></button>
-                   <a href="/pages/cart.php">
-                        <button class="icon-btn position-relative">
+                    <a href="/pages/cart.php" class="position-relative">
+                        <button class="icon-btn position-relative" style="padding-right:0;">
                             <i class="bi bi-cart fs-5"></i>
+                            <?php
+                            // Hiển thị số lượng sản phẩm trong giỏ hàng
+                            $cart_count = 0;
+                            if (isset($_SESSION['user_id'])) {
+                                // Nếu đã đăng nhập, lấy từng sản phẩm riêng biệt (theo product_id, color, size)
+                                include_once __DIR__ . '/../includes/database.php';
+                                $stmt = $conn->prepare("SELECT COUNT(*) as total FROM cart_items WHERE user_id = ?");
+                                $stmt->bind_param('i', $_SESSION['user_id']);
+                                $stmt->execute();
+                                $result = $stmt->get_result();
+                                if ($row = $result->fetch_assoc()) {
+                                    $cart_count = (int)$row['total'];
+                                }
+                                $stmt->close();
+                            } else if (isset($_SESSION['cart'])) {
+                                // Đếm số sản phẩm khác nhau trong session cart
+                                $cart_count = count($_SESSION['cart']);
+                            }
+                            if ($cart_count > 0): ?>
+                                <span class="position-absolute top-3 start-100 translate-middle badge rounded-pill bg-dark" style="font-size:8px;min-width:15px;line-height:10px;">
+                                    <?php echo $cart_count; ?>
+                                </span>
+                            <?php endif; ?>
                         </button>
                     </a>
-        
-                    <button class="icon-btn"><i class="bi bi-heart fs-5"></i></button>
+
+                    <button class="icon-btn position-relative"><i class="bi bi-heart fs-5"></i>
+                        <?php
+                        // Hiển thị số lượng sản phẩm yêu thích
+                        $fav_count = 0;
+                        if (isset($_SESSION['user_id'])) {
+                            include_once __DIR__ . '/../includes/database.php';
+                            $stmt = $conn->prepare("SELECT COUNT(*) as total FROM favorites WHERE user_id = ?");
+                            $stmt->bind_param('i', $_SESSION['user_id']);
+                            $stmt->execute();
+                            $result = $stmt->get_result();
+                            if ($row = $result->fetch_assoc()) {
+                                $fav_count = (int)$row['total'];
+                            }
+                            $stmt->close();
+                        } else if (isset($_SESSION['favorites']) && is_array($_SESSION['favorites'])) {
+                            $fav_count = count($_SESSION['favorites']);
+                        }
+                        if ($fav_count > 0): ?>
+                            <span class="position-absolute top-3 start-100 translate-middle badge rounded-pill bg-dark" style="font-size:8px;min-width:15px;line-height:10px;">
+                                <?php echo $fav_count; ?>
+                            </span>
+                        <?php endif; ?>
+                    </button>
                     <a href="/pages/register.php"><button class="icon-btn"><i class="bi bi-box-arrow-in-right fs-4"></i></button></a>
                 </div>
             </div>
         </div>
     </nav>
+
+    <script>
+        // Sau khi add to cart thành công, cập nhật badge giỏ hàng trên header (nếu có)
+        function updateCartBadge(newCount) {
+            var badge = document.querySelector('.bi-cart').parentElement.querySelector('.badge');
+            if (badge) {
+                if (newCount > 0) {
+                    badge.textContent = newCount;
+                    badge.style.display = '';
+                } else {
+                    badge.style.display = 'none';
+                }
+            } else if (newCount > 0) {
+                // Nếu chưa có badge, tạo mới
+                var btn = document.querySelector('.bi-cart').parentElement;
+                var span = document.createElement('span');
+                span.className = 'position-absolute top-3 start-100 translate-middle badge rounded-pill bg-dark';
+                span.style.fontSize = '10px';
+                span.style.minWidth = '20px';
+                span.style.lineHeight = '20px';
+                span.textContent = newCount;
+                btn.appendChild(span);
+            }
+        }
+
+        function updateFavoriteBadge(newCount) {
+            var badge = document.querySelector('.bi-heart').parentElement.querySelector('.badge');
+            if (badge) {
+                if (newCount > 0) {
+                    badge.textContent = newCount;
+                    badge.style.display = '';
+                } else {
+                    badge.style.display = 'none';
+                }
+            } else if (newCount > 0) {
+                var btn = document.querySelector('.bi-heart').parentElement;
+                var span = document.createElement('span');
+                span.className = 'position-absolute top-3 start-100 translate-middle badge rounded-pill bg-danger';
+                span.style.fontSize = '10px';
+                span.style.minWidth = '20px';
+                span.style.lineHeight = '20px';
+                span.textContent = newCount;
+                btn.appendChild(span);
+            }
+        }
+
+        // Hook vào AJAX add to cart (giả sử bạn dùng fetch)
+        if (window.location.pathname.includes('detail_products.php')) {
+            // Lắng nghe sự kiện add to cart thành công
+            document.addEventListener('addToCartSuccess', function(e) {
+                // e.detail.count là số sản phẩm mới trong cart
+                updateCartBadge(e.detail.count);
+            });
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        // Mini-cart popup khi bấm vào icon giỏ hàng
+        function showMiniCart() {
+            fetch('/public/mini_cart.php')
+                .then(r => r.text())
+                .then(html => {
+                    Swal.fire({
+                        html: html,
+                        showConfirmButton: false,
+                        showCloseButton: true,
+                        width: 520,
+                        customClass: {
+                            popup: 'swal2-cart-popup'
+                        },
+                        didOpen: () => {
+                            document.querySelectorAll('.cart-mini-increase').forEach(btn => {
+                                btn.addEventListener('click', function() {
+                                    var pid = this.getAttribute('data-pid');
+                                    var color = this.getAttribute('data-color');
+                                    var size = this.getAttribute('data-size');
+                                    var qtySpan = this.parentElement.querySelector('span');
+                                    var qty = parseInt(qtySpan.textContent) + 1;
+                                    updateMiniCartQtyDOM(pid, color, size, qty, qtySpan);
+                                });
+                            });
+                            document.querySelectorAll('.cart-mini-decrease').forEach(btn => {
+                                btn.addEventListener('click', function() {
+                                    var pid = this.getAttribute('data-pid');
+                                    var color = this.getAttribute('data-color');
+                                    var size = this.getAttribute('data-size');
+                                    var qtySpan = this.parentElement.querySelector('span');
+                                    var qty = parseInt(qtySpan.textContent) - 1;
+                                    if (qty > 0) updateMiniCartQtyDOM(pid, color, size, qty, qtySpan);
+                                });
+                            });
+                            document.querySelectorAll('.cart-mini-remove').forEach(btn => {
+                                btn.addEventListener('click', function() {
+                                    var pid = this.getAttribute('data-pid');
+                                    var color = this.getAttribute('data-color');
+                                    var size = this.getAttribute('data-size');
+                                    removeMiniCartItemDOM(pid, color, size, this);
+                                });
+                            });
+                        }
+                    });
+                });
+        }
+        document.querySelectorAll('.bi-cart').forEach(function(icon) {
+            icon.parentElement.addEventListener('click', function(e) {
+                e.preventDefault();
+                showMiniCart();
+            });
+        });
+    </script>
+
+    <script>
+        function updateMiniCartQty(pid, color, size, qty) {
+            fetch('/public/update_cart_quantity.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: new URLSearchParams({
+                    product_id: pid,
+                    color: color,
+                    size: size,
+                    quantity: qty
+                })
+            }).then(r => r.json()).then(data => {
+                if (data.success) {
+                    showMiniCart();
+                }
+            });
+        }
+
+        function removeMiniCartItem(pid, color, size) {
+            fetch('/public/remove_from_cart.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: new URLSearchParams({
+                    product_id: pid,
+                    color: color,
+                    size: size
+                })
+            }).then(r => r.json()).then(data => {
+                if (data.success) {
+                    showMiniCart();
+                }
+            });
+        }
+
+        function updateMiniCartQtyDOM(pid, color, size, qty, qtySpan) {
+            fetch('/public/update_cart_quantity.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: new URLSearchParams({
+                    product_id: pid,
+                    color: color,
+                    size: size,
+                    quantity: qty
+                })
+            }).then(r => r.json()).then(data => {
+                if (data.success) {
+                    qtySpan.textContent = qty;
+                    updateMiniCartTotal();
+                }
+            });
+        }
+
+        function removeMiniCartItemDOM(pid, color, size, btn) {
+            fetch('/public/remove_from_cart.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: new URLSearchParams({
+                    product_id: pid,
+                    color: color,
+                    size: size
+                })
+            }).then(r => r.json()).then(data => {
+                if (data.success) {
+                    var item = btn.closest('.d-flex.align-items-center');
+                    if (item) item.remove();
+                    updateMiniCartTotal();
+                }
+            });
+        }
+
+        function updateMiniCartTotal() {
+            let total = 0;
+            document.querySelectorAll('.cart-mini-list .d-flex.align-items-center').forEach(function(item) {
+                var price = item.querySelector('.text-danger');
+                var qty = item.querySelector('span.mx-1');
+                if (price && qty) {
+                    var priceVal = parseInt(price.textContent.replace(/[^\d]/g, ''));
+                    var qtyVal = parseInt(qty.textContent);
+                    if (!isNaN(priceVal) && !isNaN(qtyVal)) total += priceVal * qtyVal;
+                }
+            });
+            var totalEl = document.querySelector('.cart-mini-total');
+            if (totalEl) totalEl.textContent = total.toLocaleString('vi-VN') + '₫';
+            var count = document.querySelectorAll('.cart-mini-list .d-flex.align-items-center').length;
+            updateCartBadge(count);
+        }
+    </script>
+    <script>
+        function removeMiniFavoriteItemDOM(pid, btn) {
+            fetch('/public/remove_from_favorite.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: new URLSearchParams({
+                    product_id: pid
+                })
+            }).then(r => r.json()).then(data => {
+                if (data.success) {
+                    var item = btn.closest('.d-flex.align-items-center');
+                    if (item) item.remove();
+                    if (typeof updateMiniFavoriteTotal === 'function') updateMiniFavoriteTotal();
+
+                    // Update heart icon on product detail page if present
+                    var favoriteBtn = document.getElementById('favoriteBtn');
+                    if (favoriteBtn && String(favoriteBtn.getAttribute('data-product-id')) === String(pid)) {
+                        var icon = favoriteBtn.querySelector('i');
+                        if (icon) {
+                            icon.classList.remove('fas');
+                            icon.classList.add('far');
+                            if (!icon.classList.contains('fa-heart')) {
+                                icon.classList.add('fa-heart');
+                            }
+                        }
+                        favoriteBtn.classList.remove('active');
+                    }
+
+                    // Update heart icons in product list (if any)
+                    document.querySelectorAll('.favorite-btn[data-product-id="' + pid + '"]').forEach(function(btn) {
+                        var icon = btn.querySelector('i');
+                        if (icon) {
+                            icon.classList.remove('fas');
+                            icon.classList.add('far');
+                            if (!icon.classList.contains('fa-heart')) icon.classList.add('fa-heart');
+                        }
+                        btn.classList.remove('active');
+                    });
+
+                    // Cập nhật badge số lượng yêu thích trên header ngay lập tức
+                    fetch('/public/get_favorite_count.php')
+                        .then(r => r.json())
+                        .then(data => {
+                            if (data.success && typeof updateFavoriteBadge === 'function') updateFavoriteBadge(data.count);
+                        });
+                }
+            });
+        }
+
+        // --- Toggle favorite from product list (heart icon) ---
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.favorite-btn[data-product-id]').forEach(function(btn) {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    var pid = btn.getAttribute('data-product-id');
+                    fetch('/pages/new_products.php', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded'
+                            },
+                            body: 'toggle_favorite=1&product_id=' + encodeURIComponent(pid)
+                        })
+                        .then(r => r.json())
+                        .then(data => {
+                            if (data.success) {
+                                var icon = btn.querySelector('i');
+                                if (icon) {
+                                    icon.classList.toggle('fas');
+                                    icon.classList.toggle('far');
+                                }
+                                // Cập nhật badge số lượng yêu thích trên header
+                                fetch('/public/get_favorite_count.php')
+                                    .then(r => r.json())
+                                    .then(data => {
+                                        if (data.success && typeof updateFavoriteBadge === 'function') updateFavoriteBadge(data.count);
+                                    });
+                            }
+                        });
+                });
+            });
+
+            // Chọn đúng button chứa icon tim ở header (không phải các .favorite-btn)
+            var headerHeartBtn = null;
+            document.querySelectorAll('.navbar .icon-btn.position-relative').forEach(function(btn) {
+                if (
+                    btn.querySelector('.bi-heart') &&
+                    !btn.hasAttribute('data-product-id') &&
+                    !btn.classList.contains('favorite-btn') &&
+                    !btn.closest('a')
+                ) {
+                    headerHeartBtn = btn;
+                }
+            });
+            if (!headerHeartBtn) {
+                var allHeartBtns = document.querySelectorAll('.bi-heart');
+                if (allHeartBtns.length) {
+                    headerHeartBtn = allHeartBtns[0].closest('.icon-btn');
+                }
+            }
+            if (headerHeartBtn) {
+                headerHeartBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    <?php if (!isset($_SESSION['user_id'])): ?>
+                        window.location.href = '/pages/login.php';
+                    <?php else: ?>
+                        showMiniFavorite();
+                    <?php endif; ?>
+                });
+            }
+        });
+
+        // --- Mini-favorite popup khi bấm vào icon yêu thích ---
+        function showMiniFavorite() {
+            fetch('/public/mini_favorite.php')
+                .then(r => r.text())
+                .then(html => {
+                    Swal.fire({
+                        html: html,
+                        showConfirmButton: false,
+                        showCloseButton: true,
+                        width: 520,
+                        customClass: {
+                            popup: 'swal2-cart-popup'
+                        },
+                        didOpen: () => {
+                            document.querySelectorAll('.favorite-mini-remove').forEach(btn => {
+                                btn.addEventListener('click', function() {
+                                    var pid = this.getAttribute('data-pid');
+                                    removeMiniFavoriteItemDOM(pid, this);
+                                });
+                            });
+                        }
+                    });
+                });
+        }
+    </script>
+</body>
+
+</html>
