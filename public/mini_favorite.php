@@ -35,21 +35,28 @@ if (isset($_SESSION['user_id'])) {
     }
 }
 ?>
-<div style="font-size: 1.5rem; font-weight: 700; text-align: center; margin-bottom: 12px;">Favorite Products</div>
 
-<div class="favorite-mini-list" style="background:#fff; padding:16px; border-radius:12px; border:1px solid #ddd; max-height:400px; overflow-y:auto;">
+<div class="text-center fw-bold fs-4 mb-3">Favorite Products</div>
+<div class="favorite-mini-list bg-white p-3 rounded-2 border border-secondary-subtle" style="max-height: 400px; overflow-y: auto;">
     <?php if (count($favorites) === 0): ?>
-        <div style="text-align:center; color:#888; margin: 30px 0;">No favorite products yet.</div>
+        <div class="text-center text-muted my-5">No favorite products yet.</div>
     <?php else: ?>
         <?php foreach ($favorites as $fav): ?>
-            <div class="d-flex align-items-center mb-3" style="gap:16px;">
-                <img src="<?php echo htmlspecialchars($fav['image_url']); ?>" style="width:100px;height:100px;object-fit:cover;border-radius:8px;border:1px solid #eee;">
-                <div style="flex:1;">
-                    <div style="font-weight:700;"><?php echo htmlspecialchars($fav['name']); ?></div>
-                    <div style="color:#e74c3c;font-weight:700;"><?php echo number_format($fav['price'], 0, ',', '.'); ?>₫</div>
+            <div class="d-flex gap-3 mb-2 p-2 border rounded shadow-sm" style="margin: 0 auto; max-width: 100%; width: 95%;">
+                <img src="<?php echo htmlspecialchars($fav['image_url']); ?>" class="rounded-2 border" style="width: 80px; height: 80px; object-fit: cover;">
+                
+                <div class="flex-grow-1">
+                    <div class="fw-semibold"><?php echo htmlspecialchars($fav['name']); ?></div>
+                    <div class="text-secondary small mb-1" style="font-weight: 500;">Product ID: <?php echo $fav['product_id']; ?></div>
+                    <div class="text-danger fw-bold"><?php echo number_format($fav['price'], 0, ',', '.'); ?>₫</div>
                 </div>
-                <button class="favorite-mini-remove btn btn-link text-dark" data-pid="<?php echo $fav['product_id']; ?>" style="font-size:18px;"><i class="bi bi-x-lg"></i></button>
+                
+                <button class="favorite-mini-remove btn btn-light p-0 border" style="width: 28px; height: 30px;" data-pid="<?php echo $fav['product_id']; ?>">
+                    <i class="bi bi-x-lg" style="font-size: 14px;"></i>
+                </button>
+
             </div>
         <?php endforeach; ?>
     <?php endif; ?>
 </div>
+

@@ -301,7 +301,7 @@ if ($cat_result) {
     </div>
     <?php include '../includes/truck.php'; ?>
     <?php include '../includes/footer.php'; ?>
-
+<script src="/assets/js/auto_logout.js"></script>
     <script src="/assets/js/new_products.js"></script>
 </body>
 

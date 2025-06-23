@@ -23,8 +23,8 @@ $current_page = basename($_SERVER['PHP_SELF']);
         <div class="d-flex align-items-center gap-3">
             <?php if (isset($_SESSION['is_logged_in']) && $_SESSION['is_logged_in']): ?>
                 <span style="color:white;font-weight:600;font-size:14px;">
-                    <i class="bi bi-person-circle me-1" style="font-size:20px;"></i>
-                    Hello, <?php echo htmlspecialchars($_SESSION['user']['fullname'] ?? $_SESSION['user']['email'] ?? $_SESSION['username'] ?? ''); ?> !
+                    <i class="bi bi-person-circle me-1" style="font-size:17px;"></i>
+                    <?php echo htmlspecialchars($_SESSION['user']['email'] ?? $_SESSION['user']['email'] ?? $_SESSION['username'] ?? ''); ?>
                 </span>
             <?php endif; ?>
         </div>
@@ -122,7 +122,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
                             </span>
                         <?php endif; ?>
                     </button>
-                    <a href="/pages/register.php"><button class="icon-btn"><i class="bi bi-box-arrow-in-right fs-4"></i></button></a>
+                    <a href="/pages/login.php"><button class="icon-btn"><i class="bi bi-box-arrow-in-right fs-4"></i></button></a>
                 </div>
             </div>
         </div>
@@ -144,9 +144,9 @@ $current_page = basename($_SERVER['PHP_SELF']);
                 var btn = document.querySelector('.bi-cart').parentElement;
                 var span = document.createElement('span');
                 span.className = 'position-absolute top-3 start-100 translate-middle badge rounded-pill bg-dark';
-                span.style.fontSize = '10px';
-                span.style.minWidth = '20px';
-                span.style.lineHeight = '20px';
+                span.style.fontSize = '6px';
+                span.style.minWidth = '15px';
+                span.style.lineHeight = '10px';
                 span.textContent = newCount;
                 btn.appendChild(span);
             }
@@ -164,10 +164,10 @@ $current_page = basename($_SERVER['PHP_SELF']);
             } else if (newCount > 0) {
                 var btn = document.querySelector('.bi-heart').parentElement;
                 var span = document.createElement('span');
-                span.className = 'position-absolute top-3 start-100 translate-middle badge rounded-pill bg-danger';
-                span.style.fontSize = '10px';
-                span.style.minWidth = '20px';
-                span.style.lineHeight = '20px';
+                span.className = 'position-absolute top-3 start-100 translate-middle badge rounded-pill bg-dark';
+                span.style.fontSize = '8px';
+                span.style.minWidth = '15px';
+                span.style.lineHeight = '10px';
                 span.textContent = newCount;
                 btn.appendChild(span);
             }
@@ -205,7 +205,26 @@ $current_page = basename($_SERVER['PHP_SELF']);
                                     var size = this.getAttribute('data-size');
                                     var qtySpan = this.parentElement.querySelector('span');
                                     var qty = parseInt(qtySpan.textContent) + 1;
-                                    updateMiniCartQtyDOM(pid, color, size, qty, qtySpan);
+                                    var max = parseInt(this.getAttribute('data-max'));
+                                    if (!isNaN(max) && qty > max) {
+                                        // Không cho tăng nữa, báo hết hàng bằng SweetAlert2 toast
+                                        qtySpan.textContent = max;
+                                        if (typeof Swal !== 'undefined') {
+                                            Swal.fire({
+                                                toast: true,
+                                                position: 'top-end',
+                                                icon: 'info',
+                                                title: 'This is the maximum quantity available in stock.',
+                                                showConfirmButton: false,
+                                                timer: 2200,
+                                                background: '#222',
+                                                color: '#fff',
+                                                customClass: { popup: 'swal2-toast-custom' }
+                                            });
+                                        }
+                                        return;
+                                    }
+                                    updateMiniCartQtyDOM(pid, color, size, qty, qtySpan, max);
                                 });
                             });
                             document.querySelectorAll('.cart-mini-decrease').forEach(btn => {
@@ -276,7 +295,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
             });
         }
 
-        function updateMiniCartQtyDOM(pid, color, size, qty, qtySpan) {
+        function updateMiniCartQtyDOM(pid, color, size, qty, qtySpan, maxQty) {
             fetch('/public/update_cart_quantity.php', {
                 method: 'POST',
                 headers: {
@@ -290,8 +309,18 @@ $current_page = basename($_SERVER['PHP_SELF']);
                 })
             }).then(r => r.json()).then(data => {
                 if (data.success) {
-                    qtySpan.textContent = qty;
-                    updateMiniCartTotal();
+                    // Chỉ cập nhật số lượng và tổng tiền, không reload lại popup
+                    if (qtySpan) qtySpan.textContent = data.quantity;
+                    // Cập nhật lại tổng tiền bằng giá trị gốc từ data-price
+                    let total = 0;
+                    document.querySelectorAll('.cart-mini-list > .d-flex.align-items-center').forEach(function(item) {
+                        var priceVal = parseFloat(item.getAttribute('data-price'));
+                        var qtyEl = item.querySelector('span.mx-1');
+                        var qtyVal = qtyEl ? parseInt(qtyEl.textContent) : 1;
+                        if (!isNaN(priceVal) && !isNaN(qtyVal)) total += priceVal * qtyVal;
+                    });
+                    var totalEl = document.querySelector('.cart-mini-total');
+                    if (totalEl) totalEl.textContent = total.toLocaleString('vi-VN') + '₫';
                 }
             });
         }
@@ -407,7 +436,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
                                 }
                                 // Cập nhật badge số lượng yêu thích trên header
                                 fetch('/public/get_favorite_count.php')
-                                    .then(r => r.json())
+                                    .then (r => r.json())
                                     .then(data => {
                                         if (data.success && typeof updateFavoriteBadge === 'function') updateFavoriteBadge(data.count);
                                     });
@@ -445,8 +474,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
                     <?php endif; ?>
                 });
             }
-        });
-
+        }); // <-- Thêm dấu đóng này để kết thúc DOMContentLoaded
         // --- Mini-favorite popup khi bấm vào icon yêu thích ---
         function showMiniFavorite() {
             fetch('/public/mini_favorite.php')
@@ -472,6 +500,36 @@ $current_page = basename($_SERVER['PHP_SELF']);
                 });
         }
     </script>
+    <script>
+        // Ví dụ: hàm gọi khi thêm sản phẩm vào giỏ hàng
+        function addToCart(product_id, color, size, quantity) {
+            fetch('/public/add_to_cart.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: new URLSearchParams({
+                    add_to_cart: 1,
+                    product_id: product_id,
+                    color: color,
+                    size: size,
+                    quantity: quantity
+                })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    // ...existing code: cập nhật badge, reload mini cart, v.v...
+                    if (data.maxed) {
+                        alert('Bạn đã thêm tối đa số lượng sản phẩm này trong kho.');
+                    }
+                } else if (data.maxed) {
+                    alert('Bạn đã thêm tối đa số lượng sản phẩm này trong kho.');
+                } else if (data.message) {
+                    alert(data.message);
+                }
+            });
+        }
+    </script>
 </body>
-
 </html>
