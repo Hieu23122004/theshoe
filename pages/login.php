@@ -94,7 +94,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['login'])) {
         $_SESSION['login_error'] = "Lỗi hệ thống. Vui lòng thử lại.";
     }
 }
-// Kiểm tra timeout session (15 phút không hoạt động)
+
 if (isset($_SESSION['user']) && isset($_SESSION['last_activity'])) {
     if (time() - $_SESSION['last_activity'] > 900) { // 900s = 15 phút
         session_unset();

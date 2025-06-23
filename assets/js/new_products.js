@@ -106,19 +106,19 @@ function handleFavorite(event, productId) {
         Swal.fire({
             title: '',
             html: `
-                <div style="background:#fff;border-radius:12px;box-shadow:0 2px 16px rgba(44,62,80,0.10);padding:18px 12px 14px 12px;max-width:270px;margin:0 auto;">
-                    <div style="font-size:16px;font-weight:700;color:#222;text-align:center;margin-bottom:10px;letter-spacing:0.2px;">Sign in required</div>
-                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
-                        <img src="${img}" style="width:54px;height:54px;object-fit:cover;border-radius:8px;border:1px solid #eee;background:#fafafa;">
-                        <div style="text-align:left;max-width:140px;">
-                            <div style="font-size:14px;font-weight:700;margin-bottom:2px;line-height:1.2;word-break:break-word;color:#222;">${name}</div>
-                            <div style="color:#222;font-weight:700;font-size:13px;">${price}</div>
+                 <div style='background:#fff;border-radius:18px;box-shadow:0 4px 32px rgba(44,62,80,0.10);padding:24px 18px 18px 18px;max-width:350px; max-height:400px;margin:0 auto;'>
+                    <div style='font-size:20px;font-weight:800;color:#222;text-align:center;margin-bottom:16px;letter-spacing:0.5px;'>Please log in to continue</div>
+                    <div style='display:flex;align-items:center;gap:18px;margin-bottom:18px;'>
+                        <img src='${img}' style='width:90px;height:90px;object-fit:cover;border-radius:16px;border:2px solid #eee;box-shadow:0 2px 12px rgba(44,62,80,0.10);background:#fafafa;'>
+                        <div style='text-align:left;max-width:200px;'>
+                            <div style='font-size:19px;font-weight:800;margin-bottom:4px;line-height:1.2;word-break:break-word;color:#222;'>${name}</div>
+                            <div style='color:#e74c3c;font-weight:800;font-size:18px;margin-bottom:2px;'>${price}</div>
                         </div>
                     </div>
-                    <div style="font-size:13px;color:#444;margin-bottom:12px;text-align:left;">Please log in to add this product to your favorites.</div>
-                    <div style="display:flex;gap:8px;">
-                        <button id="loginFavBtn" style="flex:1;background:#222;color:#fff;font-weight:600;font-size:13px;padding:7px 0;border:none;border-radius:7px;box-shadow:0 1px 4px rgba(44,62,80,0.08);cursor:pointer;">Log in</button>
-                        <button id="cancelFavBtn" style="flex:1;background:#f3f3f3;color:#444;font-weight:500;font-size:13px;padding:7px 0;border:none;border-radius:7px;cursor:pointer;">Later</button>
+                    <div style='font-size:15px;color:#444;margin-bottom:18px;text-align:left;'>You need to log in to add products to your favorites list.</div>
+                    <div style='display:flex;gap:12px;'>
+                        <button id='loginFavBtn' style='flex:1;background:#6e5f51;color:#fff;font-weight:700;font-size:16px;padding:10px 0;border:none;border-radius:8px;box-shadow:0 2px 8px rgba(44,62,80,0.08);cursor:pointer;'>Log In</button>
+                        <button id='cancelFavBtn' style='flex:1;background:#f3f3f3;color:#444;font-weight:600;font-size:16px;padding:10px 0;border:none;border-radius:8px;cursor:pointer;'>Later</button>
                     </div>
                 </div>
             `,
@@ -126,7 +126,7 @@ function handleFavorite(event, productId) {
             showCancelButton: false,
             background: 'transparent',
             customClass: { popup: 'swal2-login-fav-popup' },
-            width: 290,
+            width: 500,
             didOpen: () => {
                 document.getElementById('loginFavBtn').onclick = function () {
                     window.location.href = '/pages/login.php?pending_favorite=' + productId;
@@ -172,3 +172,54 @@ function handleFavorite(event, productId) {
             });
         });
 }
+
+// Đảm bảo đoạn này chạy sau khi DOMContentLoaded
+document.addEventListener('DOMContentLoaded', function() {
+    // Lắng nghe sự kiện xóa sản phẩm yêu thích trong mini-favorite popup
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('.favorite-mini-remove')) {
+            const btn = e.target.closest('.favorite-mini-remove');
+            const pid = btn.getAttribute('data-pid');
+            // Gọi API xóa
+            fetch('/public/remove_from_favorite.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: new URLSearchParams({ product_id: pid })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    // Xóa khỏi popup
+                    const item = btn.closest('.d-flex');
+                    if (item) item.remove();
+                    // Cập nhật badge header
+                    fetch('/public/get_favorite_count.php')
+                        .then(r => r.json())
+                        .then(data => {
+                            if (data.success && typeof updateFavoriteBadge === 'function') updateFavoriteBadge(data.count);
+                        });
+                    // Cập nhật icon tim trên danh sách sản phẩm (nếu có)
+                    document.querySelectorAll('.favorite-btn').forEach(function(favBtn) {
+                        if (favBtn.onclick && favBtn.onclick.toString().includes(pid)) {
+                            const icon = favBtn.querySelector('i');
+                            if (icon && icon.classList.contains('fas')) {
+                                icon.classList.remove('fas');
+                                icon.classList.add('far');
+                            }
+                        }
+                        // Nếu dùng data-product-id:
+                        if (favBtn.getAttribute('onclick') && favBtn.getAttribute('onclick').includes(pid)) {
+                            const icon = favBtn.querySelector('i');
+                            if (icon && icon.classList.contains('fas')) {
+                                icon.classList.remove('fas');
+                                icon.classList.add('far');
+                            }
+                        }
+                    });
+                }
+            });
+        }
+    });
+});
