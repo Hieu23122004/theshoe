@@ -73,6 +73,7 @@ sort($all_sizes);
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="/assets/js/auto_logout.js"></script>
 
 </head>
 
@@ -376,18 +377,18 @@ sort($all_sizes);
                     title: '',
                     html: `
                 <div style='background:#fff;border-radius:18px;box-shadow:0 4px 32px rgba(44,62,80,0.10);padding:24px 18px 18px 18px;max-width:350px;margin:0 auto;'>
-                    <div style='font-size:20px;font-weight:800;color:#222;text-align:center;margin-bottom:16px;letter-spacing:0.5px;'>Yêu cầu đăng nhập</div>
+                    <div style='font-size:20px;font-weight:800;color:#222;text-align:center;margin-bottom:16px;letter-spacing:0.5px;'>Please log in to continue</div>
                     <div style='display:flex;align-items:center;gap:18px;margin-bottom:18px;'>
                         <img src='${img}' style='width:90px;height:90px;object-fit:cover;border-radius:16px;border:2px solid #eee;box-shadow:0 2px 12px rgba(44,62,80,0.10);background:#fafafa;'>
                         <div style='text-align:left;max-width:200px;'>
                             <div style='font-size:19px;font-weight:800;margin-bottom:4px;line-height:1.2;word-break:break-word;color:#222;'>${name}</div>
-                            <div style='color:#e74c3c;font-weight:800;font-size:18px;margin-bottom:2px;'>${price}</div>
+                            <div style='color:#e74c3c;font-weight:800;font-size:18px;margin-bottom:2px;'>${price} đ</div>
                         </div>
                     </div>
-                    <div style='font-size:15px;color:#444;margin-bottom:18px;text-align:left;'>Bạn cần đăng nhập để thêm sản phẩm vào danh sách yêu thích.</div>
+                    <div style='font-size:15px;color:#444;margin-bottom:18px;text-align:left;'>You need to log in to add products to your favorites list.</div>
                     <div style='display:flex;gap:12px;'>
-                        <button id='loginFavBtn' style='flex:1;background:#6e5f51;color:#fff;font-weight:700;font-size:16px;padding:10px 0;border:none;border-radius:8px;box-shadow:0 2px 8px rgba(44,62,80,0.08);cursor:pointer;'>Đăng nhập</button>
-                        <button id='cancelFavBtn' style='flex:1;background:#f3f3f3;color:#444;font-weight:600;font-size:16px;padding:10px 0;border:none;border-radius:8px;cursor:pointer;'>Để sau</button>
+                        <button id='loginFavBtn' style='flex:1;background:#6e5f51;color:#fff;font-weight:700;font-size:16px;padding:10px 0;border:none;border-radius:8px;box-shadow:0 2px 8px rgba(44,62,80,0.08);cursor:pointer;'>Log In</button>
+                        <button id='cancelFavBtn' style='flex:1;background:#f3f3f3;color:#444;font-weight:600;font-size:16px;padding:10px 0;border:none;border-radius:8px;cursor:pointer;'>Later</button>
                     </div>
                 </div>
             `,
@@ -423,7 +424,7 @@ sort($all_sizes);
                     icon.classList.toggle('far');
                     // Cập nhật badge số lượng yêu thích trên header
                     fetch('/public/get_favorite_count.php')
-                        .then(r => r.json())
+                        .then (r => r.json())
                         .then(data => {
                             if (data.success && typeof updateFavoriteBadge === 'function') updateFavoriteBadge(data.count);
                         });
@@ -435,18 +436,20 @@ sort($all_sizes);
             if (type === 'add') {
                 Swal.fire({
                     html: `
-    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
-        <div style="font-size: 20px; font-weight: 700;">Successfully added to cart!</div>
-        <ion-icon name="checkmark-circle-outline" style="font-size: 30px; color: #27ae60;"></ion-icon>
-    </div>
-    <div style="display:flex;align-items:center;gap:12px;">
-        <img src="${product.image_url}" style="width:100px;height:100px;object-fit:cover;border-radius:6px;border:1px solid #eee;">
-        <div style="text-align:left;">
-            <div style="font-size:16px;font-weight:600;margin-bottom:2px;">${product.name}</div>
-            <div style="color:#e74c3c;font-weight:700;font-size:18px;">${product.price.toLocaleString('vi-VN')}₫</div>
-        </div>
-    </div>
-  `,
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px;">
+                        <div style="font-size: 20px; font-weight: 700;">Successfully added to cart!</div>
+                        <ion-icon name="checkmark-circle-outline" style="font-size: 30px; color: black;"></ion-icon>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:12px;">
+                        <img src="${product.image_url}" style="width:100px;height:100px;object-fit:cover;border-radius:6px;border:1px solid #eee;">
+                        <div style="text-align:left;">
+                            <div style="font-size:16px;font-weight:600;margin-bottom:2px;">${product.name}</div>
+                            <div style="font-size:16px;font-weight:600;margin-bottom:2px;">Quantity: ${product.quantity}</div>
+                            <div style="color:#e74c3c;font-weight:700;font-size:18px;">${product.price.toLocaleString('vi-VN')}₫</div>
+                        </div>
+                    </div>
+        
+                `,
                     showConfirmButton: false,
                     timer: 1800,
                     width: 500,
@@ -477,6 +480,42 @@ sort($all_sizes);
             addToCart('cart');
         });
 
+        // Thêm xử lý cho nút BUY NOW
+        document.querySelector('.buy-btn').addEventListener('click', function(e) {
+            e.preventDefault();
+            buyNow();
+        });
+
+        function buyNow() {
+            if (!selectedColor || !selectedSize) {
+                Swal.fire('Please select color and size!');
+                return;
+            }
+            const qty = parseInt(qtyInput.value);
+            const max = parseInt(qtyInput.max);
+            if (qty < 1 || qty > max) {
+                Swal.fire('Invalid quantity!');
+                return;
+            }
+            // AJAX add to cart
+            fetch('/public/add_to_cart.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: `add_to_cart=1&product_id=<?php echo $product_id; ?>&color=${encodeURIComponent(selectedColor)}&size=${encodeURIComponent(selectedSize)}&quantity=${qty}`
+            }).then(r => r.json()).then(data => {
+                if (data.success) {
+                    // Chuyển sang trang thanh toán
+                    window.location.href = '/pages/checkout.php';
+                } else {
+                    Swal.fire('Lỗi', data.message || 'Không thể thêm vào giỏ hàng', 'error');
+                }
+            }).catch(() => {
+                Swal.fire('Lỗi', 'Không thể kết nối máy chủ', 'error');
+            });
+        }
+
         function addToCart(action) {
             if (!selectedColor || !selectedSize) {
                 Swal.fire('Please select color and size!');
@@ -500,7 +539,8 @@ sort($all_sizes);
                     showCartToast('add', {
                         image_url: <?php echo json_encode($product['image_url']); ?>,
                         name: <?php echo json_encode($product['name']); ?>,
-                        price: <?php echo (int)$product['price']; ?>
+                        price: <?php echo (int)$product['price']; ?>,
+                        quantity: qty
                     });
                     fetch('/public/get_cart_count.php')
                         .then(r => r.json())
@@ -513,6 +553,32 @@ sort($all_sizes);
                                 }));
                             }
                         });
+                    // Nếu đã đạt tối đa, thông báo nhỏ màu đen
+                    if (data.maxed) {
+                        Swal.fire({
+                            toast: true,
+                            position: 'top-end',
+                            icon: 'info',
+                            title: data.message || 'This is the maximum quantity available in stock.',
+                            showConfirmButton: false,
+                            timer: 2200,
+                            background: '#222',
+                            color: '#fff',
+                            customClass: { popup: 'swal2-toast-custom' }
+                        });
+                    }
+                } else if (data.maxed) {
+                    Swal.fire({
+                        toast: true,
+                        position: 'top-end',
+                        icon: 'info',
+                        title: data.message || 'This is the maximum quantity available in stock.',
+                        showConfirmButton: false,
+                        timer: 2200,
+                        background: '#222',
+                        color: '#fff',
+                        customClass: { popup: 'swal2-toast-custom' }
+                    });
                 } else {
                     Swal.fire('Lỗi', data.message || 'Không thể thêm vào giỏ hàng', 'error');
                 }
@@ -523,5 +589,6 @@ sort($all_sizes);
     </script>
     <?php include '../includes/truck.php'; ?>
     <?php include '../includes/footer.php'; ?>
+     <?php include '../includes/floating_contact.php'; ?>
 </body>
 </html>

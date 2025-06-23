@@ -1,4 +1,4 @@
-   .gallery-main {
+.gallery-main {
        background: #f7f7f7;
        min-height: 420px;
        border-radius: 14px;
@@ -503,3 +503,100 @@
    .swal2-actions {
        gap: 10px;
    }
+
+   /* Fundiin popup styles for SweetAlert2 */
+   .fundiin-popup-custom .fundiin-container {
+       max-width: 480px;
+       background: #fff;
+       border-radius: 18px;
+       padding: 10px;
+       box-shadow: 0 4px 32px rgba(44, 62, 80, 0.1);
+       margin: 0 auto;
+   }
+
+   .fundiin-popup-custom .fundiin-title {
+       font-size: 18px;
+       font-weight: bold;
+       text-align: center;
+       margin-bottom: 10px;
+   }
+
+   .fundiin-popup-custom .voucher-card {
+       display: flex;
+       margin-bottom: 10px;
+       overflow: visible;
+   }
+
+   .fundiin-popup-custom .voucher-left {
+       position: relative;
+       width: 60px;
+       background: linear-gradient(to bottom right, #4B2EFF, #00D1C1);
+       clip-path: polygon(
+           0%   0%,
+           100% 0%,
+           100% 10%,
+           100% 90%,
+           100% 100%,
+           0%   100%,
+           0%   90%,
+           0%   10%
+       );
+       display: flex;
+       align-items: center;
+       justify-content: center;
+       z-index: 2;
+   }
+
+   .fundiin-popup-custom .voucher-icon {
+       width: 34px;
+       height: 34px;
+   }
+
+.voucher-right {
+  position: relative;
+  background: #fff;
+  flex: 1;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* Thay vì justify-center */
+  margin-left: -1px;
+  clip-path: polygon(
+    0%   0%,
+    100% 0%,
+    100% 100%,
+    0%   100%,
+    0%   90%,
+    0%   10%
+  );
+  z-index: 1;
+}
+
+   .fundiin-popup-custom .voucher-line {
+       font-size: 15px;
+       font-weight: 500;
+       margin-bottom: 7px;
+   }
+
+   .fundiin-popup-custom .code {
+       background: #fff8f5;
+       border: 2px solid #E64626;
+       padding: 2px 8px;
+       border-radius: 6px;
+       color: #222;
+       font-weight: 700;
+       margin-left: 6px;
+   }
+
+   .fundiin-popup-custom .voucher-desc {
+       font-size: 14px;
+       color: #444;
+   }
+
+   .fundiin-popup-custom .voucher-note {
+       font-size: 13px;
+       color: #555;
+       margin-left: 60px;
+   }
+
+   /* ...existing code... */

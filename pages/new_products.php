@@ -1,7 +1,6 @@
 <?php
 session_start();
 include '../includes/database.php';
-
 // Handle favorite toggle via AJAX (đặt lên đầu, trước khi include header.php)
 if (isset($_POST['toggle_favorite']) && isset($_SESSION['user_id'])) {
     $user_id = $_SESSION['user_id'];
@@ -301,7 +300,8 @@ if ($cat_result) {
     </div>
     <?php include '../includes/truck.php'; ?>
     <?php include '../includes/footer.php'; ?>
-<script src="/assets/js/auto_logout.js"></script>
+    <?php include '../includes/floating_contact.php'; ?>
+    <script src="/assets/js/auto_logout.js"></script>
     <script src="/assets/js/new_products.js"></script>
 </body>
 
