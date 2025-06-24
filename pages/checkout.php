@@ -1,7 +1,45 @@
 <?php
 include '../includes/header.php';
 include '../includes/database.php';
+
+// Lấy giỏ hàng từ session hoặc DB
+$cart = [];
+if (isset($_SESSION['user_id'])) {
+    $user_id = $_SESSION['user_id'];
+    $stmt = $conn->prepare("SELECT * FROM cart_items WHERE user_id = ?");
+    $stmt->bind_param('i', $user_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    while ($row = $result->fetch_assoc()) {
+        $cart[] = $row;
+    }
+    $stmt->close();
+} else if (isset($_SESSION['cart'])) {
+    foreach ($_SESSION['cart'] as $item) $cart[] = $item;
+}
+
+// Lấy thông tin sản phẩm
+$product_map = [];
+if ($cart) {
+    $ids = implode(',', array_map(function($item) { return intval($item['product_id']); }, $cart));
+    $result = $conn->query("SELECT * FROM products WHERE product_id IN ($ids)");
+    while ($row = $result->fetch_assoc()) {
+        $product_map[$row['product_id']] = $row;
+    }
+}
+
+// Tính tổng tiền
+$subtotal = 0;
+foreach ($cart as $item) {
+    $pid = $item['product_id'];
+    $qty = $item['quantity'];
+    $price = isset($product_map[$pid]) ? $product_map[$pid]['price'] : 0;
+    $subtotal += $price * $qty;
+}
+$shipping_fee = 0; // Có thể tính động sau
+$total = $subtotal + $shipping_fee;
 ?>
+
 <div class="container-fluid" style="margin-top:100px;padding:0;">
     <div class="row g-0 bg-white" style="min-height:100vh;">
         <div class="col-md-7 p-5" style="min-height:100vh;">
@@ -131,7 +169,6 @@ include '../includes/database.php';
 <?php include '../includes/footer.php'; ?>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-  
 let discountValue = 0;
 let discountType = null;
 let discountMsg = '';
@@ -222,4 +259,75 @@ document.getElementById('applyDiscountBtn').addEventListener('click', function()
         msgEl.style.color = '#e74c3c';
     });
 });
+
+function updateCheckoutTotals() {
+    let subtotal = 0;
+    document.querySelectorAll('.checkout-cart-item').forEach(item => {
+        // Lấy giá từng sản phẩm (giá 1 sản phẩm)
+        const priceDivs = item.querySelectorAll('div[style*="font-weight:600;"]');
+        let price = 0;
+        let qty = 1;
+        priceDivs.forEach(div => {
+            if (div.textContent.includes('₫')) {
+                price = parseInt(div.textContent.replace(/[^\d]/g, '')) || 0;
+            }
+        });
+        const badge = item.querySelector('.badge');
+        if (badge) {
+            qty = parseInt(badge.textContent) || 1;
+        }
+        subtotal += price;
+    });
+    document.getElementById('checkoutSubtotal').textContent = subtotal.toLocaleString('vi-VN') + '₫';
+
+    // Áp dụng giảm giá
+    let discount = 0;
+    let discountLabel = '';
+    let discountDisplay = '';
+    let showDiscountRow = false;
+
+    if (discountType === 'percent') {
+        discount = Math.round(subtotal * discountValue / 100);
+        if (discount > 0) {
+            discountLabel = 'Giảm giá';
+            discountDisplay = `- ${discountValue}%`;
+            showDiscountRow = true;
+        }
+    } else if (discountType === 'fixed' && shippingDiscount === 0) {
+        discount = Math.round(discountValue);
+        if (discount > 0) {
+            discountLabel = 'Giảm giá';
+            discountDisplay = `- ${discount.toLocaleString('vi-VN')}₫`;
+            showDiscountRow = true;
+        }
+    } else if (discountType === 'fixed' && shippingDiscount > 0) {
+        // Mã freeship
+        discount = 0;
+        discountLabel = 'Giảm phí vận chuyển';
+        discountDisplay = `- ${shippingDiscount.toLocaleString('vi-VN')}₫`;
+        showDiscountRow = true;
+    }
+
+    // Hiển thị dòng giảm giá nếu có
+    const discountRow = document.getElementById('discountRow');
+    if (showDiscountRow) {
+        discountRow.style.display = '';
+        document.getElementById('discountLabel').textContent = discountLabel;
+        document.getElementById('discountValue').textContent = discountDisplay;
+    } else {
+        discountRow.style.display = 'none';
+    }
+
+    // Phí vận chuyển
+    let shipping = DEFAULT_SHIPPING;
+    if (shippingDiscount > 0) {
+        shipping = Math.max(0, DEFAULT_SHIPPING - shippingDiscount);
+    }
+    document.getElementById('checkoutShipping').textContent = shipping > 0 ? shipping.toLocaleString('vi-VN') + '₫' : 'Miễn phí';
+
+    // Tổng cộng
+    let total = subtotal - discount + shipping;
+    if (total < 0) total = 0;
+    document.getElementById('checkoutTotal').textContent = total.toLocaleString('vi-VN');
+}
 </script>
