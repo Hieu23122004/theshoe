@@ -130,3 +130,96 @@ include '../includes/database.php';
 </div>
 <?php include '../includes/footer.php'; ?>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+  
+let discountValue = 0;
+let discountType = null;
+let discountMsg = '';
+let shippingDiscount = 0;
+const DEFAULT_SHIPPING = 35000;
+
+// Khi trang vừa load, tính tổng cộng luôn có phí ship mặc định
+document.addEventListener('DOMContentLoaded', function() {
+    bindRemoveCheckoutEvents();
+    updateCheckoutTotals();
+});
+
+function bindRemoveCheckoutEvents() {
+    document.querySelectorAll('.btn-remove-checkout-item').forEach(btn => {
+        btn.onclick = function() {
+            const pid = this.getAttribute('data-pid');
+            const color = this.getAttribute('data-color');
+            const size = this.getAttribute('data-size');
+            fetch('/public/remove_from_cart.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({
+                    product_id: pid,
+                    color: color,
+                    size: size
+                })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    // Xóa sản phẩm khỏi DOM
+                    const item = document.querySelector('.checkout-cart-item[data-pid="' + pid + '"][data-color="' + color + '"][data-size="' + size + '"]');
+                    if (item) item.remove();
+                    updateCheckoutTotals();
+                    // Gắn lại sự kiện xóa cho các nút còn lại (nếu DOM thay đổi)
+                    bindRemoveCheckoutEvents();
+                    if (typeof updateCartBadge === 'function') {
+                        fetch('/public/get_cart_count.php')
+                            .then (r => r.json())
+                            .then(res => { if (res.success) updateCartBadge(res.count); });
+                    }
+                } else {
+                    Swal.fire('Lỗi', data.message || 'Không thể xóa sản phẩm', 'error');
+                }
+            });
+        };
+    });
+}
+
+document.getElementById('applyDiscountBtn').addEventListener('click', function() {
+    const code = document.getElementById('discountCodeInput').value.trim();
+    const msgEl = document.getElementById('discountCodeMsg');
+    msgEl.textContent = '';
+    if (!code) {
+        msgEl.textContent = 'Please enter a discount code.';
+        msgEl.style.color = '#e74c3c';
+        discountValue = 0;
+        discountType = null;
+        shippingDiscount = 0;
+        updateCheckoutTotals();
+        return;
+    }
+    fetch('/public/check_discount_code.php', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: new URLSearchParams({ code })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.valid) {
+            discountValue = parseFloat(data.discount_value);
+            discountType = data.discount_type;
+            shippingDiscount = parseFloat(data.shipping_discount || 0);
+            msgEl.textContent = 'Successfully applied the code!';
+            msgEl.style.color = '#27ae60';
+            updateCheckoutTotals();
+        } else {
+            discountValue = 0;
+            discountType = null;
+            shippingDiscount = 0;
+            msgEl.textContent = data.message || 'Invalid or expired discount code.';
+            msgEl.style.color = '#e74c3c';
+            updateCheckoutTotals();
+        }
+    })
+    .catch(() => {
+        msgEl.textContent = 'Error checking discount code.';
+        msgEl.style.color = '#e74c3c';
+    });
+});
+</script>
