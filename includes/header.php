@@ -15,6 +15,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     <link rel="stylesheet" href="/assets/css/style.css">
     <link rel="stylesheet" href="/assets/css/header.css">
+
 </head>
 
 <body>
@@ -64,12 +65,22 @@ $current_page = basename($_SERVER['PHP_SELF']);
                     <li class="nav-item"><a class="nav-link <?php if ($current_page == 'new_products.php') echo 'active'; ?>" href="/pages/new_products.php">NEW</a></li>
                     <li class="nav-item"><a class="nav-link <?php if ($current_page == 'sale_products.php') echo 'active'; ?>" href="/pages/sale_products.php">SALE</a></li>
                     <li class="nav-item"><a class="nav-link <?php if ($current_page == 'type_products.php') echo 'active'; ?>" href="/pages/type_products.php">MEN'S SHOES</a></li>
-                    <li class="nav-item"><a class="nav-link <?php if ($current_page == 'type_accessories.php') echo 'active'; ?>" href="/pages/type_accessories.php">ACCESSORIES</a></li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle <?php if ($current_page == 'type_accessories.php') echo 'active'; ?>" href="#" id="accessoriesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            ACCESSORIES
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="accessoriesDropdown">
+                            <li><a class="dropdown-item" href="/pages/handbag_accessories.php?category=2">Handbag</a></li>
+                            <li><a class="dropdown-item" href="/pages/belt_accessories.php?category=3">Belt</a></li>
+                        </ul>
+                    </li>
                     <li class="nav-item"><a class="nav-link <?php if ($current_page == 'introduction.php') echo 'active'; ?>" href="/pages/introduction.php">INTRODUCTION</a></li>
                     <li class="nav-item"><a class="nav-link <?php if ($current_page == 'new_promotions.php') echo 'active'; ?>" href="/pages/new_promotions.php">PROMOTIONS</a></li>
                 </ul>
                 <div class="d-flex align-items-center position-relative">
-                    <button class="icon-btn"><i class="bi bi-search fs-5"></i></button>
+                   <a href="/pages/search.php">
+                        <button class="icon-btn"><i class="bi bi-search fs-5"></i></button>
+                    </a>
                     <a href="/pages/cart.php" class="position-relative">
                         <button class="icon-btn position-relative" style="padding-right:0;">
                             <i class="bi bi-cart fs-5"></i>
@@ -183,12 +194,22 @@ $current_page = basename($_SERVER['PHP_SELF']);
         }
     </script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Đảm bảo SweetAlert2 chỉ được load 1 lần và nằm trước các script sử dụng Swal -->
+    <script>
+        // Kiểm tra nếu đã có SweetAlert2 thì không load lại
+        if (typeof Swal === 'undefined') {
+            var script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/sweetalert2@11';
+            document.head.appendChild(script);
+        }
+    </script>
     <script>
         // Mini-cart popup khi bấm vào icon giỏ hàng
         function showMiniCart() {
             fetch('/public/mini_cart.php')
                 .then(r => r.text())
                 .then(html => {
+                    console.log('showMiniCart: Đã fetch xong mini_cart.php');
                     Swal.fire({
                         html: html,
                         showConfirmButton: false,
@@ -207,9 +228,9 @@ $current_page = basename($_SERVER['PHP_SELF']);
                                     var qty = parseInt(qtySpan.textContent) + 1;
                                     var max = parseInt(this.getAttribute('data-max'));
                                     if (!isNaN(max) && qty > max) {
-                                        // Không cho tăng nữa, báo hết hàng bằng SweetAlert2 toast
                                         qtySpan.textContent = max;
                                         if (typeof Swal !== 'undefined') {
+                                            console.log('showMiniCart: Toast max stock');
                                             Swal.fire({
                                                 toast: true,
                                                 position: 'top-end',
@@ -245,6 +266,80 @@ $current_page = basename($_SERVER['PHP_SELF']);
                                     removeMiniCartItemDOM(pid, color, size, this);
                                 });
                             });
+                            // Gắn lại sự kiện cho nút checkout trong mini cart popup
+                            var checkoutBtn = document.getElementById('miniCartCheckoutBtn');
+                            if (checkoutBtn) {
+                                checkoutBtn.onclick = function(e) {
+                                    e.preventDefault();
+                                    const selected = [];
+                                    document.querySelectorAll('.mini-cart-item-select').forEach(function(checkbox) {
+                                        if (checkbox.checked) {
+                                            selected.push({
+                                                pid: checkbox.getAttribute('data-pid'),
+                                                color: checkbox.getAttribute('data-color'),
+                                                size: checkbox.getAttribute('data-size')
+                                            });
+                                        }
+                                    });
+                                    if (selected.length === 0) {
+                                        console.log('miniCartCheckoutBtn: Không chọn sản phẩm, show toast');
+                                        if (typeof Swal !== 'undefined' && Swal && typeof Swal.fire === 'function') {
+                                            Swal.fire({
+                                                toast: true,
+                                                position: 'top-end',
+                                                icon: 'info',
+                                                title: 'You have not selected any products for checkout!',
+                                                showConfirmButton: false,
+                                                timer: 2000,
+                                                background: '#222',
+                                                color: '#fff',
+                                                timerProgressBar: true,
+                                                didOpen: (toast) => {
+                                                    toast.addEventListener('mouseenter', Swal.stopTimer)
+                                                    toast.addEventListener('mouseleave', Swal.resumeTimer)
+                                                },
+                                                customClass: {
+                                                    popup: 'swal2-toast-custom-compact'
+                                                }
+                                            });
+                                        } else {
+                                            alert('You have not selected any products for checkout!');
+                                        }
+                                        return false;
+                                    }
+                                    try {
+                                        localStorage.setItem('checkout_selected', JSON.stringify(selected));
+                                        console.log('miniCartCheckoutBtn: Đã lưu sản phẩm chọn, chuyển sang trang checkout.');
+                                        window.location.href = '/pages/checkout.php';
+                                    } catch (err) {
+                                        console.error('miniCartCheckoutBtn: localStorage error:', err);
+                                        alert('Có lỗi khi lưu thông tin sản phẩm.');
+                                    }
+                                    return false;
+                                };
+                            }
+                            // --- ĐỒNG BỘ CHECKBOX MINI CART VỚI LOCALSTORAGE ---
+                            if (typeof syncMiniCartCheckboxesWithStorage === 'function') {
+                                syncMiniCartCheckboxesWithStorage();
+                            } else if (window.syncMiniCartCheckboxesWithStorage) {
+                                window.syncMiniCartCheckboxesWithStorage();
+                            }
+                            // Gắn lại sự kiện cho checkbox để cập nhật localStorage khi tích/bỏ tích
+                            document.querySelectorAll('.mini-cart-item-select').forEach(function(checkbox) {
+                                checkbox.addEventListener('change', function() {
+                                    const selected = [];
+                                    document.querySelectorAll('.mini-cart-item-select').forEach(function(cb) {
+                                        if (cb.checked) {
+                                            selected.push({
+                                                pid: cb.getAttribute('data-pid'),
+                                                color: cb.getAttribute('data-color'),
+                                                size: cb.getAttribute('data-size')
+                                            });
+                                        }
+                                    });
+                                    localStorage.setItem('checkout_selected', JSON.stringify(selected));
+                                });
+                            });
                         }
                     });
                 });
@@ -252,7 +347,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
         document.querySelectorAll('.bi-cart').forEach(function(icon) {
             icon.parentElement.addEventListener('click', function(e) {
                 e.preventDefault();
-                showMiniCart();
+                window.location.href = '/pages/cart.php';
             });
         });
     </script>
@@ -314,13 +409,22 @@ $current_page = basename($_SERVER['PHP_SELF']);
                     // Cập nhật lại tổng tiền bằng giá trị gốc từ data-price
                     let total = 0;
                     document.querySelectorAll('.cart-mini-list > .d-flex.align-items-center').forEach(function(item) {
-                        var priceVal = parseFloat(item.getAttribute('data-price'));
-                        var qtyEl = item.querySelector('span.mx-1');
-                        var qtyVal = qtyEl ? parseInt(qtyEl.textContent) : 1;
-                        if (!isNaN(priceVal) && !isNaN(qtyVal)) total += priceVal * qtyVal;
+                        var checkbox = item.querySelector('.mini-cart-item-select');
+                        if (checkbox && checkbox.checked) {
+                            var priceVal = parseFloat(item.getAttribute('data-price'));
+                            var qtyEl = item.querySelector('span.mx-1');
+                            var qtyVal = qtyEl ? parseInt(qtyEl.textContent) : 1;
+                            if (!isNaN(priceVal) && !isNaN(qtyVal)) total += priceVal * qtyVal;
+                        }
                     });
                     var totalEl = document.querySelector('.cart-mini-total');
-                    if (totalEl) totalEl.textContent = total.toLocaleString('vi-VN') + '₫';
+                    if (totalEl) {
+                        if (total === 0) {
+                            totalEl.textContent = '0₫';
+                        } else {
+                            totalEl.textContent = total.toLocaleString('vi-VN') + '₫';
+                        }
+                    }
                 }
             });
         }
@@ -347,17 +451,25 @@ $current_page = basename($_SERVER['PHP_SELF']);
 
         function updateMiniCartTotal() {
             let total = 0;
-            document.querySelectorAll('.cart-mini-list .d-flex.align-items-center').forEach(function(item) {
-                var price = item.querySelector('.text-danger');
-                var qty = item.querySelector('span.mx-1');
-                if (price && qty) {
-                    var priceVal = parseInt(price.textContent.replace(/[^\d]/g, ''));
-                    var qtyVal = parseInt(qty.textContent);
+            let checkedCount = 0;
+            document.querySelectorAll('.cart-mini-list > .d-flex.align-items-center').forEach(function(item) {
+                var checkbox = item.querySelector('.mini-cart-item-select');
+                if (checkbox && checkbox.checked) {
+                    checkedCount++;
+                    var priceVal = parseFloat(item.getAttribute('data-price'));
+                    var qtyEl = item.querySelector('span.mx-1');
+                    var qtyVal = qtyEl ? parseInt(qtyEl.textContent) : 1;
                     if (!isNaN(priceVal) && !isNaN(qtyVal)) total += priceVal * qtyVal;
                 }
             });
             var totalEl = document.querySelector('.cart-mini-total');
-            if (totalEl) totalEl.textContent = total.toLocaleString('vi-VN') + '₫';
+            if (totalEl) {
+                if (total === 0) {
+                    totalEl.textContent = '0₫';
+                } else {
+                    totalEl.textContent = total.toLocaleString('vi-VN') + '₫';
+                }
+            }
             var count = document.querySelectorAll('.cart-mini-list .d-flex.align-items-center').length;
             updateCartBadge(count);
         }
@@ -531,5 +643,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
             });
         }
     </script>
+
+
 </body>
 </html>

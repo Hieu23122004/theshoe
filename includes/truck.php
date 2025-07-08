@@ -1,4 +1,3 @@
-<!-- Bootstrap 5 CDN -->
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
 <div class="container py-4 border-top border-bottom">
@@ -26,8 +25,8 @@
         <img src="/assets/images/warranty-icon.png" alt="Warranty" width="60">
       </div>
       <p class="mb-0">
-        <strong>Lifetime warranty</strong><br>
-        and official shoe maintenance
+        Lifetime warranty<br>
+       <strong> Official shoe maintenance</strong>
       </p>
     </div>
   </div>
