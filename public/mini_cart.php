@@ -159,6 +159,17 @@ $grand_total = 0;
             font-size: 0.98rem;
         }
     }
+
+    /* Thêm CSS này để checkbox luôn nền trắng, không bị nền đen */
+    .mini-cart-item-select[type="checkbox"] {
+        accent-color: #222 !important; /* màu viền/tích, nền vẫn trắng */
+        background: #fff !important;
+        border: 1.5px solid #bbb !important;
+        box-shadow: none !important;
+    }
+    .mini-cart-item-select[type="checkbox"]:checked {
+        background: #fff !important;
+    }
 </style>
 <div class="cart-mini-title">Shopping Cart</div>
 <hr class="my-1">
@@ -188,7 +199,13 @@ $grand_total = 0;
             $grand_total += $total;
         ?>
             <div class="d-flex align-items-center border-bottom py-2 mb-2" data-price="<?php echo $price; ?>">
-                <img src="<?php echo htmlspecialchars($p['image_url']); ?>" class="rounded me-3" style="width:120px;height:110px;object-fit:cover;">
+                <!-- Checkbox bên trái ảnh, ảnh giữ nguyên kích thước -->
+                <input type="checkbox" class="mini-cart-item-select" style="margin-right:8px;width:17px;height:17px;"
+                    data-pid="<?php echo $item['product_id']; ?>"
+                    data-color="<?php echo htmlspecialchars($color); ?>"
+                    data-size="<?php echo htmlspecialchars($size); ?>"
+                />
+                <img src="<?php echo htmlspecialchars($p['image_url']); ?>" class="rounded me-3" style="width:120px;height:120px;object-fit:cover;">
                 <div class="flex-grow-1">
                     <div class="fw-bold" style="font-size:1rem;line-height:1.2;white-space:nowrap;padding-right:140px;margin-top:10px;">
                         <?php echo htmlspecialchars($p['name']); ?>
@@ -218,12 +235,13 @@ $grand_total = 0;
 <hr class="my-1">
 <div class="d-flex justify-content-between align-items-center mb-2">
     <span class="fw-bold" style="font-size:1.1rem;">Total Amount:</span>
-    <span class="cart-mini-total fw-bold text-danger" style="font-size:1.3rem;"><?php echo number_format($grand_total, 0, ',', '.'); ?>₫</span>
+    <span class="cart-mini-total fw-bold text-danger" style="font-size:1.3rem;">0₫</span>
 </div>
 <div class="cart-mini-btns d-flex gap-3" style="margin-bottom: 10px;">
     <a href="/pages/cart.php" class="btn btn-dark w-50" style="width:50px; height: 50px;">View Cart</a>
-    <a href="/pages/checkout.php" class="btn btn-outline-dark w-50" style="width:50px; height: 50px;">Checkout</a>
+    <button id="miniCartCheckoutBtn" class="btn btn-outline-dark w-50" style="width:50px; height: 50px;">Checkout</button>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
     function updateMiniCartQty(pid, color, size, qty) {
         fetch('/public/update_cart_quantity.php', {
@@ -239,7 +257,6 @@ $grand_total = 0;
             })
         }).then(r => r.json()).then(data => {
             if (data.success) {
-                // Cập nhật số lượng thực tế trả về từ server
                 const btns = document.querySelectorAll('.cart-mini-increase, .cart-mini-decrease');
                 btns.forEach(btn => {
                     if (
@@ -251,6 +268,7 @@ $grand_total = 0;
                         if (qtySpan) qtySpan.textContent = data.quantity;
                     }
                 });
+                // Không reload lại popup, chỉ cập nhật số lượng và tổng tiền
                 updateMiniCartTotal();
             }
         });
@@ -287,14 +305,51 @@ $grand_total = 0;
     function updateMiniCartTotal() {
         let total = 0;
         document.querySelectorAll('.cart-mini-list > .d-flex.align-items-center').forEach(function(item) {
-            var priceVal = parseFloat(item.getAttribute('data-price'));
-            var qtyEl = item.querySelector('span.mx-1');
-            var qtyVal = qtyEl ? parseInt(qtyEl.textContent) : 1;
-            if (!isNaN(priceVal) && !isNaN(qtyVal)) total += priceVal * qtyVal;
+            var checkbox = item.querySelector('.mini-cart-item-select');
+            if (checkbox && checkbox.checked) {
+                var priceVal = parseFloat(item.getAttribute('data-price'));
+                var qtyEl = item.querySelector('span.mx-1');
+                var qtyVal = qtyEl ? parseInt(qtyEl.textContent) : 1;
+                if (!isNaN(priceVal) && !isNaN(qtyVal)) total += priceVal * qtyVal;
+            }
         });
         var totalEl = document.querySelector('.cart-mini-total');
-        if (totalEl) totalEl.textContent = total.toLocaleString('vi-VN') + '₫';
+        if (totalEl) {
+            if (total === 0) {
+                totalEl.textContent = '0₫';
+            } else {
+                totalEl.textContent = total.toLocaleString('vi-VN') + '₫';
+            }
+        }
     }
+
+    function initMiniCartCheckboxes() {
+        document.querySelectorAll('.mini-cart-item-select').forEach(function(checkbox) {
+            checkbox.checked = false;
+        });
+        updateMiniCartTotal();
+    }
+
+    // XÓA đoạn này để không tự động reset checkbox khi render mini cart
+    // syncMiniCartCheckboxesWithStorage();
+
+    // Khi tích/bỏ tích checkbox trong mini cart, cập nhật lại localStorage
+    document.querySelectorAll('.mini-cart-item-select').forEach(function(checkbox) {
+        checkbox.addEventListener('change', function() {
+            const selected = [];
+            document.querySelectorAll('.mini-cart-item-select').forEach(function(cb) {
+                if (cb.checked) {
+                    selected.push({
+                        pid: cb.getAttribute('data-pid'),
+                        color: cb.getAttribute('data-color'),
+                        size: cb.getAttribute('data-size')
+                    });
+                }
+            });
+            localStorage.setItem('checkout_selected', JSON.stringify(selected));
+            updateMiniCartTotal();
+        });
+    });
 
     document.querySelectorAll('.cart-mini-increase').forEach(btn => {
         btn.addEventListener('click', function() {
@@ -309,6 +364,7 @@ $grand_total = 0;
                 return;
             }
             updateMiniCartQty(pid, color, size, qty);
+            // KHÔNG reload lại popup, KHÔNG gọi showMiniCart()
         });
     });
     document.querySelectorAll('.cart-mini-decrease').forEach(btn => {
@@ -318,6 +374,7 @@ $grand_total = 0;
             var size = this.getAttribute('data-size');
             var qty = parseInt(this.parentElement.querySelector('span').textContent) - 1;
             if (qty > 0) updateMiniCartQty(pid, color, size, qty);
+            // KHÔNG reload lại popup, KHÔNG gọi showMiniCart()
         });
     });
     document.querySelectorAll('.cart-mini-remove').forEach(btn => {
@@ -328,4 +385,59 @@ $grand_total = 0;
             removeMiniCartItem(pid, color, size);
         });
     });
+    // Đảm bảo chỉ gắn sự kiện sau khi DOM đã render xong
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.mini-cart-item-select').forEach(function(checkbox) {
+            checkbox.addEventListener('change', updateMiniCartTotal);
+            checkbox.addEventListener('input', updateMiniCartTotal);
+        });
+    });
+
+    (function() {
+        var checkoutBtn = document.getElementById('miniCartCheckoutBtn');
+        if (checkoutBtn) {
+            checkoutBtn.onclick = function(e) {
+                e.preventDefault();
+                const selected = [];
+                document.querySelectorAll('.mini-cart-item-select').forEach(function(checkbox) {
+                    if (checkbox.checked) {
+                        selected.push({
+                            pid: checkbox.getAttribute('data-pid'),
+                            color: checkbox.getAttribute('data-color'),
+                            size: checkbox.getAttribute('data-size')
+                        });
+                    }
+                });
+                if (selected.length === 0) {
+                    if (typeof Swal !== 'undefined' && Swal && typeof Swal.fire === 'function') {
+                        Swal.fire({
+                            toast: true,
+                            position: 'top-end',
+                            icon: 'warning',
+                            title: 'Bạn chưa chọn sản phẩm nào để thanh toán!',
+                            showConfirmButton: false,
+                            timer: 2000,
+                            timerProgressBar: true,
+                            didOpen: (toast) => {
+                                toast.addEventListener('mouseenter', Swal.stopTimer)
+                                toast.addEventListener('mouseleave', Swal.resumeTimer)
+                            }
+                        });
+                    } else {
+                        alert('Bạn chưa chọn sản phẩm nào để thanh toán!');
+                    }
+                    return false;
+                }
+                try {
+                    localStorage.setItem('checkout_selected', JSON.stringify(selected));
+                    window.location.href = '/pages/checkout.php';
+                } catch (err) {
+                    alert('Có lỗi khi lưu thông tin sản phẩm.');
+                }
+                return false;
+            };
+        }
+    })();
+
+    initMiniCartCheckboxes();
 </script>

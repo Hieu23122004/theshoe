@@ -59,6 +59,22 @@ foreach ($size_stock as $color => $sizes) {
 }
 sort($all_sizes);
 
+// Xác định loại sản phẩm dựa vào parent_id
+$product_type = 'shoes'; // mặc định
+$category_id = $product['category_id'] ?? 0;
+$parent_id = 0;
+if ($category_id) {
+    $stmt = $conn->prepare("SELECT parent_id FROM categories WHERE category_id = ?");
+    $stmt->bind_param("i", $category_id);
+    $stmt->execute();
+    $stmt->bind_result($parent_id);
+    $stmt->fetch();
+    $stmt->close();
+    if ($parent_id == 2) $product_type = 'bag';
+    else if ($parent_id == 3) $product_type = 'belt';
+    else $product_type = 'shoes';
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="vi">
@@ -95,51 +111,113 @@ sort($all_sizes);
                 </div>
                 <!-- Size guide link and popup -->
                 <div style="margin-top:12px;">
-                    <a href="#" id="sizeGuideToggle" style="color:#8c7e71; font-weight:600; text-decoration:underline; cursor:pointer;">Not sure about your size? Click here</a>
+                    <a href="#" id="sizeGuideToggle" style="color:#8c7e71; font-weight:600; text-decoration:underline; cursor:pointer;">
+                        <?php if ($product_type === 'shoes'): ?>Not sure about your size? Click here<?php elseif ($product_type === 'bag'): ?>Not sure about bag size? Click here<?php elseif ($product_type === 'belt'): ?>Not sure about belt size? Click here<?php endif; ?>
+                    </a>
                     <div id="sizeGuideBox" style="display:none; background:#fff; border-radius:10px; box-shadow:0 2px 12px rgba(0,0,0,0.08); padding:18px; margin-top:10px;">
-                        <h5 style="font-weight:700; font-size:18px; margin-bottom:12px;">Size Guide</h5>
-                        <table class="table table-bordered table-sm" style="background:#fafbfc;">
-                            <thead>
-                                <tr>
-                                    <th>Foot Length (cm)</th>
-                                    <th>US Size</th>
-                                    <th>EU Size</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>23.5</td>
-                                    <td>5.5</td>
-                                    <td>37</td>
-                                </tr>
-                                <tr>
-                                    <td>24.1</td>
-                                    <td>6.5</td>
-                                    <td>38</td>
-                                </tr>
-                                <tr>
-                                    <td>24.8</td>
-                                    <td>7.5</td>
-                                    <td>39</td>
-                                </tr>
-                                <tr>
-                                    <td>25.4</td>
-                                    <td>8.5</td>
-                                    <td>40</td>
-                                </tr>
-                                <tr>
-                                    <td>26.0</td>
-                                    <td>9.5</td>
-                                    <td>41</td>
-                                </tr>
-                                <tr>
-                                    <td>26.7</td>
-                                    <td>10.5</td>
-                                    <td>42</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                        <div style="font-size:15px; color:#555;">* Measure your foot length and compare with the table above to choose the right size.</div>
+                        <?php if ($product_type === 'shoes'): ?>
+                            <h5 style="font-weight:700; font-size:18px; margin-bottom:12px;">Shoe Size Guide</h5>
+                            <table class="table table-bordered table-sm" style="background:#fafbfc;">
+                                <thead>
+                                    <tr>
+                                        <th>Foot Length (cm)</th>
+                                        <th>US Size</th>
+                                        <th>EU Size</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>23.5</td>
+                                        <td>5.5</td>
+                                        <td>37</td>
+                                    </tr>
+                                    <tr>
+                                        <td>24.1</td>
+                                        <td>6.5</td>
+                                        <td>38</td>
+                                    </tr>
+                                    <tr>
+                                        <td>24.8</td>
+                                        <td>7.5</td>
+                                        <td>39</td>
+                                    </tr>
+                                    <tr>
+                                        <td>25.4</td>
+                                        <td>8.5</td>
+                                        <td>40</td>
+                                    </tr>
+                                    <tr>
+                                        <td>26.0</td>
+                                        <td>9.5</td>
+                                        <td>41</td>
+                                    </tr>
+                                    <tr>
+                                        <td>26.7</td>
+                                        <td>10.5</td>
+                                        <td>42</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <div style="font-size:15px; color:#555;">* Measure your foot length and compare with the table above to choose the right size.</div>
+                        <?php elseif ($product_type === 'bag'): ?>
+                            <h5 style="font-weight:700; font-size:18px; margin-bottom:12px;">Bag Size Guide</h5>
+                            <table class="table table-bordered table-sm" style="background:#fafbfc;">
+                                <thead>
+                                    <tr>
+                                        <th>Size Label</th>
+                                        <th>Approx. Width (cm)</th>
+                                        <th>Typical Use</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Small</td>
+                                        <td>~25</td>
+                                        <td>Phone, cards, keys</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Medium</td>
+                                        <td>~27</td>
+                                        <td>Wallet, phone, makeup</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Large</td>
+                                        <td>~29</td>
+                                        <td>Tablet, notebook, daily essentials</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <div style="font-size:15px; color:#555;">
+                                * Check product dimensions and model photos for scale reference.
+                            </div>
+                        <?php elseif ($product_type === 'belt'): ?>
+                            <h5 style="font-weight:700; font-size:18px; margin-bottom:12px;">Belt Size Guide</h5>
+                            <table class="table table-bordered table-sm" style="background:#fafbfc;">
+                                <thead>
+                                    <tr>
+                                        <th>Size</th>
+                                        <th>Waist (cm)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>M</td>
+                                        <td>~75–85 cm</td>
+                                    </tr>
+                                    <tr>
+                                        <td>L</td>
+                                        <td>~85–95 cm</td>
+                                    </tr>
+                                    <tr>
+                                        <td>XL</td>
+                                        <td>~95–105 cm</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <div style="font-size:15px; color:#555;">
+                                * Choose a belt size 10–15 cm longer than your waist measurement.
+                            </div>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
@@ -277,11 +355,15 @@ sort($all_sizes);
         let selectedSize = null;
 
         function renderSizes() {
-            // Luôn hiển thị các size 37-44
             const sizeOptionsDiv = document.getElementById('sizeOptions');
             sizeOptionsDiv.innerHTML = '';
-            const displaySizes = [37, 38, 39, 40, 41, 42];
-            displaySizes.forEach(size => {
+            // Lấy danh sách size thực tế theo màu đang chọn
+            let sizes = [];
+            if (sizeStock[selectedColor]) {
+                sizes = Object.keys(sizeStock[selectedColor]);
+            }
+            sizes.sort((a, b) => a - b); // Sắp xếp tăng dần
+            sizes.forEach(size => {
                 let qty = 0;
                 if (sizeStock[selectedColor] && sizeStock[selectedColor][size] !== undefined) {
                     qty = sizeStock[selectedColor][size];
@@ -296,7 +378,25 @@ sort($all_sizes);
             sizeOptionsDiv.querySelectorAll('.size-btn').forEach(btn => {
                 btn.addEventListener('click', function() {
                     if (this.classList.contains('disabled')) {
-                        Swal.fire('Hết hàng size này!');
+                        Swal.fire({
+                            toast: true,
+                            position: 'top-end',
+                            icon: 'info',
+                            title: undefined,
+                            html: `<div style="display:flex;align-items:center;;min-width:180px;">
+                                     
+                                      <span style='font-size:18px;font-weight:600;color:#fff;'>Out of stock with this size!</span>
+                                   </div>`,
+                            showConfirmButton: false,
+                            timer: 1800,
+                            background: '#222',
+                            color: '#fff',
+                            customClass: {
+                                popup: 'swal2-toast-custom'
+                            },
+                            width: 320,
+                            padding: '10px 0 10px 0'
+                        });
                         return;
                     }
                     selectSize(this.getAttribute('data-size'));
@@ -308,9 +408,11 @@ sort($all_sizes);
             renderSizes();
             // Auto-select first available size
             let firstAvailable = null;
-            const displaySizes = [37, 38, 39, 40, 41, 42];
+            let sizes = [];
             if (sizeStock[selectedColor]) {
-                for (let size of displaySizes) {
+                sizes = Object.keys(sizeStock[selectedColor]);
+                sizes.sort((a, b) => a - b);
+                for (let size of sizes) {
                     if (sizeStock[selectedColor][size] && sizeStock[selectedColor][size] > 0) {
                         firstAvailable = size;
                         break;
@@ -424,7 +526,7 @@ sort($all_sizes);
                     icon.classList.toggle('far');
                     // Cập nhật badge số lượng yêu thích trên header
                     fetch('/public/get_favorite_count.php')
-                        .then (r => r.json())
+                        .then(r => r.json())
                         .then(data => {
                             if (data.success && typeof updateFavoriteBadge === 'function') updateFavoriteBadge(data.count);
                         });
@@ -506,10 +608,34 @@ sort($all_sizes);
                 body: `add_to_cart=1&product_id=<?php echo $product_id; ?>&color=${encodeURIComponent(selectedColor)}&size=${encodeURIComponent(selectedSize)}&quantity=${qty}`
             }).then(r => r.json()).then(data => {
                 if (data.success) {
-                    // Chuyển sang trang thanh toán
+                    // Thêm sản phẩm vào checkout_selected (không ghi đè, giữ lại các sản phẩm cũ)
+                    let checkoutSelected = [];
+                    try {
+                        checkoutSelected = JSON.parse(localStorage.getItem('checkout_selected')) || [];
+                    } catch (e) {
+                        checkoutSelected = [];
+                    }
+                    // Kiểm tra trùng sản phẩm (pid, color, size)
+                    const idx = checkoutSelected.findIndex(item =>
+                        item.pid == <?php echo $product_id; ?> &&
+                        item.color == selectedColor &&
+                        item.size == selectedSize
+                    );
+                    if (idx > -1) {
+                        // Nếu đã có, cộng dồn số lượng
+                        checkoutSelected[idx].quantity += qty;
+                    } else {
+                        checkoutSelected.push({
+                            pid: <?php echo $product_id; ?>,
+                            color: selectedColor,
+                            size: selectedSize,
+                            quantity: qty
+                        });
+                    }
+                    localStorage.setItem('checkout_selected', JSON.stringify(checkoutSelected));
                     window.location.href = '/pages/checkout.php';
                 } else {
-                    Swal.fire('Lỗi', data.message || 'Không thể thêm vào giỏ hàng', 'error');
+                    Swal.fire('Lỗi', data.message || 'Không thể thêm sản phẩm vào giỏ', 'error');
                 }
             }).catch(() => {
                 Swal.fire('Lỗi', 'Không thể kết nối máy chủ', 'error');
@@ -564,7 +690,9 @@ sort($all_sizes);
                             timer: 2200,
                             background: '#222',
                             color: '#fff',
-                            customClass: { popup: 'swal2-toast-custom' }
+                            customClass: {
+                                popup: 'swal2-toast-custom'
+                            }
                         });
                     }
                 } else if (data.maxed) {
@@ -577,7 +705,9 @@ sort($all_sizes);
                         timer: 2200,
                         background: '#222',
                         color: '#fff',
-                        customClass: { popup: 'swal2-toast-custom' }
+                        customClass: {
+                            popup: 'swal2-toast-custom'
+                        }
                     });
                 } else {
                     Swal.fire('Lỗi', data.message || 'Không thể thêm vào giỏ hàng', 'error');
@@ -589,6 +719,7 @@ sort($all_sizes);
     </script>
     <?php include '../includes/truck.php'; ?>
     <?php include '../includes/footer.php'; ?>
-     <?php include '../includes/floating_contact.php'; ?>
+    <?php include '../includes/floating_contact.php'; ?>
 </body>
+
 </html>
