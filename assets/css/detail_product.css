@@ -254,24 +254,24 @@
        position: absolute;
        top: 2px;
        left: 0;
-       width: 20px;
-       height: 20px;
+       width: 22px;
+       height: 22px;
        background-size: contain;
        background-repeat: no-repeat;
    }
 
    .product-benefits li:nth-child(1)::before {
-       background-image: url('https://static-00.iconduck.com/assets.00/truck-fast-icon-512x510-it39kq3q.png');
+       background-image: url('https://img.icons8.com/ios/50/in-transit--v1.png');
        /* delivery */
    }
 
    .product-benefits li:nth-child(2)::before {
-       background-image: url('https://icons.veryicon.com/png/o/miscellaneous/template-3/payment-method-1.png');
+       background-image: url('https://img.icons8.com/ios/50/online-payment-.png');
        /* payment */
    }
 
    .product-benefits li:nth-child(3)::before {
-       background-image: url('https://png.pngtree.com/png-clipart/20230403/original/pngtree-return-box-line-icon-png-image_9019894.png');
+       background-image: url('https://img.icons8.com/external-thin-kawalan-studio/96/external-calendar-check-date-time-thin-kawalan-studio.png');
        /* return */
    }
 
