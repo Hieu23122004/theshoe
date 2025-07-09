@@ -1,67 +1,161 @@
-﻿<?php
-include '../includes/database.php';
-include '../includes/header.php';
+﻿/* Container cách top 100px */
+.main-promotions-content {
+  margin-top: 100px !important;
+}
 
-// Fetch latest 5 articles for sidebar
-$latest_sql = "SELECT post_id, title, image_url, created_at FROM promotions WHERE is_published = 1 ORDER BY created_at DESC LIMIT 5";
-$latest_result = $conn->query($latest_sql);
+/* Sidebar Latest Articles */
+.latest-articles-box {
+  border: 1px solid #eee;
+  background: #fff;
+  font-size: 1rem;
+  padding: 1rem 0.7rem 1rem 0.7rem !important;
+}
+.latest-articles-box h3 {
+  font-size: 1.15rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+.latest-article-item {
+  border-bottom: 1px solid #f2f2f2;
+  padding-bottom: 8px;
+  margin-bottom: 8px;
+}
+.latest-article-item:last-child {
+  border-bottom: none;
+}
+.latest-article-title {
+  font-size: 0.7rem;
+  line-height: 1.25;
+  display: block;
+  margin-bottom: 2px;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: #111;
+  transition: color 0.2s;
+  text-decoration: none;
+}
+.latest-article-title:hover {
+  color: #007bff;
+  text-decoration: underline;
+}
+.latest-article-item .text-muted {
+  font-size: 0.7rem;
+  margin-top: 2px;
+}
 
-// Fetch all promotions for main grid
-$main_sql = "SELECT post_id, title, excerpt, image_url, created_at FROM promotions WHERE is_published = 1 ORDER BY created_at DESC";
-$main_result = $conn->query($main_sql);
-?>
-<link rel="stylesheet" href="/assets/css/new_promotions.css">
-<div class="container-fluid py-4 main-promotions-content" style="background:#fff;">
-  <div class="row">
-    <!-- Sidebar Latest Articles -->
-    <div class="col-md-3">
-      <div class="latest-articles-box p-3 mb-4 bg-white rounded shadow-sm">
-        <h3 class="mb-3 fw-bold">Latest Articles</h3>
-        <hr>
-        <?php while ($row = $latest_result->fetch_assoc()): ?>
-          <div class="d-flex mb-3 align-items-start latest-article-item">
-            <a href="promotions_detail.php?id=<?= $row['post_id'] ?>">
-              <img src="<?= htmlspecialchars($row['image_url']) ?>" class="rounded me-2" style="width:60px;height:60px;object-fit:cover;">
-            </a>
-            <div>
-              <a href="promotions_detail.php?id=<?= $row['post_id'] ?>" class="fw-semibold text-dark latest-article-title" style="text-decoration:none;">
-                <?= htmlspecialchars($row['title']) ?>
-              </a>
-              <div class="text-muted small"><?= date('d.m.Y', strtotime($row['created_at'])) ?></div>
-            </div>
-          </div>
-        <?php endwhile; ?>
-      </div>
-    </div>
-    <!-- Main Promotions Grid -->
-    <div class="col-md-9">
-      <h1 class="mb-4 fw-bold" style="font-size:1.5rem;">New news about Mulgati</h1>
-      <div class="row g-4 d-flex justify-content-start">
-        <?php while ($row = $main_result->fetch_assoc()): ?>
-          <div class="col-md-4 d-flex justify-content-center">
-            <div class="card promotion-card h-100 shadow-sm border-0">
-              <a href="promotions_detail.php?id=<?= $row['post_id'] ?>">
-                <img src="<?= htmlspecialchars($row['image_url']) ?>" class="card-img-top promotion-img-fixed" alt="" />
-              </a>
-              <div class="card-body d-flex flex-column justify-content-center align-items-center">
-                <a href="promotions_detail.php?id=<?= $row['post_id'] ?>" class="card-title fw-bold text-dark d-block mb-2 promotion-title-fixed promotion-title-2line"><?= htmlspecialchars($row['title']) ?></a>
-                <div class="promotion-date-row w-100">
-                  <span class="line"></span>
-                  <span class="badge promotion-date-fixed"><?= date('d/m/Y', strtotime($row['created_at'])) ?></span>
-                  <span class="line"></span>
-                </div>
-                <div class="card-text text-muted promotion-excerpt-fixed">
-                  <?= htmlspecialchars(mb_strimwidth($row['excerpt'], 0, 110, '...')) ?>
-                </div>
-              </div>
-            </div>
-          </div>
-        <?php endwhile; ?>
-      </div>
-    </div>
-  </div>
-</div>
-</div>
-<?php include '../includes/footer.php'; ?>
-<?php include '../includes/floating_contact.php'; ?>
-<script src="/assets/js/auto_logout.js"></script>
+/* Main Promotions Grid */
+.promotion-card {
+  border-radius: 14px;
+  box-shadow: 0 2px 12px 0 rgba(0,0,0,0.08);
+  background: #fff;
+  font-size: 0.7rem;
+  width: 100%;
+  max-width: 370px;
+  min-width: unset;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  border: none;
+  padding: 0;
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+.promotion-card:hover {
+  box-shadow: 0 8px 32px 0 rgba(0,0,0,0.13);
+  transform: translateY(-4px) scale(1.01);
+}
+.promotion-img-fixed {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  margin: 0;
+  display: block;
+  border-top-left-radius: 14px;
+  border-top-right-radius: 14px;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  background: #f8f8f8;
+}
+.promotion-card .card-body {
+  padding: 0.7rem 10px 0.5rem 10px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-sizing: border-box;
+}
+.promotion-title-fixed {
+  font-size: 0.8rem !important;
+  line-height: 1.3;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 0.5rem;
+  margin-top: 0.2rem;
+  text-transform: uppercase;
+  word-break: break-word;
+  white-space: normal;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-height: 36px;
+  max-height: 40px;
+  display: block;
+}
+.promotion-title-2line {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-clamp: 2;
+  max-height: 2.8em;
+  min-height: 2.6em;
+  line-height: 1.3em;
+}
+.promotion-date-fixed {
+  font-size: 0.8rem !important;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 18px;
+  padding: 2px 16px;
+  font-weight: 600;
+  color: #111 !important;
+  display: inline-block;
+  z-index: 1;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.1rem;
+  margin-top: 0.1rem;
+}
+.promotion-date-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0.1rem 0 0.5rem 0;
+  width: 100%;
+  height: 10px;
+  gap: 6px;
+}
+.promotion-date-row .line {
+  width: 32px;
+  height: 1px;
+  background: #e0e0e0;
+  margin: 0;
+}
+.promotion-excerpt-fixed {
+  font-size: 0.8rem !important;
+  min-height: 28px;
+  text-align: center;
+  margin-top: 0.3rem;
+  color: #888;
+  line-height: 1.5;
+  word-break: break-word;
+  white-space: normal;
+  max-height: 38px;
+  overflow: hidden;
+}
+
+@media (max-width: 991px) {
+  .latest-articles-box { margin-bottom: 1.2rem; }
+  .promotion-card { width: 100%; min-width: unset; }
+  .promotion-img-fixed { max-width: 100%; }
+}
