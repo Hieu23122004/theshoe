@@ -3,10 +3,11 @@
     "",
     "\\assets",
     "\\assets\\css",
+    "\\assets\\js",
     "\\chatbot",
     "\\includes",
     "\\pages"
   ],
-  "SelectedNode": "\\assets\\css\\introduction.css",
+  "SelectedNode": "\\pages\\promotions_detail.php",
   "PreviewInSolutionExplorer": false
 }
