@@ -1,5 +1,8 @@
 <?php
 include '../includes/database.php';
+session_start();
+// Get redirect parameter from GET or POST
+$redirect = isset($_GET['redirect']) ? $_GET['redirect'] : (isset($_POST['redirect']) ? $_POST['redirect'] : '/pages/profile.php');
 // Handle registration
 $message = '';
 
@@ -27,7 +30,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['register'])) {
     } else {
       $stmt->bind_param("ssssss", $full_name, $email, $password, $phone, $address, $role);
       if ($stmt->execute()) {
-        $message = "Registration successful! Please login.";
+        $message = "Registration successful! You can now log in.";
+        // Không auto-login, không chuyển trang
       } else {
         if ($conn->errno == 1062) {
           $message = "Email already exists!";
@@ -51,6 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['register'])) {
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="stylesheet" href="/assets/css/login_register.css">
+  <script src="/assets/js/auto_logout.js"></script>
 </head>
 
 <body class="d-flex align-items-stretch min-vh-100 bg-light">
@@ -91,6 +96,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['register'])) {
         <?php endif; ?>
 
         <form method="POST">
+          <input type="hidden" name="redirect" value="<?= htmlspecialchars($redirect) ?>">
           <div class="mb-3">
             <input type="text" name="full_name" class="form-control" placeholder="Full Name" required>
           </div>
@@ -110,7 +116,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['register'])) {
         </form>
 
         <div class="text-center mt-4">
-          <small>Already have an account? <a href="/pages/login.php" class="text-danger">Log in</a></small>
+          <small>Already have an account? <a href="/pages/login.php?redirect=<?= urlencode($redirect) ?>" class="text-danger">Log in</a></small>
         </div>
       </div>
     </div>
