@@ -134,7 +134,7 @@ if ($cat_result) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@sweetalert2/theme-minimal@5/minimal.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <link rel="stylesheet" href="/assets/css/new_products.css">
+    <link rel="stylesheet" href="/assets/css/products.css">
     <script>
         var isLoggedIn = <?php echo isset($_SESSION['user_id']) ? 'true' : 'false'; ?>;
     </script>
@@ -146,13 +146,10 @@ if ($cat_result) {
     <div id="bannerCarousel" class="carousel slide" data-bs-ride="carousel">
         <div class="carousel-inner">
             <div class="carousel-item active">
-                <img src="https://file.hstatic.net/200000410665/collection/web_summer_deal_403160454f644c919c20e0d9e1253e90.jpg" class="d-block w-100" alt="Banner 1">
+                <img src="https://scontent.fhan14-2.fna.fbcdn.net/v/t39.30808-6/464147338_529486959863851_3595096770823152418_n.png?stp=dst-jpg_tt6&_nc_cat=108&ccb=1-7&_nc_sid=86c6b0&_nc_ohc=oJTUe-WaJi8Q7kNvwHkKSm2&_nc_oc=AdlReOX4d5R3tcROB163Hr2H8hqLzk-VhmQj4cVZaOYEkQEnQkr-uG54_1mx6geI2GY&_nc_zt=23&_nc_ht=scontent.fhan14-2.fna&_nc_gid=9B7h6mk-F-7Obuh1h0cnLA&oh=00_AfT0POWo-jQFZtB_xoDhkco-mjJwTfVw32X5W5urvlHwHw&oe=68707838" class="d-block w-100" alt="Banner 1">
             </div>
             <div class="carousel-item">
-                <img src="https://theme.hstatic.net/200000410665/1001180857/14/collection-banner.jpg?v=619" class="d-block w-100" alt="Banner 2">
-            </div>
-            <div class="carousel-item">
-                <img src="https://file.hstatic.net/200000410665/collection/banner-web-b_desktop__6cd829139f2c4da58a90914884430233.png" class="d-block w-100" alt="Banner 3">
+                <img src="https://scontent.fhan14-4.fna.fbcdn.net/v/t39.30808-6/450533759_459528903526324_5894021628706207037_n.png?stp=dst-jpg_tt6&_nc_cat=107&ccb=1-7&_nc_sid=86c6b0&_nc_ohc=RxzpbO2tAzcQ7kNvwGteQni&_nc_oc=AdnwhMLJW9wJ0Hsm08yhadDoMmTPlSU5hWcvMp3_6BZpWGhR4xxtIB5l6W_9IX1bd-g&_nc_zt=23&_nc_ht=scontent.fhan14-4.fna&_nc_gid=MrVFPDaV83ikDcKSo1D9_g&oh=00_AfRbD4SqcgC9Bmg_HXq_t6Nn5JcsbSmuHjN20fzOc3DqPg&oe=687084E3" class="d-block w-100" alt="Banner 2">
             </div>
         </div>
     </div>

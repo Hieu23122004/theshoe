@@ -6,7 +6,7 @@
 }
 
 .carousel-item img {
-    height: auto;
+    height: 490px;
     width: 100%;
     object-fit: cover;
 }
@@ -373,4 +373,31 @@ header {
     background: #f7f7f7;
     color: #bbb;
     border: none;
+}
+
+.discount-badge-animated {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    background: linear-gradient(90deg, #ffeaea 0%, #ffeaea 40%, #ffb3b3 60%, #ffeaea 100%);
+    color: #e74c3c;
+    font-weight: bold;
+    padding: 2px 12px;
+    border-radius: 14px;
+    font-size: 16px;
+    z-index: 2;
+    box-shadow: 0 2px 8px rgba(231,76,60,0.10);
+    overflow: hidden;
+    animation: discount-pulse 1.2s infinite, discount-gradient-move 2.2s linear infinite;
+    background-size: 200% 100%;
+    background-position: 0% 0%;
+}
+
+@keyframes discount-gradient-move {
+    0% {
+        background-position: 0% 0%;
+    }
+    100% {
+        background-position: 100% 0%;
+    }
 }

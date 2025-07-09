@@ -1,4 +1,4 @@
-   .swal2-cart-popup {
+.swal2-cart-popup {
        border-radius: 16px;
        padding: 0;
        background: #fff;
@@ -14,7 +14,7 @@
    }
 
    .swal2-cart-popup .cart-mini-list {
-       max-height: 260px;
+       max-height: 180px; /* Hiển thị tối đa 2 sản phẩm (2 x ~90px) */
        overflow-y: auto;
        margin-bottom: 12px;
    }
@@ -104,3 +104,102 @@
        background: #000;
        color: #fff;
    }
+   .swal2-toast-custom-compact.swal2-popup {
+        min-width: 260px !important;
+        max-width: 320px !important;
+        padding: 0.7em 1.2em !important;
+        font-size: 1rem !important;
+        border-radius: 8px !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 0.7em !important;
+    }
+    .swal2-toast-custom-compact .swal2-title {
+        font-size: 1rem !important;
+        margin: 0.2em 0 0.1em 0 !important;
+        flex: 1 1 auto;
+        text-align: left;
+    }
+    .swal2-toast-custom-compact .swal2-icon {
+        margin: 0 0.5em 0 0 !important;
+        width: 1.8em !important;
+        height: 1.8em !important;
+        flex-shrink: 0;
+    }
+    .swal2-toast-custom-compact .swal2-timer-progress-bar {
+        height: 0.18em !important;
+        border-radius: 2px !important;
+    }
+/* Dropdown xổ ra khi hover, không hiệu ứng underline, không quay mũi tên */
+.navbar-nav .dropdown:hover .dropdown-menu {
+    display: block;
+    margin-top: 0;
+}
+
+.navbar-nav .dropdown .dropdown-toggle:after {
+    transition: none;
+}
+
+.navbar-nav .dropdown .dropdown-toggle:focus,
+.navbar-nav .dropdown .dropdown-toggle:hover {
+    text-decoration: none !important;
+    box-shadow: none !important;
+}
+
+.navbar-nav .dropdown .dropdown-toggle.active,
+.navbar-nav .dropdown .dropdown-toggle:active {
+    text-decoration: none !important;
+    box-shadow: none !important;
+}
+
+/* Tùy chỉnh dropdown đẹp hơn */
+.dropdown-menu {
+    border-radius: 8px;
+    width: 100px;
+    min-width: unset;
+    max-width: 120px;
+    box-shadow: 0 4px 18px rgba(44,62,80,0.10);
+    padding: 2px 0;
+    border: 1px solid #eee;
+}
+.dropdown-menu .dropdown-item {
+    padding: 6px 10px;
+    font-size: 0.98rem;
+    font-weight: 500;
+    color: #222;
+    border-radius: 5px;
+    transition: background 0.16s, color 0.16s;
+    text-align: left;
+}
+.dropdown-menu .dropdown-item:hover {
+    background: #f3f3f3;
+    color: #8C7E71;
+}
+
+/* Gạch chân mỏng khi hover nav-link */
+.navbar-nav .nav-link {
+    position: relative;
+    padding-bottom: 2px;
+    transition: color 0.18s;
+}
+.navbar-nav .nav-link:hover,
+.navbar-nav .nav-link.active {
+    color: #8C7E71;
+}
+.navbar-nav .nav-link::after {
+    content: '';
+    display: block;
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 2px;
+    background: #222;
+    opacity: 0;
+    border-radius: 2px;
+    transition: opacity 0.18s;
+}
+.navbar-nav .nav-link:hover::after,
+.navbar-nav .nav-link.active::after {
+    opacity: 1;
+}
