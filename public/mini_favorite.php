@@ -37,13 +37,79 @@ if (isset($_SESSION['user_id'])) {
 ?>
 
 <div class="text-center fw-bold fs-4 mb-3">Favorite Products</div>
-<div class="favorite-mini-list bg-white p-3 rounded-2 border border-secondary-subtle" style="max-height: 400px; overflow-y: auto;">
+<style>
+    .favorite-mini-list {
+        background: #fff;
+        padding: 1rem;
+        border-radius: 10px;
+        border: 1px solid #dee2e6;
+        max-height: 400px;
+        overflow-y: auto;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    }
+
+    .favorite-item {
+        display: flex;
+        gap: 0.75rem;
+        padding: 0.75rem;
+        margin-bottom: 0.75rem;
+        background: #f9f9f9;
+        border-radius: 8px;
+        border: 1px solid #e0e0e0;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+        transition: background 0.2s ease;
+    }
+
+    .favorite-item:hover {
+        background: #f1f1f1;
+    }
+
+    .favorite-item img {
+        width: 80px;
+        height: 80px;
+        object-fit: cover;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+    }
+
+    .favorite-info {
+        flex-grow: 1;
+    }
+
+    .favorite-remove-btn {
+        width: 28px;
+        height: 30px;
+        padding: 0;
+        border: none;
+        background: #f8f9fa;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        transition: background 0.2s ease;
+    }
+
+    .favorite-remove-btn:hover {
+        background: #e9ecef;
+    }
+
+    .favorite-remove-btn i {
+        font-size: 14px;
+        color: #dc3545;
+    }
+
+    .favorite-empty {
+        margin-top: 4rem;
+        margin-bottom: 4rem;
+        color: #adb5bd;
+        font-size: 1.1rem;
+    }
+</style>
+<div class="favorite-mini-list bg-white p-3 rounded-2 border border-secondary-subtle" style="max-height: 450px; overflow-y: auto;">
     <?php if (count($favorites) === 0): ?>
-        <div class="text-center text-muted my-5">No favorite products yet.</div>
+        <div class="text-center favorite-empty">No favorite products yet.</div>
     <?php else: ?>
         <?php foreach ($favorites as $fav): ?>
-            <div class="d-flex gap-3 mb-2 p-2 border rounded shadow-sm" style="margin: 0 auto; max-width: 100%; width: 95%;">
-                <img src="<?php echo htmlspecialchars($fav['image_url']); ?>" class="rounded-2 border" style="width: 80px; height: 80px; object-fit: cover;">
+            <div class="d-flex gap-3 mb-3 p-2 border rounded shadow-sm" style="margin-top: 8px; max-width: 100%; width: 100%; margin-bottom: 8px; background: #f8f9fa;">
+                <img src="<?php echo htmlspecialchars($fav['image_url']); ?>" class="rounded-2 border" style="width: 115px; height: 100px; object-fit: cover;">
                 
                 <div class="flex-grow-1">
                     <div class="fw-semibold"><?php echo htmlspecialchars($fav['name']); ?></div>

@@ -89,7 +89,6 @@ if ($category_id) {
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="/assets/js/auto_logout.js"></script>
 
 </head>
 
@@ -476,38 +475,36 @@ if ($category_id) {
                 const price = '<?php echo htmlspecialchars($product["price"] ?? "0₫"); ?>';
 
                 Swal.fire({
-                    title: '',
                     html: `
-                <div style='background:#fff;border-radius:18px;box-shadow:0 4px 32px rgba(44,62,80,0.10);padding:24px 18px 18px 18px;max-width:350px;margin:0 auto;'>
-                    <div style='font-size:20px;font-weight:800;color:#222;text-align:center;margin-bottom:16px;letter-spacing:0.5px;'>Please log in to continue</div>
-                    <div style='display:flex;align-items:center;gap:18px;margin-bottom:18px;'>
-                        <img src='${img}' style='width:90px;height:90px;object-fit:cover;border-radius:16px;border:2px solid #eee;box-shadow:0 2px 12px rgba(44,62,80,0.10);background:#fafafa;'>
-                        <div style='text-align:left;max-width:200px;'>
-                            <div style='font-size:19px;font-weight:800;margin-bottom:4px;line-height:1.2;word-break:break-word;color:#222;'>${name}</div>
-                            <div style='color:#e74c3c;font-weight:800;font-size:18px;margin-bottom:2px;'>${price} đ</div>
-                        </div>
-                    </div>
-                    <div style='font-size:15px;color:#444;margin-bottom:18px;text-align:left;'>You need to log in to add products to your favorites list.</div>
-                    <div style='display:flex;gap:12px;'>
-                        <button id='loginFavBtn' style='flex:1;background:#6e5f51;color:#fff;font-weight:700;font-size:16px;padding:10px 0;border:none;border-radius:8px;box-shadow:0 2px 8px rgba(44,62,80,0.08);cursor:pointer;'>Log In</button>
-                        <button id='cancelFavBtn' style='flex:1;background:#f3f3f3;color:#444;font-weight:600;font-size:16px;padding:10px 0;border:none;border-radius:8px;cursor:pointer;'>Later</button>
-                    </div>
+        <div style='background:#fff;border-radius:18px;box-shadow:0 4px 32px rgba(44,62,80,0.10);padding:24px 18px 18px 18px;max-width:350px;margin:0 auto;'>
+            <div style='font-size:20px;font-weight:800;color:#222;text-align:center;margin-bottom:16px;letter-spacing:0.5px;'>Please log in to continue</div>
+            <div style='display:flex;align-items:center;gap:18px;margin-bottom:18px;'>
+                <img src='${img}' style='width:90px;height:90px;object-fit:cover;border-radius:16px;border:2px solid #eee;box-shadow:0 2px 12px rgba(44,62,80,0.10);background:#fafafa;'>
+                <div style='text-align:left;max-width:200px;'>
+                    <div style='font-size:19px;font-weight:800;margin-bottom:4px;line-height:1.2;word-break:break-word;color:#222;'>${name}</div>
+                    <div style='color:#e74c3c;font-weight:800;font-size:18px;margin-bottom:2px;'>${price}</div>
                 </div>
-            `,
+            </div>
+            <div style='font-size:15px;color:#444;margin-bottom:18px;text-align:left;'>You need to log in to add products to your favorites list.</div>
+            <div style='display:flex;gap:12px;'>
+                <button id='loginFavBtn' style='flex:1;background:#6e5f51;color:#fff;font-weight:700;font-size:16px;padding:10px 0;border:none;border-radius:8px;box-shadow:0 2px 8px rgba(44,62,80,0.08);cursor:pointer;'>Log In</button>
+                <button id='cancelFavBtn' style='flex:1;background:#f3f3f3;color:#444;font-weight:600;font-size:16px;padding:10px 0;border:none;border-radius:8px;cursor:pointer;'>Later</button>
+            </div>
+        </div>
+        `,
                     showConfirmButton: false,
                     showCloseButton: false,
                     allowOutsideClick: false,
                     background: 'transparent',
                     didOpen: () => {
-                        document.getElementById('loginFavBtn').addEventListener('click', () => {
-                            window.location.href = '/pages/login.php?redirect=detail_products.php?id=<?php echo $product_id; ?>';
-                        });
-                        document.getElementById('cancelFavBtn').addEventListener('click', () => {
+                        document.getElementById('loginFavBtn').onclick = function () {
+                            window.location.href = '/pages/login.php?pending_favorite=<?php echo $product_id; ?>';
+                        };
+                        document.getElementById('cancelFavBtn').onclick = function () {
                             Swal.close();
-                        });
+                        };
                     }
                 });
-
                 return;
             }
 
@@ -526,7 +523,7 @@ if ($category_id) {
                     icon.classList.toggle('far');
                     // Cập nhật badge số lượng yêu thích trên header
                     fetch('/public/get_favorite_count.php')
-                        .then(r => r.json())
+                        .then( r => r.json())
                         .then(data => {
                             if (data.success && typeof updateFavoriteBadge === 'function') updateFavoriteBadge(data.count);
                         });
@@ -720,6 +717,7 @@ if ($category_id) {
     <?php include '../includes/truck.php'; ?>
     <?php include '../includes/footer.php'; ?>
     <?php include '../includes/floating_contact.php'; ?>
+    <script src="/assets/js/auto_logout.js"></script>
 </body>
 
 </html>
