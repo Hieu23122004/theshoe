@@ -53,48 +53,44 @@ document.getElementById('sizeGuideToggle').addEventListener('click', function (e
 // --- Fundiin Learn More Popup (EN, rounded corners) ---
 document.getElementById('fundiinLearnMore').addEventListener('click', function (e) {
   e.preventDefault();
+  // Lấy danh sách mã từ window.fundiinCodes
+  const codes = (window.fundiinCodes || []).filter(c => c.code && c.valid_from && c.valid_until);
+  let html = `<div class="fundiin-title">Discount codes when paying via Fundiin</div>`;
+  if (codes.length === 0) {
+    html += '<div class="fundiin-container"><div class="voucher-note">No valid Fundiin discount codes at this time.</div></div>';
+  } else {
+    // Bọc các mã vào 1 khung cuộn nếu > 2
+    if (codes.length > 2) {
+      html += '<div style="max-height:340px;overflow-y:auto;padding-right:6px;scrollbar-width:thin;">';
+    }
+    codes.forEach((c, idx) => {
+      html += `
+      <div class="fundiin-container" style="margin-top:${idx > 0 ? '8px' : '0'};">
+        <div class="voucher-card">
+          <div class="voucher-left">
+            <svg class="voucher-icon" viewBox="0 0 32 32">
+              <path d="M10 12h12M10 16h8M10 20h4" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="voucher-right" style="height: 65px;">
+            <div class="voucher-line">
+              Use code <span class="code fundiin-copy-code" data-code="${c.code}" style="cursor:pointer;">${c.code}</span>
+            </div>
+            <div class="voucher-desc">
+              Get <strong>${c.discount_type === 'percent' ? c.discount_value + '%' : Number(c.discount_value).toLocaleString('vi-VN') + '₫'}</strong> off orders over <strong>${Number(c.min_order_amount).toLocaleString('vi-VN')}₫</strong>
+            </div>
+          </div>
+        </div>
+        <div class="voucher-note">Valid: ${c.valid_from.substr(0,10)} - ${c.valid_until.substr(0,10)}</div>
+      </div>
+      `;
+    });
+    if (codes.length > 2) {
+      html += '</div>';
+    }
+  }
   Swal.fire({
-    html: `
-<div class="fundiin-title">Discount codes when paying via Fundiin</div>
-<div class="fundiin-container">
-
-  <!-- Card 1 -->
-  <div class="voucher-card">
-    <div class="voucher-left">
-      <svg class="voucher-icon" viewBox="0 0 32 32">
-        <path d="M10 12h12M10 16h8M10 20h4" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>
-      </svg>
-    </div>
-    <div class="voucher-right" style="height: 65px;">
-      <div class="voucher-line">
-        Use code <span class="code">XINCHAO</span>
-      </div>
-      <div class="voucher-desc">Get <strong>15%</strong> off, up to 30K</div>
-    </div>
-  </div>
-  <div class="voucher-note">For first-time Fundiin users only</div>
-</div>
-
-<div class="fundiin-container" style="margin-top:8px;">
-  <!-- Card 2 -->
-  <div class="voucher-card">
-    <div class="voucher-left" style="margin-top: 5px;">
-      <svg class="voucher-icon" viewBox="0 0 32 32">
-        <path d="M10 12h12M10 16h8M10 20h4" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>
-      </svg>
-    </div>
-    <div class="voucher-right">
-      <div class="voucher-line">
-        Use code <span class="code">FUNDAY</span>
-      </div>
-      <div class="voucher-desc">Get <strong>10%</strong> off, up to 15K</div>
-    </div>
-  </div>
-  <div class="voucher-note">For returning Fundiin users</div>
-</div>
-
-
-        `,
+    html,
     showConfirmButton: false,
     showCloseButton: true,
     width: 540,
@@ -103,5 +99,48 @@ document.getElementById('fundiinLearnMore').addEventListener('click', function (
       popup: 'fundiin-popup-custom'
     }
   });
+
+  // Thêm sự kiện copy cho các mã code
+  setTimeout(function() {
+    const style = document.createElement('style');
+    style.innerHTML = `
+      .swal2-toast-custom {
+        display: flex !important;
+        align-items: center;
+        gap: 8px;
+      }
+      .swal2-toast-custom span {
+        margin-top: 0 !important;
+        margin-right: 8px;
+      }
+      .swal2-popup .swal2-html-container::-webkit-scrollbar {
+        width: 6px;
+        background: #f0f0f0;
+      }
+      .swal2-popup .swal2-html-container::-webkit-scrollbar-thumb {
+        background: #e0e0e0;
+        border-radius: 4px;
+      }
+    `;
+    document.head.appendChild(style);
+    document.querySelectorAll('.fundiin-copy-code').forEach(function(el) {
+      el.addEventListener('click', function() {
+        const code = this.getAttribute('data-code');
+        navigator.clipboard.writeText(code);
+        Swal.fire({
+          toast: true,
+          position: 'top-end',
+          icon: 'success',
+          title: `<span style="color:#fff;margin-top:100px">Coupon code copied: <b>${code}</b></span>`,
+          background: '#222',
+          color: '#fff',
+          showConfirmButton: false,
+          timer: 1200,
+          customClass: { popup: 'swal2-toast-custom' }
+        });
+      });
+    });
+  }, 100);
 });
+
 
