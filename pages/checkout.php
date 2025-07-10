@@ -1,8 +1,97 @@
 <?php
-include '../includes/header.php';
+session_start();
 include '../includes/database.php';
 
-// Lấy giỏ hàng từ session hoặc DB
+// Lấy thông tin user nếu đã đăng nhập
+$user_info = [
+    'fullname' => '',
+    'email' => '',
+    'phone' => '',
+    'address' => ''
+];
+if (isset($_SESSION['user_id'])) {
+    $uid = $_SESSION['user_id'];
+    $stmt = $conn->prepare("SELECT fullname, email, phone, address FROM users WHERE user_id = ?");
+    $stmt->bind_param('i', $uid);
+    $stmt->execute();
+    $stmt->bind_result($user_info['fullname'], $user_info['email'], $user_info['phone'], $user_info['address']);
+    $stmt->fetch();
+    $stmt->close();
+}
+
+// Nếu là POST (AJAX) và có selected, chỉ render sản phẩm đã chọn
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $input = json_decode(file_get_contents('php://input'), true);
+    $selected = $input['selected'] ?? [];
+    include '../includes/database.php';
+    $products = [];
+    foreach ($selected as $item) {
+        $pid = intval($item['pid']);
+        $color = $item['color'];
+        $size = $item['size'];
+        // Lấy số lượng đúng từ cart/session hoặc DB
+        $quantity = 1;
+        if (isset($_SESSION['user_id'])) {
+            $user_id = $_SESSION['user_id'];
+            $stmt2 = $conn->prepare("SELECT quantity FROM cart_items WHERE user_id = ? AND product_id = ? AND color = ? AND size = ?");
+            $stmt2->bind_param('iiss', $user_id, $pid, $color, $size);
+            $stmt2->execute();
+            $stmt2->bind_result($quantity_db);
+            if ($stmt2->fetch()) $quantity = $quantity_db;
+            $stmt2->close();
+        } else if (isset($_SESSION['cart'])) {
+            foreach ($_SESSION['cart'] as $cart_item) {
+                if (
+                    $cart_item['product_id'] == $pid &&
+                    $cart_item['color'] == $color &&
+                    $cart_item['size'] == $size
+                ) {
+                    $quantity = $cart_item['quantity'];
+                    break;
+                }
+            }
+        }
+        $stmt = $conn->prepare("SELECT * FROM products WHERE product_id = ?");
+        $stmt->bind_param('i', $pid);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        if ($row = $result->fetch_assoc()) {
+            $products[] = [
+                'product_id' => $pid,
+                'name' => $row['name'],
+                'image_url' => $row['image_url'],
+                'price' => $row['price'],
+                'color' => $color,
+                'size' => $size,
+                'quantity' => $quantity
+            ];
+        }
+        $stmt->close();
+    }
+    // Render lại chỉ danh sách sản phẩm đã chọn (KHÔNG render Discount Code, subtotal, shipping, total)
+    echo '<div id="checkoutCartListInner">';
+    foreach ($products as $p) {
+        echo '<div class="checkout-cart-item d-flex align-items-center mb-3" data-pid="' . htmlspecialchars($p['product_id']) . '" data-color="' . htmlspecialchars($p['color']) . '" data-size="' . htmlspecialchars($p['size']) . '" style="gap:16px;">';
+        echo '<div class="position-relative me-3">';
+        echo '<img src="' . htmlspecialchars($p['image_url']) . '" style="width:80px;height:80px;object-fit:cover;border-radius:8px;border:1px solid #eee;">';
+        if ($p['quantity'] > 1) {
+            echo '<span class="position-absolute" style="top:3px;left:3px;z-index:2;background:#fff;border:1.5px solid #bbb;padding:2px 8px;font-size:13px;font-weight:600;border-radius:12px;box-shadow:0 1px 4px rgba(0,0,0,0.07);">' . $p['quantity'] . '</span>';
+        }
+        echo '</div>';
+        echo '<div style="flex:1">';
+        echo '<div style="font-weight:700;font-size:15px;">' . htmlspecialchars($p['name']) . '</div>';
+        echo '<div style="font-size:14px;">Color: ' . htmlspecialchars($p['color']) . ' | Size: ' . htmlspecialchars($p['size']) . '</div>';
+        echo '</div>';
+        echo '<div style="font-weight:600; margin-top: 6px;">' . number_format($p['price'] * $p['quantity'], 0, ',', '.') . '₫';
+        echo '</div>';
+        echo '<button type="button" class="btn btn-link text-danger ms-2 btn-remove-checkout-item" data-pid="' . htmlspecialchars($p['product_id']) . '" data-color="' . htmlspecialchars($p['color']) . '" data-size="' . htmlspecialchars($p['size']) . '" style="font-size:18px;"><i class="fa fa-trash"></i></button>';
+        echo '</div>';
+    }
+    echo '</div>';
+    exit;
+}
+
+// Lấy giỏ hàng từ session hoặc DB (chỉ render nếu KHÔNG có checkout_selected)
 $cart = [];
 if (isset($_SESSION['user_id'])) {
     $user_id = $_SESSION['user_id'];
@@ -21,7 +110,9 @@ if (isset($_SESSION['user_id'])) {
 // Lấy thông tin sản phẩm
 $product_map = [];
 if ($cart) {
-    $ids = implode(',', array_map(function($item) { return intval($item['product_id']); }, $cart));
+    $ids = implode(',', array_map(function ($item) {
+        return intval($item['product_id']);
+    }, $cart));
     $result = $conn->query("SELECT * FROM products WHERE product_id IN ($ids)");
     while ($row = $result->fetch_assoc()) {
         $product_map[$row['product_id']] = $row;
@@ -33,109 +124,143 @@ $subtotal = 0;
 foreach ($cart as $item) {
     $pid = $item['product_id'];
     $qty = $item['quantity'];
-    $price = isset($product_map[$pid]) ? $product_map[$pid]['price'] : 0;
+    // Lấy giá sản phẩm từ DB (bảng products)
+    $price = 0;
+    if (isset($product_map[$pid])) {
+        $price = (float)$product_map[$pid]['price'];
+    }
     $subtotal += $price * $qty;
 }
 $shipping_fee = 0; // Có thể tính động sau
 $total = $subtotal + $shipping_fee;
+include '../includes/header.php';
 ?>
-
-<div class="container-fluid" style="margin-top:100px;padding:0;">
+<!-- Thêm div thông báo khi không có sản phẩm được chọn -->
+<div id="checkout-empty-message" style="display:none;text-align:center;margin:120px auto;font-size:1.2rem;color:#888;">
+    <i class="fa fa-shopping-cart" style="font-size:48px;color:#bbb;"></i><br>
+    Không có sản phẩm nào để thanh toán!
+</div>
+<div class="container-fluid" style="margin-top:20px;padding:0;">
     <div class="row g-0 bg-white" style="min-height:100vh;">
         <div class="col-md-7 p-5" style="min-height:100vh;">
-            
+
             <nav style="font-size:14px;margin-bottom:18px;">
-                <a href="/pages/cart.php" class="text-decoration-none text-primary">My Cart</a>
+                <a href="/pages/cart.php" class="text-decoration-none checkout-nav-step inactive" id="navCart">My Cart</a>
                 <span class="mx-1 text-muted">&gt;</span>
-                <span class="text-dark">Shipping Information</span>
-                <span class="mx-1 text-muted">&gt;</span>
-                <span class="text-muted">Payment Method</span>
+                <span class="checkout-nav-step active" id="navShipping" style="cursor:pointer;">Shipping Information</span>
+                <span class="mx-1 text-muted"></span>
+
             </nav>
             <h4 class="mb-3 fw-bold" style="font-size:1.3rem;">Shipping Information</h4>
             <div class="mb-3" style="font-size:15px;">
-                Do you have an account? <a href="/pages/login.php" class="text-primary">Login Now</a>
+                Do you have an account? <a href="/pages/login.php?redirect=/pages/checkout.php?step=payment" class="text-primary">Login Now</a>
             </div>
             <form id="checkoutForm" autocomplete="off">
                 <div class="row g-2 mb-2">
                     <div class="col-12">
-                        <input type="text" class="form-control" name="fullname" placeholder="Họ và tên" required>
+                        <input type="text" class="form-control" name="fullname" placeholder="Họ và tên" required value="<?php echo htmlspecialchars($user_info['fullname']); ?>">
                     </div>
                 </div>
                 <div class="row g-2 mb-2">
                     <div class="col-6">
-                        <input type="email" class="form-control" name="email" placeholder="Email" required>
+                        <input type="email" class="form-control" name="email" placeholder="Email" required value="<?php echo htmlspecialchars($user_info['email']); ?>">
                     </div>
                     <div class="col-6">
-                        <input type="tel" class="form-control" name="phone" placeholder="Số điện thoại" required>
+                        <input type="tel" class="form-control" name="phone" placeholder="Số điện thoại" required value="<?php echo htmlspecialchars($user_info['phone']); ?>">
                     </div>
                 </div>
                 <div class="mb-2">
-                    <input type="text" class="form-control" name="address" placeholder="Địa chỉ" required>
+                    <input type="text" class="form-control" name="address" placeholder="Địa chỉ" required value="<?php echo htmlspecialchars($user_info['address']); ?>">
                 </div>
                 <div class="row g-2 mb-3">
                     <div class="col-md-4">
-                        <select class="form-select" name="province" required>
-                            <option value="">Tỉnh / thành</option>
-                            <option>Bắc Kạn</option>
-                            <!-- ...other provinces... -->
+                        <select class="form-select" name="province" id="provinceSelect" required>
+                            <option value="">Province / City</option>
                         </select>
                     </div>
                     <div class="col-md-4">
-                        <select class="form-select" name="district" required>
-                            <option value="">Quận / huyện</option>
-                            <option>Huyện Bạch Thông</option>
-                            <!-- ...other districts... -->
+                        <select class="form-select" name="district" id="districtSelect" required>
+                            <option value="">Urban / Rural</option>
                         </select>
                     </div>
                     <div class="col-md-4">
-                        <select class="form-select" name="ward" required>
-                            <option value="">Phường / xã</option>
-                            <option>Xã Mỹ Thanh</option>
-                            <!-- ...other wards... -->
+                        <select class="form-select" name="ward" id="wardSelect" required>
+                            <option value="">Ward / Commune</option>
                         </select>
                     </div>
                 </div>
+                <input type="hidden" name="bank_name" id="bankNameInput" value="">
                 <div class="d-flex justify-content-between align-items-center mt-4">
-                    <a href="/pages/cart.php" class="text-primary text-decoration-none">My Cart</a>
-                    <button type="submit" class="btn btn-primary px-4" style="font-size:17px;">Continue to Payment Method</button>
+
+                    <button type="submit" class="btn px-4" style="font-size:17px; color:white; background-color:black;border:1px solid #dee2e6;">Continue to Payment</button>
                 </div>
             </form>
+            <!-- Payment Method Section (ẩn mặc định, hiện khi submit form) -->
+            <div id="paymentMethodSection" style="display:none; margin-top:10px;">
+                <h5 class="mb-3 fw-bold">Choose Payment Method</h5>
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="radio" name="payment_method" id="payCOD" value="COD" checked>
+                    <label class="form-check-label" for="payCOD">Cash on Delivery</label>
+                </div>
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="radio" name="payment_method" id="payBank" value="Bank">
+                    <label class="form-check-label" for="payBank">Bank Wire Transfer</label>
+                </div>
+                <div id="bankTransferOptions" style="display:none; margin-bottom:20px;">
+                    <label class="mb-2 fw-bold">Select Bank:</label>
+                    <select id="bankSelect" class="form-select mb-2" style="max-width:300px;">
+                        <option value="">-- Select Bank --</option>
+                        <option value="vcb">Vietcombank</option>
+                        <option value="tcb">Techcombank</option>                   
+                        <option value="bidv">BIDV</option>
+                        <option value="mb">MB Bank</option>
+                    </select>
+                    <div id="qrSection" style="display:none;">
+                        <div class="mb-2">Scan QR Code to Pay <span id="qrBankName"></span>:</div>
+                        <img id="qrImage" src="" alt="QR code" style="width:280px;height:280px;border:1px solid #eee; margin-left:170px;">
+                        <div class="mt-2 fw-bold"><span id="qrAmount"></span></div>
+                    </div>
+                </div>
+                <button id="confirmOrderBtn" class="btn btn-dark px-4" style="margin-left:480px">Submit Order</button>
+            </div>
         </div>
         <!-- Right: Order Summary -->
         <div class="col-md-5 p-5 border-start" style="background:#fafbfc;min-height:100vh;position:relative;">
             <div style="position:sticky;top:0;">
-                <div id="checkoutCartList" style="max-height:270px;overflow-y:auto;scrollbar-width:thin;">
-                <?php if ($cart): ?>
-                    <?php foreach ($cart as $item):
-                        $pid = $item['product_id'];
-                        $product = $product_map[$pid];
-                    ?>
-                    <div class="d-flex align-items-center mb-3 checkout-cart-item" 
-                        data-pid="<?php echo $pid; ?>" 
-                        data-color="<?php echo htmlspecialchars($item['color']); ?>" 
-                        data-size="<?php echo htmlspecialchars($item['size']); ?>"
-                        style="cursor:pointer; padding: 10px 0 10px 0; min-height: 70px;"
-                        onclick="if(event.target.closest('.btn-remove-checkout-item')) return; window.open('/pages/detail_products.php?id=<?php echo $pid; ?>', '_blank');">
-                        <div class="position-relative me-3" style="margin-top: 6px;">
-                            <img src="<?php echo htmlspecialchars($product['image_url']); ?>" style="width:54px;height:54px;object-fit:cover;border-radius:8px;border:1px solid #eee;">
-                            <?php if ($item['quantity'] > 1): ?>
-                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-secondary" style="font-size:13px;"><?php echo $item['quantity']; ?></span>
-                            <?php endif; ?>
-                        </div>
-                        <div style="flex:1; margin-top: 6px;">
-                            <div style="font-weight:600;"><?php echo htmlspecialchars($product['name']); ?></div>
-                            <div class="text-muted small"><?php echo htmlspecialchars($item['color']); ?> / <?php echo htmlspecialchars($item['size']); ?></div>
-                        </div>
-                        <div style="font-weight:600; margin-top: 6px;"><?php echo number_format($product['price'] * $item['quantity'], 0, ',', '.'); ?>₫</div>
-                        <button type="button" class="btn btn-link text-danger ms-2 btn-remove-checkout-item" 
-                            data-pid="<?php echo $pid; ?>" 
-                            data-color="<?php echo htmlspecialchars($item['color']); ?>" 
-                            data-size="<?php echo htmlspecialchars($item['size']); ?>"
-                            style="font-size:18px;"
-                            onclick="event.stopPropagation();"><i class="fa fa-trash"></i></button>
+                <div id="checkoutCartList" style="max-height:240px;overflow-y:auto;scrollbar-width:thin;">
+                    <div id="checkoutCartListInner">
+                        <?php if ($cart): ?>
+                            <?php foreach ($cart as $item):
+                                $pid = $item['product_id'];
+                                $product = $product_map[$pid];
+                            ?>
+                                <div class="d-flex align-items-center mb-3 checkout-cart-item"
+                                    data-pid="<?php echo $pid; ?>"
+                                    data-color="<?php echo htmlspecialchars($item['color']); ?>"
+                                    data-size="<?php echo htmlspecialchars($item['size']); ?>"
+                                    style="cursor:pointer; padding: 10px 0 10px 0; min-height: 70px;"
+                                    onclick="if(event.target.closest('.btn-remove-checkout-item')) return; window.open('/pages/detail_products.php?id=<?php echo $pid; ?>', '_blank');">
+                                    <div class="position-relative me-3" style="margin-top: 6px;">
+                                        <img src="<?php echo htmlspecialchars($product['image_url']); ?>" style="width:80px;height:80px;object-fit:cover;border-radius:8px;border:1px solid #eee;">
+                                        <?php if ($item['quantity'] > 1): ?>
+                                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-secondary" style="font-size:13px;"><?php echo $item['quantity']; ?></span>
+                                        <?php endif; ?>
+                                    </div>
+                                    <div style="flex:1; margin-top: 6px;">
+                                        <div style="font-weight:600;"><?php echo htmlspecialchars($product['name']); ?></div>
+                                        <div class="text-muted small"><?php echo htmlspecialchars($item['color']); ?> / <?php echo htmlspecialchars($item['size']); ?></div>
+                                    </div>
+                                    <div style="font-weight:600; margin-top: 6px;"><?php echo number_format($product['price'] * $item['quantity'], 0, ',', '.'); ?>₫</div>
+                                    <button type="button" class="btn btn-link text-danger ms-2 btn-remove-checkout-item"
+                                        data-pid="<?php echo $pid; ?>"
+                                        data-color="<?php echo htmlspecialchars($item['color']); ?>"
+                                        data-size="<?php echo htmlspecialchars($item['size']); ?>"
+                                        style="font-size:18px;"
+                                        onclick="event.stopPropagation();"><i class="fa fa-trash"></i></button>
+                                </div>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
                     </div>
-                    <?php endforeach; ?>
-                <?php endif; ?>
                 </div>
                 <hr>
                 <div class="mb-3">
@@ -167,167 +292,31 @@ $total = $subtotal + $shipping_fee;
     </div>
 </div>
 <?php include '../includes/footer.php'; ?>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<?php include '../includes/truck.php'; ?>
+<?php include '../includes/floating_contact.php'; ?>
+<script src="/assets/js/auto_logout.js"></script>
+<script src="/assets/js/checkout.js"></script>
+<!-- Bootstrap 5 JS Bundle (with Popper) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-let discountValue = 0;
-let discountType = null;
-let discountMsg = '';
-let shippingDiscount = 0;
-const DEFAULT_SHIPPING = 35000;
-
-// Khi trang vừa load, tính tổng cộng luôn có phí ship mặc định
+// --- Thêm đoạn này để cập nhật tên ngân hàng vào input ẩn ---
 document.addEventListener('DOMContentLoaded', function() {
-    bindRemoveCheckoutEvents();
-    updateCheckoutTotals();
-});
-
-function bindRemoveCheckoutEvents() {
-    document.querySelectorAll('.btn-remove-checkout-item').forEach(btn => {
-        btn.onclick = function() {
-            const pid = this.getAttribute('data-pid');
-            const color = this.getAttribute('data-color');
-            const size = this.getAttribute('data-size');
-            fetch('/public/remove_from_cart.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: new URLSearchParams({
-                    product_id: pid,
-                    color: color,
-                    size: size
-                })
-            })
-            .then(r => r.json())
-            .then(data => {
-                if (data.success) {
-                    // Xóa sản phẩm khỏi DOM
-                    const item = document.querySelector('.checkout-cart-item[data-pid="' + pid + '"][data-color="' + color + '"][data-size="' + size + '"]');
-                    if (item) item.remove();
-                    updateCheckoutTotals();
-                    // Gắn lại sự kiện xóa cho các nút còn lại (nếu DOM thay đổi)
-                    bindRemoveCheckoutEvents();
-                    if (typeof updateCartBadge === 'function') {
-                        fetch('/public/get_cart_count.php')
-                            .then (r => r.json())
-                            .then(res => { if (res.success) updateCartBadge(res.count); });
-                    }
-                } else {
-                    Swal.fire('Lỗi', data.message || 'Không thể xóa sản phẩm', 'error');
-                }
-            });
-        };
-    });
-}
-
-document.getElementById('applyDiscountBtn').addEventListener('click', function() {
-    const code = document.getElementById('discountCodeInput').value.trim();
-    const msgEl = document.getElementById('discountCodeMsg');
-    msgEl.textContent = '';
-    if (!code) {
-        msgEl.textContent = 'Please enter a discount code.';
-        msgEl.style.color = '#e74c3c';
-        discountValue = 0;
-        discountType = null;
-        shippingDiscount = 0;
-        updateCheckoutTotals();
-        return;
-    }
-    fetch('/public/check_discount_code.php', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-        body: new URLSearchParams({ code })
-    })
-    .then(r => r.json())
-    .then(data => {
-        if (data.valid) {
-            discountValue = parseFloat(data.discount_value);
-            discountType = data.discount_type;
-            shippingDiscount = parseFloat(data.shipping_discount || 0);
-            msgEl.textContent = 'Successfully applied the code!';
-            msgEl.style.color = '#27ae60';
-            updateCheckoutTotals();
-        } else {
-            discountValue = 0;
-            discountType = null;
-            shippingDiscount = 0;
-            msgEl.textContent = data.message || 'Invalid or expired discount code.';
-            msgEl.style.color = '#e74c3c';
-            updateCheckoutTotals();
-        }
-    })
-    .catch(() => {
-        msgEl.textContent = 'Error checking discount code.';
-        msgEl.style.color = '#e74c3c';
-    });
-});
-
-function updateCheckoutTotals() {
-    let subtotal = 0;
-    document.querySelectorAll('.checkout-cart-item').forEach(item => {
-        // Lấy giá từng sản phẩm (giá 1 sản phẩm)
-        const priceDivs = item.querySelectorAll('div[style*="font-weight:600;"]');
-        let price = 0;
-        let qty = 1;
-        priceDivs.forEach(div => {
-            if (div.textContent.includes('₫')) {
-                price = parseInt(div.textContent.replace(/[^\d]/g, '')) || 0;
+    var bankSelect = document.getElementById('bankSelect');
+    var bankNameInput = document.getElementById('bankNameInput');
+    if (bankSelect && bankNameInput) {
+        bankSelect.addEventListener('change', function() {
+            let bankName = '';
+            switch (bankSelect.value) {
+                case 'vcb': bankName = 'Vietcombank'; break;
+                case 'tcb': bankName = 'Techcombank'; break;
+                case 'mb': bankName = 'MB Bank'; break;
+                case 'bidv': bankName = 'BIDV'; break;
+                default: bankName = '';
             }
+            bankNameInput.value = bankName;
         });
-        const badge = item.querySelector('.badge');
-        if (badge) {
-            qty = parseInt(badge.textContent) || 1;
-        }
-        subtotal += price;
-    });
-    document.getElementById('checkoutSubtotal').textContent = subtotal.toLocaleString('vi-VN') + '₫';
-
-    // Áp dụng giảm giá
-    let discount = 0;
-    let discountLabel = '';
-    let discountDisplay = '';
-    let showDiscountRow = false;
-
-    if (discountType === 'percent') {
-        discount = Math.round(subtotal * discountValue / 100);
-        if (discount > 0) {
-            discountLabel = 'Giảm giá';
-            discountDisplay = `- ${discountValue}%`;
-            showDiscountRow = true;
-        }
-    } else if (discountType === 'fixed' && shippingDiscount === 0) {
-        discount = Math.round(discountValue);
-        if (discount > 0) {
-            discountLabel = 'Giảm giá';
-            discountDisplay = `- ${discount.toLocaleString('vi-VN')}₫`;
-            showDiscountRow = true;
-        }
-    } else if (discountType === 'fixed' && shippingDiscount > 0) {
-        // Mã freeship
-        discount = 0;
-        discountLabel = 'Giảm phí vận chuyển';
-        discountDisplay = `- ${shippingDiscount.toLocaleString('vi-VN')}₫`;
-        showDiscountRow = true;
     }
-
-    // Hiển thị dòng giảm giá nếu có
-    const discountRow = document.getElementById('discountRow');
-    if (showDiscountRow) {
-        discountRow.style.display = '';
-        document.getElementById('discountLabel').textContent = discountLabel;
-        document.getElementById('discountValue').textContent = discountDisplay;
-    } else {
-        discountRow.style.display = 'none';
-    }
-
-    // Phí vận chuyển
-    let shipping = DEFAULT_SHIPPING;
-    if (shippingDiscount > 0) {
-        shipping = Math.max(0, DEFAULT_SHIPPING - shippingDiscount);
-    }
-    document.getElementById('checkoutShipping').textContent = shipping > 0 ? shipping.toLocaleString('vi-VN') + '₫' : 'Miễn phí';
-
-    // Tổng cộng
-    let total = subtotal - discount + shipping;
-    if (total < 0) total = 0;
-    document.getElementById('checkoutTotal').textContent = total.toLocaleString('vi-VN');
-}
+});
 </script>
+<!-- Bootstrap 5 CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
