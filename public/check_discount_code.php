@@ -6,8 +6,10 @@ $code = isset($_POST['code']) ? trim($_POST['code']) : '';
 $now = date('Y-m-d H:i:s');
 $response = [
     'valid' => false,
-    'message' => 'Mã giảm giá không hợp lệ hoặc đã hết hạn.'
+    'message' => 'Invalid or expired discount code.'
 ];
+
+$selected_items = isset($_POST['selected_items']) ? json_decode($_POST['selected_items'], true) : null;
 
 // Tính tổng tiền giỏ hàng hiện tại
 $cart = [];
@@ -26,6 +28,26 @@ if (isset($_SESSION['user_id'])) {
         $cart[] = $item;
     }
 }
+
+// Nếu có selected_items (từ checkout), chỉ tính tổng tiền các sản phẩm này
+if ($selected_items && is_array($selected_items) && count($selected_items) > 0) {
+    $cart = [];
+    foreach ($selected_items as $item) {
+        $pid = isset($item['product_id']) ? (int)$item['product_id'] : 0;
+        $color = isset($item['color']) ? $item['color'] : '';
+        $size = isset($item['size']) ? $item['size'] : '';
+        $qty = isset($item['quantity']) ? (int)$item['quantity'] : 1;
+        if ($pid) {
+            $cart[] = [
+                'product_id' => $pid,
+                'color' => $color,
+                'size' => $size,
+                'quantity' => $qty
+            ];
+        }
+    }
+}
+
 $product_ids = array_column($cart, 'product_id');
 $products = [];
 if (!empty($product_ids)) {
@@ -58,7 +80,7 @@ if ($code) {
             // Kiểm tra min_order_amount
             $min_order = (float)($row['min_order_amount'] ?? 0);
             if ($subtotal < $min_order) {
-                $response['message'] = 'Đơn hàng của bạn chưa đủ giá trị tối thiểu để áp dụng mã này (' . number_format($min_order, 0, ',', '.') . '₫).';
+                $response['message'] = 'This code requires a higher order value (' . number_format($min_order, 0, ',', '.') . '₫).';
             } else {
                 $response['valid'] = true;
                 $response['discount_type'] = $row['discount_type'];
@@ -67,10 +89,10 @@ if ($code) {
                 if ($row['discount_type'] === 'fixed' && stripos($row['code'], 'freeship') !== false) {
                     $response['shipping_discount'] = $row['discount_value'];
                 }
-                $response['message'] = 'Áp dụng mã thành công!';
+                $response['message'] = 'Code applied successfully!';
             }
         } else {
-            $response['message'] = 'Mã giảm giá đã hết hạn hoặc vượt quá số lượt sử dụng.';
+            $response['message'] = 'This promo code is no longer valid.';
         }
     }
     $stmt->close();
