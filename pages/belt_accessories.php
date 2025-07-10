@@ -53,6 +53,35 @@ if (isset($_GET['pending_favorite'])) {
 $sort = isset($_GET['sort']) ? $_GET['sort'] : 'newest';
 $price_range = isset($_GET['price']) ? $_GET['price'] : 'all';
 $color = isset($_GET['color']) ? $_GET['color'] : 'all';
+$selected_category = isset($_GET['category']) ? (int)$_GET['category'] : 0;
+
+// Lấy danh sách categories có parent_id = 3
+$filter_categories = [];
+$cat_filter_result = $conn->query("SELECT category_id, name FROM categories WHERE parent_id = 3");
+if ($cat_filter_result) {
+    while ($cat = $cat_filter_result->fetch_assoc()) {
+        $filter_categories[] = $cat;
+    }
+}
+
+// Lấy danh sách màu sắc có trong category đang chọn
+$color_options = [];
+if ($selected_category) {
+    $color_query = "SELECT DISTINCT JSON_UNQUOTE(JSON_EXTRACT(color_options, CONCAT('$[0]'))) as color FROM products WHERE category_id = $selected_category";
+    $color_result = $conn->query("SELECT DISTINCT color_options FROM products WHERE category_id = $selected_category");
+    if ($color_result) {
+        $color_set = [];
+        while ($row = $color_result->fetch_assoc()) {
+            $colors = json_decode($row['color_options'], true);
+            if (is_array($colors)) {
+                foreach ($colors as $c) {
+                    $color_set[$c] = true;
+                }
+            }
+        }
+        $color_options = array_keys($color_set);
+    }
+}
 
 // Pagination settings
 $items_per_page = 8;
@@ -60,10 +89,15 @@ $current_page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $offset = ($current_page - 1) * $items_per_page;
 
 // Base query for counting total products
-$count_query = "SELECT COUNT(*) as total FROM products p JOIN categories c ON p.category_id = c.category_id WHERE c.parent_id = 1";
-
-// Base query for fetching products
-$query = "SELECT p.* FROM products p JOIN categories c ON p.category_id = c.category_id WHERE c.parent_id = 1";
+if ($selected_category && in_array($selected_category, [9, 10, 11])) {
+    // Nếu chọn 1 trong 3 loại con của Footwear thì chỉ lấy sản phẩm thuộc loại đó
+    $count_query = "SELECT COUNT(*) as total FROM products WHERE category_id = $selected_category";
+    $query = "SELECT * FROM products WHERE category_id = $selected_category";
+} else {
+    // Mặc định: lấy tất cả sản phẩm có danh mục cha là Footwear (id=1)
+    $count_query = "SELECT COUNT(*) as total FROM products p JOIN categories c ON p.category_id = c.category_id WHERE c.parent_id = 3";
+    $query = "SELECT p.* FROM products p JOIN categories c ON p.category_id = c.category_id WHERE c.parent_id = 3";
+}
 
 // Add price range filter to both queries
 $price_filter = "";
@@ -147,10 +181,10 @@ if ($cat_result) {
     <div id="bannerCarousel" class="carousel slide" data-bs-ride="carousel">
         <div class="carousel-inner">
             <div class="carousel-item active">
-                <img src="https://scontent.fhan14-2.fna.fbcdn.net/v/t39.30808-6/464147338_529486959863851_3595096770823152418_n.png?stp=dst-jpg_tt6&_nc_cat=108&ccb=1-7&_nc_sid=86c6b0&_nc_ohc=oJTUe-WaJi8Q7kNvwHkKSm2&_nc_oc=AdlReOX4d5R3tcROB163Hr2H8hqLzk-VhmQj4cVZaOYEkQEnQkr-uG54_1mx6geI2GY&_nc_zt=23&_nc_ht=scontent.fhan14-2.fna&_nc_gid=9B7h6mk-F-7Obuh1h0cnLA&oh=00_AfT0POWo-jQFZtB_xoDhkco-mjJwTfVw32X5W5urvlHwHw&oe=68707838" class="d-block w-100" alt="Banner 1">
+                <img src="https://scontent.fhan14-2.fna.fbcdn.net/v/t39.30808-6/474389866_511390831968889_8018899957664999442_n.jpg?_nc_cat=108&ccb=1-7&_nc_sid=cc71e4&_nc_ohc=3mfUYJ8v48YQ7kNvwFyo6lj&_nc_oc=AdnWByttwyFsCeu3HXkvtLjpwEHJU-PgJUZpQdWHRJEt31I8bOkvQDrH0n3Uwc6Hbw0&_nc_zt=23&_nc_ht=scontent.fhan14-2.fna&_nc_gid=1JySjnBwbQ2DIRGRzvchdA&oh=00_AfSWqsnnalsBZ-p2WMCnsQ5IoBBUH777iD94NW6VVN_EfQ&oe=687090EC" class="d-block w-100" alt="Banner 1">
             </div>
             <div class="carousel-item">
-                <img src="https://scontent.fhan14-4.fna.fbcdn.net/v/t39.30808-6/450533759_459528903526324_5894021628706207037_n.png?stp=dst-jpg_tt6&_nc_cat=107&ccb=1-7&_nc_sid=86c6b0&_nc_ohc=RxzpbO2tAzcQ7kNvwGteQni&_nc_oc=AdnwhMLJW9wJ0Hsm08yhadDoMmTPlSU5hWcvMp3_6BZpWGhR4xxtIB5l6W_9IX1bd-g&_nc_zt=23&_nc_ht=scontent.fhan14-4.fna&_nc_gid=MrVFPDaV83ikDcKSo1D9_g&oh=00_AfRbD4SqcgC9Bmg_HXq_t6Nn5JcsbSmuHjN20fzOc3DqPg&oe=687084E3" class="d-block w-100" alt="Banner 2">
+                <img src="https://scontent.fhan14-4.fna.fbcdn.net/v/t39.30808-6/470199562_487306527704074_1532315434389727408_n.jpg?_nc_cat=107&ccb=1-7&_nc_sid=86c6b0&_nc_ohc=Mf0UzWb6QU4Q7kNvwHqbpB_&_nc_oc=AdnZcudbx8-M-Y_sEkbOTEmyAVN4U4fQGWF25EMV5RAB3nqdWVaxGwWC7OTeKHAcch0&_nc_zt=23&_nc_ht=scontent.fhan14-4.fna&_nc_gid=KOOyr5bX275qqhgPuXnoNA&oh=00_AfQBAR9_G_SeCKilj5YG94LyVra0vEZGUWTh18RHtBnFbA&oe=68706FA7" class="d-block w-100" alt="Banner 3">
             </div>
         </div>
     </div>
@@ -159,7 +193,15 @@ if ($cat_result) {
     <div class="filter-section">
         <div class="container">
             <form id="filterForm" class="row g-3">
-                <div class="col-md-4">
+                <div class="col-md-3">
+                    <select name="category" class="form-select" onchange="filterProducts()">
+                        <option value="0" <?php echo $selected_category == 0 ? 'selected' : ''; ?>>All Categories</option>
+                        <?php foreach ($filter_categories as $cat): ?>
+                            <option value="<?php echo $cat['category_id']; ?>" <?php echo $selected_category == $cat['category_id'] ? 'selected' : ''; ?>><?php echo htmlspecialchars($cat['name']); ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <div class="col-md-3">
                     <select name="sort" class="form-select" onchange="filterProducts()">
                         <option value="newest" <?php echo $sort == 'newest' ? 'selected' : ''; ?>>Newest</option>
                         <option value="featured" <?php echo $sort == 'featured' ? 'selected' : ''; ?>>Featured Products</option>
@@ -167,7 +209,7 @@ if ($cat_result) {
                         <option value="price_desc" <?php echo $sort == 'price_desc' ? 'selected' : ''; ?>>High to Low</option>
                     </select>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <select name="price" class="form-select" onchange="filterProducts()">
                         <option value="all" <?php echo $price_range == 'all' ? 'selected' : ''; ?>>All Prices</option>
                         <option value="under1m" <?php echo $price_range == 'under1m' ? 'selected' : ''; ?>>Under 1 Million</option>
@@ -175,11 +217,12 @@ if ($cat_result) {
                         <option value="2.5mto5m" <?php echo $price_range == '2.5mto5m' ? 'selected' : ''; ?>>2.5 Million - 5 Million</option>
                     </select>
                 </div>
-                <div class="col-md-4">
+                <div class="col-md-3">
                     <select name="color" class="form-select" onchange="filterProducts()">
                         <option value="all" <?php echo $color == 'all' ? 'selected' : ''; ?>>All Color</option>
-                        <option value="Black" <?php echo $color == 'Black' ? 'selected' : ''; ?>>Black</option>
-                        <option value="Brown" <?php echo $color == 'Brown' ? 'selected' : ''; ?>>Brown</option>
+                        <?php foreach ($color_options as $c): ?>
+                            <option value="<?php echo htmlspecialchars($c); ?>" <?php echo $color == $c ? 'selected' : ''; ?>><?php echo htmlspecialchars($c); ?></option>
+                        <?php endforeach; ?>
                     </select>
                 </div>
             </form>
@@ -300,7 +343,7 @@ if ($cat_result) {
     <?php include '../includes/footer.php'; ?>
     <?php include '../includes/floating_contact.php'; ?>
     <script src="/assets/js/auto_logout.js"></script>
-    <script src="/assets/js/new_products.js"></script>
+    <script src="/assets/js/belt_accessories.js"></script>
     <!-- Bootstrap 5 JS Bundle (with Popper) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
