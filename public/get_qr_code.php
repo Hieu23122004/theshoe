@@ -7,23 +7,23 @@ $amount = isset($_POST['amount']) ? floatval($_POST['amount']) : 0;
 // Thông tin tài khoản mẫu (bạn thay bằng tài khoản thật)
 $accounts = [
     'vcb' => [
-        'account' => '0123456789',
-        'name' => 'NGUYEN VAN A',
+        'account' => '9999999999',
+        'name' => 'Diep Van Huy',
         'bank_code' => 'VCB',
     ],
     'tcb' => [
-        'account' => '1234567890',
-        'name' => 'TRAN VAN B',
+        'account' => '9999999999',
+        'name' => 'Nguyen Huu Hieu',
         'bank_code' => 'TCB',
     ],
     'mb' => [
-        'account' => '0373327816', // Số tài khoản MB thật của bạn
-        'name' => 'MB BANK', // Bạn có thể thay bằng tên thật nếu muốn
+        'account' => '9999999999', // Số tài khoản MB thật của bạn
+        'name' => 'Nguyen Tien Dung', // Bạn có thể thay bằng tên thật nếu muốn
         'bank_code' => 'MB',
     ],
     'bidv' => [
-        'account' => '3456789012',
-        'name' => 'PHAM VAN D',
+        'account' => '9999999999',
+        'name' => 'Tran Vu Duc Luong',
         'bank_code' => 'BIDV',
     ],
 ];

@@ -6,6 +6,8 @@ function resetTimer() {
     document.addEventListener(evt, resetTimer)
 );
 setInterval(function() {
+    // Chỉ kiểm tra timeout nếu đã đăng nhập
+    if (window.isLoggedIn !== true) return;
     // Kiểm tra nếu đã có popup thì không hiện lại nữa
     if (
         Date.now() - lastActivity > 15 * 60 * 1000 && // 1 phút (hoặc đổi lại 15 * 60 * 1000 cho 15 phút)
