@@ -57,10 +57,10 @@ $main_result = $conn->query($main_sql);
             <div id="bannerCarousel" class="carousel slide container-fluid p-0" data-bs-ride="carousel">
                 <div class="carousel-inner">
                     <div class="carousel-item active">
-                        <img src="https://file.hstatic.net/200000410665/file/banner_web_vip_ae0d8143fdc94b35a8b0dbca1a45b033.jpg" class="d-block w-100" alt="Banner 1">
+                        <img src="/assets/images/hom1.jpeg" class="d-block w-100" alt="Banner 1">
                     </div>
                     <div class="carousel-item">
-                        <img src="https://scontent.fhan14-2.fna.fbcdn.net/v/t39.30808-6/481113439_620928787386334_6214742871461408999_n.png?stp=dst-jpg_tt6&_nc_cat=108&ccb=1-7&_nc_sid=86c6b0&_nc_ohc=JJX1UHkY2B4Q7kNvwHLWSLN&_nc_oc=AdmeWCCmGuNKSNZ3X4JzD8LqvHh5LbM0yB_8cjjH4EXYPsQTIMTUMe10iv_lYxV7yAY&_nc_zt=23&_nc_ht=scontent.fhan14-2.fna&_nc_gid=HFlIHNsutx7IHBGjn2vcNw&oh=00_AfTriMZWcEEXSoQc_aRSGNBp19O_iYrcgFuQ9IE1RevAhA&oe=6872810E" class="d-block w-100" alt="Banner 2">
+                        <img src="/assets/images/hom2.jpeg" class="d-block w-100" alt="Banner 2">
                     </div>
                 </div>
             </div>
