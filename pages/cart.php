@@ -44,13 +44,16 @@ foreach ($cart as $item) $total_quantity += $item['quantity'];
 
 <div class="container" style="margin-top:32px;">
     <div class="cart-main">
-        <div class="cart-list">
+        <div class="cart-list cart-list-scrollable">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
                 <h3 style="font-size:1.3rem;font-weight:700;">Giỏ hàng:</h3>
                 <span style="font-size:15px;color:#222;"><?php echo $total_quantity; ?> sản phẩm</span>
             </div>
             <?php if (empty($cart)): ?>
-                <div class="alert alert-info">Giỏ hàng của bạn đang trống.</div>
+                <div class="alert alert-dark" style="text-align: center;">
+                    Your cart is empty. <a href="/pages/type_products.php" class="">Start shopping now!</a>
+                </div>
+
             <?php else: ?>
                 <?php $grand_total = 0; ?>
                 <?php foreach ($cart as $key => $item):
@@ -60,7 +63,9 @@ foreach ($cart as $item) $total_quantity += $item['quantity'];
                     $total = $p['price'] * $item['quantity'];
                     $grand_total += $total;
                 ?>
-                    <div class="cart-item" data-pid="<?php echo $pid; ?>" data-color="<?php echo htmlspecialchars($item['color']); ?>" data-size="<?php echo htmlspecialchars($item['size']); ?>">
+                    <div class="cart-item" data-pid="<?php echo $pid; ?>" data-color="<?php echo htmlspecialchars($item['color']); ?>" data-size="<?php echo htmlspecialchars($item['size']); ?>" style="display:flex;align-items:center;position:relative;">
+                        <!-- Checkbox sát mép trái -->
+                        <input type="checkbox" class="cart-item-select" style="width:18px;height:18px;margin-right:0;" />
                         <a href="/pages/detail_products.php?id=<?php echo $pid; ?>">
                             <img src="<?php echo htmlspecialchars($p['image_url']); ?>" class="cart-item-img" alt="">
                         </a>
@@ -96,30 +101,25 @@ foreach ($cart as $item) $total_quantity += $item['quantity'];
         <div class="cart-summary">
             <div class="cart-summary-title">Order Information</div>
             <div class="cart-summary-label">Total Payment Due:</div>
-            <div class="cart-summary-total">
-                <?php
-                if (isset($grand_total)) {
-                    echo number_format($grand_total) . '₫';
-                } else {
-                    echo '0₫';
-                }
-                ?>
-            </div>
+            <div class="cart-summary-total">0₫</div>
             <div style="font-size:14px;color:#444;margin-bottom:10px;">Shipping fees will be calculated the checkout page.<br>You can also enter a discount code below</div>
             <form class="cart-summary-form">
                 <button type="button" class="cart-summary-btn">CHECKOUT NOW</button>
             </form>
-            <a href="/pages/new_products.php" class="cart-summary-link">&larr; Continue Shopping</a>
+            <a href="/pages/home.php" class="cart-summary-link">&larr; Continue Shopping</a>
         </div>
     </div>
 </div>
+<?php include '../includes/truck.php'; ?>
 <?php include '../includes/footer.php'; ?>
- <?php include '../includes/floating_contact.php'; ?>
+<?php include '../includes/floating_contact.php'; ?>
+<script src="/assets/js/auto_logout.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<link rel="stylesheet" href="/assets/css/cart.css">
-<script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
-<script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
-
 <script src="../assets/js/cart.js"></script>
+
+<!-- Bootstrap 5 JS Bundle (with Popper) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<link rel="stylesheet" href="/assets/css/cart.css">
 <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
 <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
