@@ -214,7 +214,7 @@ if (isset($_GET['pending_favorite']) && is_numeric($_GET['pending_favorite'])) {
 }
 
 if (isset($_SESSION['user']) && isset($_SESSION['last_activity'])) {
-    if (time() - $_SESSION['last_activity'] > 30) { // 900s = 15 phút
+    if (time() - $_SESSION['last_activity'] > 900) { // 900s = 15 phút
         session_unset();
         session_destroy();
         session_start();
@@ -234,8 +234,8 @@ if (isset($_SESSION['user']) && isset($_SESSION['last_activity'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Đăng nhập</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap 5 CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <!-- Font Awesome with latest version -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="/assets/css/login_register.css">
@@ -342,6 +342,7 @@ if (isset($_SESSION['user']) && isset($_SESSION['last_activity'])) {
             </div>
         </div>
     </div>
+    <!-- Bootstrap 5 JS Bundle (with Popper) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="/assets/js/login.js"></script>
     <script>

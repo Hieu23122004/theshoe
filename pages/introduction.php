@@ -1,5 +1,6 @@
 <?php include '../includes/header.php'; ?>
 <link rel="stylesheet" href="/assets/css/introduction.css">
+<!-- Bootstrap 5 CSS -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 <link href="https://fonts.googleapis.com/css?family=Roboto:400,700,800&display=swap" rel="stylesheet">
 <div class="container-fluid py-4 introduction-main-bg" style="margin-top: 100px;">
@@ -26,12 +27,12 @@
     <!-- Main Content -->
     <div class="col-lg-10 col-md-9">
       <div class="intro-content-wrapper">
-        <h1 class="intro-title mb-4" style="font-size:1.35rem; font-weight:700; color:#222; letter-spacing:1px;">MULGATI – Premium Leather Shoes Brand from Russia</h1>
+        <h1 class="intro-title mb-4" style="font-size:1.35rem; font-weight:700; color:#222; letter-spacing:1px;">MULGATI â€“ Premium Leather Shoes Brand from Russia</h1>
         <p class="lead" style="font-size:1.08rem; font-weight:400; color:#222;">Above all, Mulgati understands that leather shoes are an indispensable part of a man's style. At any age, in any color or style, a quality pair of shoes is always a perfect choice, making a great impression in everyone's eyes. Not just a simple accessory to complete your outfit, your shoes will be your companion and witness to the important events in every gentleman's life.</p>
         <h2 class="intro-section-title mt-4">How was Mulgati founded?</h2>
-        <p>"I can't remember how I became addicted to shoes, but one day I realized that when I go out, I love looking at the shoes men wear." With passion and years of experience in the Russian market, Mulgati was born with the spirit of Russian royalty—strong, elegant, and classy in every design. Perhaps that's why every Mulgati product exudes luxury, nobility, and a unique character that every gentleman desires to own.</p>
+        <p>"I can't remember how I became addicted to shoes, but one day I realized that when I go out, I love looking at the shoes men wear." With passion and years of experience in the Russian market, Mulgati was born with the spirit of Russian royaltyâ€”strong, elegant, and classy in every design. Perhaps that's why every Mulgati product exudes luxury, nobility, and a unique character that every gentleman desires to own.</p>
         <p>With the philosophy of "putting customers at the heart of every activity," every Mulgati product is meticulously invested in, and the shopping experience as well as after-sales services will satisfy every customer.</p>
-        <p>With a symbol of a faceted diamond stylized from the letters M (Manners) - G (Gentleman) - T (Timeless), these are also the three qualities every true gentleman aspires to—strength, power, and class.</p>
+        <p>With a symbol of a faceted diamond stylized from the letters M (Manners) - G (Gentleman) - T (Timeless), these are also the three qualities every true gentleman aspires toâ€”strength, power, and class.</p>
         <div class="text-center my-4">
           <img src="https://scontent.fhan14-2.fna.fbcdn.net/v/t39.30808-6/472727534_581506751315511_4563420414291115545_n.jpg?_nc_cat=100&ccb=1-7&_nc_sid=cc71e4&_nc_ohc=DJyj8rlfZ1oQ7kNvwGl3-a6&_nc_oc=AdkQVjv-wOgOQtIvbMgDoB1f39Di6K_hGpQU9t15iMxzm0j13rczE7elsXn9frxeBI4&_nc_zt=23&_nc_ht=scontent.fhan14-2.fna&_nc_gid=CjeOuiOga7VrK50Z0GaAuw&oh=00_AfQCjXALuRRD-dSDxicZRPC-uwjtxdxS4QlN6tPwNImPbQ&oe=6871852B" alt="Mulgati Store" class="img-fluid rounded shadow-sm" style="max-width:600px;">
         </div>
@@ -56,7 +57,7 @@
           <li><i class="fas fa-check text-primary me-2"></i>Elegant, masculine colors, easy to mix and match</li>
         </ul>
         <div class="text-center mt-4 mb-2">
-          <span class="intro-title" style="font-size:1.3rem; font-weight:700; color:#222; letter-spacing:1px;">MULGATI – Premium Leather Shoes Brand from Russia</span>
+          <span class="intro-title" style="font-size:1.3rem; font-weight:700; color:#222; letter-spacing:1px;">MULGATI â€“ Premium Leather Shoes Brand from Russia</span>
         </div>
         <hr>
         <div class="mb-2"><b>CONTACT INFORMATION:</b></div>
@@ -74,6 +75,8 @@
   </div>
 </div>
 <script src="https://kit.fontawesome.com/4e9c2b6e8b.js" crossorigin="anonymous"></script>
+<!-- Bootstrap 5 JS Bundle (with Popper) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <?php include '../includes/truck.php'; ?>
 <?php include '../includes/footer.php'; ?>
 <?php include '../includes/floating_contact.php'; ?>

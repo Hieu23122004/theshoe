@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 include '../includes/header.php';
 require_once '../includes/database.php';
 
@@ -165,3 +165,5 @@ $main_result = $conn->query($main_sql);
 
     <?php include '../includes/floating_contact.php'; ?>
     <script src="/assets/js/auto_logout.js"></script>
+    <!-- Bootstrap 5 JS Bundle (with Popper) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

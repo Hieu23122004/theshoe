@@ -39,6 +39,8 @@ if ($user_id) {
     }
 }
 ?>
+<!-- Bootstrap 5 CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 <style>
     h5.text-primary span {
     background-color: #f0f0f0;
@@ -116,6 +118,8 @@ if ($user_id) {
 <?php include '../includes/floating_contact.php'; ?>
 <script src="/assets/js/auto_logout.js"></script>
 <script src="/assets/js/sale_products.js"></script>
+<!-- Bootstrap 5 JS Bundle (with Popper) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 // Đảm bảo biến isLoggedIn có giá trị đúng
 var isLoggedIn = <?php echo isset($_SESSION['user_id']) ? 'true' : 'false'; ?>;
