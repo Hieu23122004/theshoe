@@ -20,7 +20,7 @@ function filterProducts(page = 1) {
     window.history.pushState({}, '', `?${params.toString()}`);
 
     // Fetch filtered products
-    fetch(`/public/filter_new_products.php?${params.toString()}`)
+    fetch(`/public/filter_type_products.php?${params.toString()}`)
         .then(response => response.text())
         .then(html => {
             // Hide loading indicator
@@ -142,7 +142,7 @@ function handleFavorite(event, productId) {
     const btn = event.currentTarget;
     const icon = btn.querySelector('i');
 
-    fetch('new_products.php', {
+    fetch('type_products.php', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/x-www-form-urlencoded',
@@ -221,5 +221,56 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             });
         }
+    });
+
+    // Đảm bảo khi chọn category sẽ lọc ngay lập tức
+    // (thay vì onchange="filterProducts()" trên select, dùng event listener để tránh reload trang)
+    const form = document.getElementById('filterForm');
+    if (form) {
+        // Bỏ onchange="filterProducts()" trên select category và color trong HTML (chỉ dùng JS)
+        form.querySelectorAll('select[name="category"]').forEach(function(select) {
+            select.onchange = null;
+            select.addEventListener('change', function() {
+                // Reset các filter khác về mặc định khi đổi category
+                form.querySelector('select[name="sort"]').selectedIndex = 0;
+                form.querySelector('select[name="price"]').selectedIndex = 0;
+                // Lấy lại màu động theo category
+                const colorSelect = form.querySelector('select[name="color"]');
+                colorSelect.selectedIndex = 0;
+                colorSelect.innerHTML = '<option value="all">All Color</option>';
+                const catVal = select.value;
+                fetch(`/public/get_colors_product.php?category=${catVal}`)
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success && Array.isArray(data.colors)) {
+                            data.colors.forEach(function(color) {
+                                const opt = document.createElement('option');
+                                opt.value = color;
+                                opt.textContent = color;
+                                colorSelect.appendChild(opt);
+                            });
+                        }
+                        filterProducts(1);
+                    });
+            });
+        });
+        form.querySelectorAll('select[name="sort"], select[name="price"]').forEach(function(select) {
+            select.onchange = null;
+            select.addEventListener('change', function() {
+                filterProducts(1);
+            });
+        });
+        // Khi đổi màu cũng lọc lại
+        form.querySelectorAll('select[name="color"]').forEach(function(select) {
+            select.onchange = null;
+            select.addEventListener('change', function() {
+                filterProducts(1);
+            });
+        });
+    }
+
+    // Đảm bảo khi bấm F5 hoặc back/forward trên trình duyệt sẽ load lại đúng filter
+    window.addEventListener('popstate', function() {
+        filterProducts();
     });
 });

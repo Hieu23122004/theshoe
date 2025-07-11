@@ -13,11 +13,11 @@
             <div class="footer-column">
                 <h3>Showroom Locations</h3>
                 <ul>
-                    <li><i class="fas fa-home"></i> T102 - The Shoes Hà Đông, Hanoi</li>
-                    <li><i class="fas fa-home"></i> T243 - The Shoes Long Biên, Hanoi</li>
-                    <li><i class="fas fa-home"></i> T240 - The Shoes Hải Phòng Lê Chân</li>
-                    <li><i class="fas fa-home"></i> L1-08 - The Shoes Đông Hà, Quảng Trị</li>
-                    <li><i class="fas fa-home"></i> L2-05A - The Shoes Vincom Đà Nẵng</li>
+                    <li><i class="fas fa-home"></i> T102 - The Shoes Ha Dong, Hanoi</li>
+                    <li><i class="fas fa-home"></i> T243 - The Shoes Long Bien, Hanoi</li>
+                    <li><i class="fas fa-home"></i> T240 - The Shoes HHai Phong Le Chan</li>
+                    <li><i class="fas fa-home"></i> L1-08 - The Shoes Dong Ha, Quang Tri</li>
+                    <li><i class="fas fa-home"></i> L2-05A - The Shoes Vincom Da Nang</li>
                 </ul>
             </div>
 
@@ -58,9 +58,9 @@
 
         <div class="footer-bottom mt-4">
             <div class="company-info">
-                <strong>THE SHOES VIETNAM TRADING SERVICE CO., LTD</strong><br>
+                <strong>THE MULGATI TRADING SERVICE CO., LTD</strong><br>
                 Business Registration No.: 0108539446<br>
-                Address: Room 606, No. 19 Cao Thắng, Vinh City, Nghe An<br>
+                Address: Room 606, No. 19 Cao Thang, Vinh City, Nghe An<br>
                 <strong>Hotline:</strong> 1900 6868
             </div>
             <div class="certifications text-end">
@@ -79,5 +79,5 @@
             </div>
         </div>
 
-        <p>© By TheShoes – Russian-origin footwear brand.</p>
+        <p>© By MULGATI – Russian-origin footwear brand.</p>
     </footer>

@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 include '../includes/database.php';
 include '../includes/header.php';
 
@@ -10,6 +10,8 @@ $latest_result = $conn->query($latest_sql);
 $main_sql = "SELECT post_id, title, excerpt, image_url, created_at FROM promotions WHERE is_published = 1 ORDER BY created_at DESC";
 $main_result = $conn->query($main_sql);
 ?>
+<!-- Bootstrap 5 CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 <link rel="stylesheet" href="/assets/css/new_promotions.css">
 <div class="container-fluid py-4 main-promotions-content" style="background:#fff;">
   <div class="row">
@@ -65,3 +67,5 @@ $main_result = $conn->query($main_sql);
 <?php include '../includes/footer.php'; ?>
 <?php include '../includes/floating_contact.php'; ?>
 <script src="/assets/js/auto_logout.js"></script>
+<!-- Bootstrap 5 JS Bundle (with Popper) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
