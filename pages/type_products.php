@@ -181,10 +181,10 @@ if ($cat_result) {
     <div id="bannerCarousel" class="carousel slide" data-bs-ride="carousel">
         <div class="carousel-inner">
             <div class="carousel-item active">
-                <img src="https://scontent.fhan14-2.fna.fbcdn.net/v/t39.30808-6/382986687_197400773367898_1660810491617346126_n.png?stp=dst-jpg_tt6&_nc_cat=108&ccb=1-7&_nc_sid=86c6b0&_nc_ohc=AOA40LH0VBMQ7kNvwHOxXmW&_nc_oc=Adk7juN2_eLoFapocbLvIzRN-i9lZoSrEyU93-pW3Uc6wPqTYKWWs8O7AnKAU5HRBZU&_nc_zt=23&_nc_ht=scontent.fhan14-2.fna&_nc_gid=BkSuuF9E3qmQmeV_xjEwJw&oh=00_AfTVJUx77cJrQxbGAJYUHeljvtRsxvbT4GTIupIyQoz9rw&oe=687075E5" class="d-block w-100" alt="Banner 1">
+                <img src="/assets/images/type1.jpeg" class="d-block w-100" alt="Banner 1">
             </div>
             <div class="carousel-item">
-                <img src="https://scontent.fhan14-4.fna.fbcdn.net/v/t39.30808-6/481970801_625817500217769_5428337219088073197_n.jpg?_nc_cat=107&ccb=1-7&_nc_sid=86c6b0&_nc_ohc=_1x6Twj0veYQ7kNvwH16blM&_nc_oc=Adn9CwVwWdBotd99v4807Y0qrvHshcRGUnhPiSQwjWrJkshRTd6Yrsm23qf-uS0zYC4&_nc_zt=23&_nc_ht=scontent.fhan14-4.fna&_nc_gid=Gn2mwBzNWEnaJ4YgpDOQoA&oh=00_AfTwLKaPp6BYTMDpXukDGWWo-r-jUd88x3Ydvn84QTm6lA&oe=6870838B" class="d-block w-100" alt="Banner 2">
+                <img src="/assets/images/type2.jpeg" class="d-block w-100" alt="Banner 2">
             </div>
 
         </div>
