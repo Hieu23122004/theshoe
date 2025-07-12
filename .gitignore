@@ -1,5 +1,4 @@
 # Ignore sensitive and environment files
 .env
 /vendor/
-chatbot/config.php
 db.txt
