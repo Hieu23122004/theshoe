@@ -1,0 +1,535 @@
+CREATE TABLE users (
+    user_id INT AUTO_INCREMENT PRIMARY KEY,
+    fullname VARCHAR(100),
+    email VARCHAR(100) UNIQUE,
+    password_hash VARCHAR(255),
+    phone VARCHAR(20),
+    address TEXT,
+    role ENUM('admin', 'customer') DEFAULT 'customer',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE login_attempts (
+    ip VARCHAR(45) PRIMARY KEY,
+    attempts INT NOT NULL DEFAULT 0,
+    blocked_until INT DEFAULT NULL
+);
+CREATE TABLE categories (
+    category_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100),
+    parent_id INT,
+    FOREIGN KEY (parent_id) REFERENCES categories(category_id)
+);
+
+CREATE TABLE products (
+    product_id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(150),
+    description TEXT,
+    price DECIMAL(10,2),
+    original_price DECIMAL(10,2),
+    discount_percent INT,
+    stock_quantity INT,
+    color_options JSON ,
+    size_stock JSON DEFAULT NULL,
+    sold_quantity INT,
+    material VARCHAR(100),
+    image_url VARCHAR(255),
+    image_urls JSON DEFAULT NULL,
+    category_id INT,
+    is_featured BOOLEAN DEFAULT FALSE,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (category_id) REFERENCES categories(category_id)
+);
+
+CREATE TABLE orders (
+    order_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
+    shipping_address TEXT,
+    shipping_method VARCHAR(100),
+    payment_method VARCHAR(100),
+    total_amount DECIMAL(10,2),
+    order_details JSON NOT NULL,
+    status VARCHAR(50),
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
+);
+
+CREATE TABLE cart_items (
+    cart_item_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
+    product_id INT,
+    color VARCHAR(50) NOT NULL,
+    size VARCHAR(20) NOT NULL,
+    quantity INT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id),
+    FOREIGN KEY (product_id) REFERENCES products(product_id),
+    UNIQUE ( user_id, product_id, color, size)  -- đảm bảo 1 sản phẩm + màu + size duy nhất trong giỏ hàng của 1 user
+);
+
+CREATE TABLE favorites (
+    user_id INT,
+    product_id INT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (user_id, product_id),
+    FOREIGN KEY (user_id) REFERENCES users(user_id),
+    FOREIGN KEY (product_id) REFERENCES products(product_id)
+);
+
+CREATE TABLE product_reviews (
+    review_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
+    product_id INT,
+    rating INT,
+    comment TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id),
+    FOREIGN KEY (product_id) REFERENCES products(product_id)
+);
+
+
+CREATE TABLE promotions (
+    post_id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(255),
+    slug VARCHAR(255) UNIQUE,           -- URL thân thiện SEO
+    excerpt TEXT,                       -- đoạn tóm tắt
+    content LONGTEXT,                  -- nội dung chi tiết HTML / markdown
+    image_url VARCHAR(500),            -- ảnh chính
+    is_published BOOLEAN DEFAULT TRUE, -- trạng thái xuất bản
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+
+CREATE TABLE discount_codes (
+    code_id INT AUTO_INCREMENT PRIMARY KEY,
+    code VARCHAR(50) UNIQUE,
+    discount_type ENUM('percent', 'fixed') NOT NULL,
+    discount_value DECIMAL(10,2) NOT NULL,
+    max_uses INT DEFAULT NULL,
+    used_count INT DEFAULT 0,
+    min_order_amount DECIMAL(10,2) DEFAULT 0,
+    valid_from DATETIME,
+    valid_until DATETIME,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
+INSERT INTO users (fullname, email, password_hash, phone, address, role)
+VALUES
+("John Nguyen", "a.nguyen@example.com", "$2a$10$1234567890abcdefghiA", "0901234567", "12 Vo Van Tan St, District 3, Ho Chi Minh City", "customer"),
+("Anna Tran", "b.tran@example.com", "$2a$10$1234567890abcdefghiB", "0912345678", "45 Pham Ngu Lao St, District 1, Ho Chi Minh City", "customer"),
+("Chris Le", "c.le@example.com", "$2a$10$1234567890abcdefghiC", "0923456789", "78 Hoang Sa St, District 3, Ho Chi Minh City", "customer"),
+("Diana Pham", "d.pham@example.com", "$2a$10$1234567890abcdefghiD", "0934567890", "10 Nguyen Van Cu St, District 5, Ho Chi Minh City", "customer"),
+("Eric Hoang", "e.hoang@example.com", "$2a$10$1234567890abcdefghiE", "0945678901", "101 Tran Quang Khai St, District 1, Ho Chi Minh City", "customer"),
+("Fiona Dang", "f.dang@example.com", "$2a$10$1234567890abcdefghiF", "0956789012", "88 Le Van Sy St, Phu Nhuan District, Ho Chi Minh City", "customer"),
+("George Vu", "g.vu@example.com", "$2a$10$1234567890abcdefghiG", "0967890123", "99 Truong Dinh St, District 3, Ho Chi Minh City", "customer"),
+("Helen Bui", "h.bui@example.com", "$2a$10$1234567890abcdefghiH", "0978901234", "18 Nam Ky Khoi Nghia St, District 1, Ho Chi Minh City", "customer"),
+("Ivan Do", "i.do@example.com", "$2a$10$1234567890abcdefghiI", "0989012345", "27 Nguyen Dinh Chieu St, District 3, Ho Chi Minh City", "customer"),
+("Admin System", "admin@example.com", "$2a$10$1234567890abcdefghiX", "0990123456", "10th Floor, Landmark Tower, Nam Tu Liem District, Hanoi", "admin");
+
+
+
+INSERT INTO categories (name, parent_id) VALUES
+
+('Footwear', NULL),     
+('Handbag', NULL),
+('Belt', NULL),
+('Titan Sneakers', 1),
+('Aero Trainers', 1),
+('Vibe Runners', 1),
+('CoreX Sneakers', 1),
+('Nova Flex', 1),
+('Luna Bags', 2),
+('Arc Bags', 2),
+('Everyday Totes', 2),
+('Signature Belts', 3),
+('Patterned Belts', 3),
+('Chainline Belts', 3);
+
+INSERT INTO products 
+(name, description, price, original_price, discount_percent, stock_quantity, color_options, size_stock, sold_quantity, material, image_url, image_urls, category_id, is_featured, created_at)
+VALUES
+
+('Titan Sneakers', 'Modern chunky sole sneakers for daily wear, featuring a sporty look and comfortable fit.', 1200000, 1200000, 0, 18, '["Black", "Brown"]', '{"Black": {"38": 3, "39": 2, "40": 5}, "Brown": {"38": 0, "39": 4, "40": 2}}', 25, 'Canvas, Rubber Sole', 'https://product.hstatic.net/200000410665/product/99361671d_803643f3b9644ab1959dc57d1bb0c412.jpg', '["https://product.hstatic.net/200000410665/product/99361671d-1_1fc4fde19eb542b788b46356c530bfe6.jpg","https://product.hstatic.net/200000410665/product/99361671d-2_11c667a1b19048ba8faa4d9fafa1fa6e_grande.jpg","https://product.hstatic.net/200000410665/product/99361671d-3_02e53810929d4226ab0680d4ba56dce6_grande.jpg"]', 8, 1, '2025-06-01'),
+
+('Aero Trainers', 'Lightweight trainers with breathable knit upper, ideal for running and gym workouts.', 2866667, 4150000, 25, 24, '["Black"]', '{"Black": {"38": 12, "39": 6, "40": 4, "41": 8}}', 48, 'Knit Fabric, Memory Sole', 'https://product.hstatic.net/200000410665/product/_hbk2486g_c5f3f735eeab4149bcb9fa2e0bb0ab40_grande.jpg', '["https://product.hstatic.net/200000410665/product/_hbk2502g_8c06972165b04f99a197ef992c6c8915_grande.jpg","https://product.hstatic.net/200000410665/product/_hbk2493g_60e5cc5720d341419d7d98fbf8a178b8_grande.jpg","https://product.hstatic.net/200000410665/product/_hbk2501g_09870d2e40c24b94bf7d9cb54ff63352_grande.jpg"]', 4, 1, '2025-04-02'),
+
+('Vibe Runners', 'EVA lightweight running shoes with dynamic colorways for an active lifestyle.', 3706667, 4250000, 25, 26, '["Brown", "Black"]', '{"Brown": {"38": 12, "39": 5}, "Black": {"38": 7, "39": 11}}', 52, 'Mesh, EVA Sole', 'https://product.hstatic.net/200000410665/product/_hbk5821_ce66880db8eb4ca287509f49f39906af.jpg', '["https://product.hstatic.net/200000410665/product/_hbk5822_988d0cbb289b4794879480ba9a84b872.jpg","https://product.hstatic.net/200000410665/product/_hbk5825_e2bbb0b80c6348c9af5610d179c05cc4.jpg","https://product.hstatic.net/200000410665/product/_hbk5827_088859c0d9bb4b079d4567e1268344c0.jpg"]', 5, 0, '2025-04-03'),
+
+('CoreX Sneakers', 'Basic synthetic leather sneakers with anti-slip rubber outsole, easy to match with any outfit.', 4271429, 5980000, 30, 22, '["Black"]', '{"Black": {"38": 11, "39": 6, "40": 9, "41": 2}}', 45, 'Synthetic Leather, Rubber', 'https://product.hstatic.net/200000410665/product/giay-luoi-nam-n3030-51n-5_4fe8de6712c44601b16fb7823035e003.jpg', '["https://product.hstatic.net/200000410665/product/giay-luoi-nam-n3030-51n-3_7cc6c7446e3d4053a2a46bd3e54a087f.jpg","https://product.hstatic.net/200000410665/product/giay-luoi-nam-n3030-51n-2_2f6cd61c920e435fb91d777b33211862.jpg","https://product.hstatic.net/200000410665/product/giay-luoi-nam-n3030-51n-1_32e49e3b973b4107887ca6c31e35b14b.jpg"]', 6, 1, '2024-03-04'),
+
+('Nova sports Flex', 'Flexible air-cushioned sports shoes for training and casual wear.', 2750000, 2750000, 0, 30, '["Black"]', '{"Black": {"38": 7, "39": 14, "40": 11, "41": 3}}', 38, 'Rubber, Mesh', 'https://product.hstatic.net/200000410665/product/_mg_9540_aff7afb0280f4e30bda71185fbdee16d.jpg', '["https://product.hstatic.net/200000410665/product/_mg_9542_a8ddb8aa5b284095a698d15492eb97f7.jpg","https://product.hstatic.net/200000410665/product/_mg_9545_21f3629da86c4670ad54c5de2119ae8b.jpg","https://product.hstatic.net/200000410665/product/_mg_9548_ef1a2d4a614740ffb58620647deddfc4.jpg"]', 7, 1, '2025-02-05'),
+
+('Bulky Bold Colors', 'Bulky sneakers with modern color splash and heavy-duty sole for street style.', 2860000, 2860000, 0, 25, '["Black"]', '{"Black": {"38": 12, "39": 16, "40": 7, "41": 3}}', 40, 'Synthetic, Mesh', 'https://product.hstatic.net/200000410665/product/n3030-50n_38164199cb8248149c167f3caa54c424_grande.jpg', '["https://product.hstatic.net/200000410665/product/n3030-50n-2_1de4bf449a034c399f3bd568bc6b6a3c_grande.jpg","https://product.hstatic.net/200000410665/product/n3030-50n-3_d5043c1b1cb4425c8143926aa11471d4_grande.jpg","https://product.hstatic.net/200000410665/product/n3030-50n-4_3b9f4a88d65f47edb4fbe3a7557eca61_grande.jpg"]', 8, 0, '2025-01-06'),
+
+('Zen Monochrome', 'Minimalist low-profile sneakers with a comfortable fit and subtle elegance.', 2237500, 2980000, 20, 20, '["Brown"]', '{"Brown": {"38": 12, "39": 5, "40": 9, "41": 17}}', 35, 'Knitted Fabric', 'https://product.hstatic.net/200000410665/product/giay-luoi-nam-a258c-a2-1_ff7121e1a2834255b4941ae5b11a54a3.jpg', '["https://product.hstatic.net/200000410665/product/giay-luoi-nam-a258c-a2-2_2894169be38049b98c8c5e98e28c2430.jpg","https://product.hstatic.net/200000410665/product/giay-luoi-nam-a258c-a2-3_c9408567315c4d6495c8f2107dfae159.jpg","https://product.hstatic.net/200000410665/product/giay-luoi-nam-a258c-a2-4_ecd8922b83ea4eb9a52e79c0fbe79fa2.jpg"]', 4, 1, '2025-01-07'),
+
+('Urban Edge Runners', 'Streetwear sneakers with bold design and breathable mesh upper for city life.', 1590000, 1590000, 25, 30, '["Black"]', '{"Black": {"39": 9, "40": 6, "41": 18, "42": 13}}', 50, 'Mesh, Synthetic', 'https://product.hstatic.net/200000410665/product/giay-luoi-nam-f1816-7_0c293a3e72054115b9a23257f7ad29d7.jpg', '["https://product.hstatic.net/200000410665/product/giay-luoi-nam-f1816-10_cefa8f8c1e0c470cab690c93a2e93c76.jpg","https://product.hstatic.net/200000410665/product/giay-luoi-nam-f1816-12_4f57c71ef82c46a58a35aa0df771cf99.jpg","https://product.hstatic.net/200000410665/product/giay-luoi-nam-f1816-8_beb2da4adc5a4e259fa184a99c6acea6.jpg"]', 5, 0, '2025-06-17'),
+
+('Vortex High Tops', 'Chunky high-top sneakers with futuristic design and high-traction sole.', 2500000, 3333333, 25, 18, '["Black"]', '{"Black": {"38": 6, "39": 13, "40": 17, "41": 3}}', 33, 'Synthetic Leather', 'https://product.hstatic.net/200000410665/product/giay-da-nam-105-d37-1_efac3b5d17fd4dc9bc9219ce09895d03.jpg', '["https://product.hstatic.net/200000410665/product/giay-da-nam-105-d37-2_3f71f53412f34a178ea58e1efa1ad32b.jpg","https://product.hstatic.net/200000410665/product/giay-da-nam-105-d37-4_d9514e41e6a545f7ba009c308abf3c6f.jpg","https://product.hstatic.net/200000410665/product/giay-da-nam-105-d37-3_210bd1136adf4b559ee911832f1ae8ad.jpg"]', 6, 0, '2025-05-07'),
+
+('Mirage Flex Trainers', 'Flexible trainers for daily movement and urban exploration.', 3455000, 3455000, 0, 35, '["Black"]', '{"Black": {"38": 15, "39": 26, "40": 11, "41": 9}}', 42, 'Woven Textile', 'https://product.hstatic.net/200000410665/product/giay-tay-mulgati-sp17159-01-1_2eea7149001e4c7eae7591db8e5fac64.jpg', '["https://product.hstatic.net/200000410665/product/giay-tay-mulgati-sp17159-01-3_d027bd32964e42478b2c2cf3657fe617.jpg","https://product.hstatic.net/200000410665/product/giay-tay-mulgati-sp17159-01-4_52fc4d6c6f314bee814e9f808df2c2f0.jpg","https://product.hstatic.net/200000410665/product/giay-tay-mulgati-sp17159-01-5_df92afb523a841529a291de3960a58a2.jpg"]', 7, 1, '2025-05-07'),
+
+('Mirage Flex Brown', 'Brown version of Mirage Flex, lightweight and flexible for everyday use.', 1900000, 2375000, 0, 35, '["Black", "Brown"]', '{"Brown": {"38": 18, "39": 12}, "Black": {"38": 19, "39": 8}}', 42, 'Woven Textile', 'https://product.hstatic.net/200000410665/product/_mg_9477_4ceaa6b09b4e4f178392b9e6fc264835.jpg', '["https://product.hstatic.net/200000410665/product/_mg_9479_7c998ad1d9b9460ea654a53225c8ad4a.jpg","https://product.hstatic.net/200000410665/product/_mg_9482_01aca3e896954d868f3600033178a66b.jpg","https://product.hstatic.net/200000410665/product/_mg_9485_21f56b365af84357b6541411350b0f13.jpg"]', 8, 0, '2025-06-07'),
+
+('Mirage Trainers Grey', 'Grey version of Mirage Flex, for urban style and daily comfort.', 1490000, 1490000, 0, 32, '["Brown", "Black"]', '{"Brown": {"38": 14, "39": 22}, "Black": {"38": 16, "39": 9}}', 30, 'Woven Textile', 'https://product.hstatic.net/200000410665/product/giay-da-nam-mulgati-sp22356a-5_61884183e8ed4ae29e6799dd8a6f4de3_grande.jpg', '["https://product.hstatic.net/200000410665/product/giay-da-nam-mulgati-sp22356a-3_eda58d9e396a46d696ec599f74845398_grande.jpg","https://product.hstatic.net/200000410665/product/giay-da-nam-mulgati-sp22356a-2_15e6c052b9194dc9bb3505d78f0b9fa9_grande.jpg","https://product.hstatic.net/200000410665/product/giay-da-nam-mulgati-sp22356a-1_20263c9722fe4034a12fd62909dcbc11_grande.jpg"]', 4, 0, '2025-06-07'),
+
+('Mirage Flex Edition', 'Breathable trainers in blue tones for flexible street wear.',3850000, 3850000, 0, 28, '["Black"]', '{"Black": {"38": 13, "39": 16, "40": 27, "41": 21}}', 36, 'Mesh, Textile', 'https://product.hstatic.net/200000410665/product/giay-luoi-nam-sp17166-03-1_4c1b56ea4b3e4e2ba63ffff1a4ce1a3a.jpg', '["https://product.hstatic.net/200000410665/product/giay-luoi-nam-sp17166-03-2_867458de147c48aeb9963c1bf1ff9a1c.jpg","https://product.hstatic.net/200000410665/product/giay-luoi-nam-sp17166-03-4_a73558c14c7249099248b72b0ba33aa5.jpg","https://product.hstatic.net/200000410665/product/giay-luoi-nam-sp17166-03-5_d1da81a1f8d84466afaf7c3f3e011535.jpg"]', 5, 0, '2025-02-11'),
+
+('Mirage Trainers Mono', 'All-white minimalist trainers for casual fashion.', 2100000, 2100000, 0, 30, '["Brown"]', '{"Brown": {"38": 15, "39": 26, "40": 7, "41": 12}}', 40, 'Woven Textile', 'https://product.hstatic.net/200000410665/product/giay-luoi-nam-a22096-1_e293f53f24964e2f8e01a99b2928cb22.jpg', '["https://product.hstatic.net/200000410665/product/giay-luoi-nam-a22096-2_797c700aac6d42e2b71e5a0eb951bcfb.jpg","https://product.hstatic.net/200000410665/product/giay-luoi-nam-a22096-3_9e64b08d4cee410cadad40b9f56e3a1d.jpg","https://product.hstatic.net/200000410665/product/giay-luoi-nam-a22096-4_248ac27ff187478695386a61f9e840e2.jpg"]', 6, 1, '2025-04-11'),
+
+('Flex Trainers Sunset', 'Red trainers for bold personalities and active lifestyles.', 3690000, 3690000, 0, 34, '["Brown", "Black"]', '{"Brown": {"38": 9, "39": 15}, "Black": {"38": 26, "39": 7}}', 38, 'Mesh Fabric', 'https://product.hstatic.net/200000410665/product/giay-tay-mulgati-sp17159-01-1_2eea7149001e4c7eae7591db8e5fac64.jpg', '["https://product.hstatic.net/200000410665/product/giay-tay-mulgati-sp17159-01-3_d027bd32964e42478b2c2cf3657fe617.jpg","https://product.hstatic.net/200000410665/product/giay-tay-mulgati-sp17159-01-4_52fc4d6c6f314bee814e9f808df2c2f0.jpg","https://product.hstatic.net/200000410665/product/giay-tay-mulgati-sp17159-01-5_df92afb523a841529a291de3960a58a2.jpg"]', 7, 1, '2025-06-30'),
+
+('Mirage Urban Edition', 'Urban trainers with reflective details and city-ready build.', 4980000, 4980000, 0, 33, '["Black", "Brown"]', '{"Brown": {"38": 9, "39": 12}, "Black": {"38": 26, "39": 23}}', 41, 'Synthetic Textile', 'https://product.hstatic.net/200000410665/product/_hbk5930_d0013ce0217b481ea739f6ddfe791b41.jpg', '["https://product.hstatic.net/200000410665/product/_hbk5934_04e530089f8c4cf292b29419147e0593.jpg","https://product.hstatic.net/200000410665/product/_hbk5936_338d821e4cec4a62980f965c9375964b.jpg","https://product.hstatic.net/200000410665/product/_hbk5938_3883ba5f7b7e4135a73bc1da70d024f9.jpg"]', 6, 1, '2025-06-21'),
+
+('Mirage Limited Urban', 'Limited edition trainers with reflective details for city life.', 890000, 890000, 0, 33, '["Brown"]', '{"Brown": {"38": 6, "39": 14, "40": 9, "41": 18}}', 41, 'Synthetic Textile', 'https://product.hstatic.net/200000410665/product/giay-luoi-nam-a22096-1_e293f53f24964e2f8e01a99b2928cb22.jpg', '["https://product.hstatic.net/200000410665/product/giay-luoi-nam-a22096-2_797c700aac6d42e2b71e5a0eb951bcfb.jpg","https://product.hstatic.net/200000410665/product/giay-luoi-nam-a22096-3_9e64b08d4cee410cadad40b9f56e3a1d.jpg","https://product.hstatic.net/200000410665/product/giay-luoi-nam-a22096-4_248ac27ff187478695386a61f9e840e2.jpg"]', 7, 1, '2025-05-11'),
+
+('Moccasin Penny Loafers', 'Classic penny moccasin loafers for a casual and modern look.', 795000, 795000, 0, 33, '["Black"]', '{"Black": {"38": 6, "39": 14, "40": 9, "41": 18}}', 41, 'Synthetic Textile', 'https://product.hstatic.net/200000410665/product/_mg_9602_8705ba22db1d4697afc34796d1a4c731.jpg', '["https://product.hstatic.net/200000410665/product/_mg_9604_ae594150368248d6ba48fb17ef6d62f4.jpg","https://product.hstatic.net/200000410665/product/_mg_9607_ac7202b0a7f948168e67ae8b97ea901f.jpg","https://product.hstatic.net/200000410665/product/_mg_9609_c82b095c1956495f8db70d5d244c951c.jpg"]', 8, 1, '2025-05-11'),
+
+
+-- Túi
+
+('TTS SAT043 Clutch', 'Premium cowhide clutch bag with minimalist design.perfect for formal occasions.', 1490000, 1900000, 20, 32, '["Black"]','{"Black": {"25": 17, "27": 16, "29": 26}}', 45, 'Synthetic Textile', 'https://product.hstatic.net/200000410665/product/dsc08701-1_e282f56f98e3404c8b5f75e1ae0ca09c.jpg', '["https://product.hstatic.net/200000410665/product/dsc08727_fe77d20a3384456a86fe2a227d126ebf.jpg","https://product.hstatic.net/200000410665/product/dsc08736_7a7cf982115f4668b64a4d7e17af0d64.jpg","https://product.hstatic.net/200000410665/product/dsc08733_5d3951ec47db4945aca749fecc5d679f.jpg"]', 9, 1, '2025-07-11'),
+
+('TTS TAB201226 Clutch', 'Elegant clutch bag made of high quality cowhide, perfect for formal occasions.', 1690000, 1690000, 0, 12, '["Black"]', '{"Black": {"25": 11, "27": 32, "29": 22}}', 24, 'Synthetic Textile', 'https://product.hstatic.net/200000410665/product/dsc07443_021d70635991453e881e563af875351a.jpg', '["https://product.hstatic.net/200000410665/product/dsc07444_5d692bd83fd34a6387def4d38eaffa10.jpg","https://product.hstatic.net/200000410665/product/dsc07445_0ec3874db897445faafdf446e3ae2bab.jpg","https://product.hstatic.net/200000410665/product/dsc07446_102803ef9fe6423eaae29edff6d47778.jpg"]', 9, 1, '2025-07-05'),
+
+('TTS TAB2108 Handbag', 'Elegant clutch bag made of high quality cowhide, perfect for formal occasions.', 2530000, 2530000, 0, 12, '["Black"]', '{"Black": {"25": 18, "27": 23, "29":16}}', 37, 'Synthetic Textile', 'https://product.hstatic.net/200000410665/product/tab-da-mulgati-tab2108-1-12_98bc7da9fdbf4981ab5b79b8c1e8f420.jpg', '["https://product.hstatic.net/200000410665/product/tab-da-mulgati-tab2108-1-11_90a94166358e40e785b70955d08b8d72.jpg","https://product.hstatic.net/200000410665/product/tab-da-mulgati-tab2108-1-10_fbbaa7846f514a55b52a6315721f9c49.jpg","https://product.hstatic.net/200000410665/product/tab-da-mulgati-tab2108-1-09_5ee3e5f3d5ff49679ef79d034e03b8e7.jpg"]', 10, 1, '2025-07-01'),
+
+('TTS TAB9814 Clutch', 'Elegant clutch bag made of high quality cowhide, perfect for formal occasions.',  1250000, 1250000, 0, 12, '["Black"]', '{"Black": {"25": 19, "27": 16, "29": 11}}', 41, 'Synthetic Textile', 'https://product.hstatic.net/200000410665/product/dsc07416__1__037ab98126344c25bed71e4aac61f7b8.jpg', '["https://product.hstatic.net/200000410665/product/tab-da-nam-tab9814-4-2_5d365818296146aeb22ca8009eb90c2d.jpg","https://product.hstatic.net/200000410665/product/tab-da-nam-tab9814-4-3_70b044169d704b5eb058b025fd3d5681.jpg","https://product.hstatic.net/200000410665/product/tab-da-nam-tab9814-4-4_5d01a2cf35a94b6aa7fbfa5c2c6d1c78.jpg"]', 10, 1, '2025-07-16'),
+
+('TTS TAB66341 Clutch', 'Elegant clutch bag made of high quality cowhide, perfect for formal occasions.', 3670000, 3670000, 0, 12, '["Black"]', '{"Black": {"25": 31, "27": 9, "29": 26}}', 29, 'Synthetic Textile', 'https://product.hstatic.net/200000410665/product/tab-da-nam-tabtab66341-4_-1_2a8da37c6961495489d286cc59686a5d.jpg', '["https://product.hstatic.net/200000410665/product/tab-da-nam-tabtab66341-4_-2_94cc5136f10d49c2a1fe68e7f3692609.jpg","https://product.hstatic.net/200000410665/product/tab-da-nam-tabtab66341-4_-3_cb7189163a3d4ac5bb7d65b91c58db0e.jpg","https://product.hstatic.net/200000410665/product/tab-da-nam-tabtab66341-4_-4_4be339f8af134400951aba5418413c9e.jpg"]', 11, 1, '2025-07-09'),
+
+('TTS TAB7710 Clutch', 'Elegant clutch bag made of high quality cowhide, perfect for formal occasions.', 2790000, 2790000, 0, 12, '["Black"]', '{"Black": {"25": 9, "27": 12, "29": 22}}', 16, 'Synthetic Textile', 'https://product.hstatic.net/200000410665/product/dsc07478_2100968b3f64408d8a026ef9fb2518cf.jpg', '["https://product.hstatic.net/200000410665/product/dsc07481_20f0b1d2390b4c87b91784cb4523f973.jpg","https://product.hstatic.net/200000410665/product/dsc07485_fd713903db914d63a755e8f9c9d8ae26.jpg","https://product.hstatic.net/200000410665/product/tab-da-nam-tab7710-4-4_8f3d9f138c3246029bac8b94db9bd1a4.jpg"]', 11, 1, '2025-07-06'),
+
+('TTS TABS063 Clutch', 'Elegant clutch bag made of high quality cowhide, perfect for formal occasions.', 1790000, 1790000, 0, 12, '["Black"]', '{"Black": {"25": 16, "27": 23, "29": 11}}', 33, 'Synthetic Textile', 'https://product.hstatic.net/200000410665/product/3_196cb2edca4540069ec3c81e3269fe99.jpg', '["https://product.hstatic.net/200000410665/product/4_d4b131d21750496faa298a6eb175efb4.jpg","https://product.hstatic.net/200000410665/product/5_896fd2e2fbe34ef39d1d5dbb0983d778.jpg","https://product.hstatic.net/200000410665/product/6_c5c7d3dec3b643b389516ed94e7e4acf.jpg"]', 11, 1, '2025-06-17'),
+
+('TTS TABS068 Clutch', 'Elegant clutch bag made of high quality cowhide, perfect for formal occasions.', 3350000, 3350000, 0, 12, '["Black"]', '{"Black": {"25": 18, "27": 16, "29": 26}}', 33, 'Synthetic Textile', 'https://product.hstatic.net/200000410665/product/tui-cam-tay-sat109-21-03_aaf3e65d719547d6bebaf576ef716e38.jpg', '["https://product.hstatic.net/200000410665/product/tui-cam-tay-sat109-21-01_e21e49d8a5e94a259b7b063ecc7d0c4e.jpg","https://product.hstatic.net/200000410665/product/tui-cam-tay-sat109-21-04_964fdd69719148bbb8bc2fb988bd8a4e.jpg","https://product.hstatic.net/200000410665/product/tui-cam-tay-sat109-21-05_3fc7899a3da749a49ced276570a85adb.jpg"]', 10, 1, '2025-06-17'),
+
+('TTS TABS109 Clutch', 'Elegant clutch bag made of high quality cowhide, perfect for formal occasions.', 1690000, 1690000, 0, 12, '["Black"]', '{"Black": {"25": 11, "27": 6, "29": 6}}', 31, 'Synthetic Textile', 'https://product.hstatic.net/200000410665/product/vi-da-cluch-mulgati-tab6821-13_15851b7f411140bfbc9987bcf40c2f21.jpg', '["https://product.hstatic.net/200000410665/product/vi-da-cluch-mulgati-tab6821-12_d18f737249b244ffb7fe677167e6d0b4.jpg","https://product.hstatic.net/200000410665/product/vi-da-cluch-mulgati-tab6821-11_f7bc446728e244b4a389e0f2a38e2582.jpg","https://product.hstatic.net/200000410665/product/vi-da-cluch-mulgati-tab6821-1_6e20d7d057da473ba10e2512ffece635.jpg"]', 9, 1, '2025-06-16'),
+
+-- Thắt Lưng
+('TTS JYMG24403 Belt', 'Elegant clutch bag made of high quality cowhide, perfect for formal occasions.', 3450000, 3450000, 0, 12, '["Black"]', '{"Black": {"M": 11, "L": 6}}', 31, 'Synthetic Textile', 'https://product.hstatic.net/200000410665/product/that-lung-nam-jymg24403-01_358c93ff120b412aae96c07aebde0061_grande.jpg', '["https://product.hstatic.net/200000410665/product/that-lung-nam-jymg24403-07_5656ec03b24b4bad9501fa3ab235ff4d_grande.jpg","https://product.hstatic.net/200000410665/product/that-lung-nam-jymg24403-06_94eef20a68b747fbaf1a35f63a2937ba_grande.jpg","https://product.hstatic.net/200000410665/product/that-lung-nam-jymg24403-08_df616ffe762c43c787fde884ea45d8fd_grande.jpg"]', 12, 1, '2025-06-15'),
+
+('TTS JYMG24412 Belt', 'Elegant clutch bag made of high quality cowhide, perfect for formal occasions.', 1290000, 1290000, 0, 12, '["Black"]', '{"Black": {"M": 13, "L": 11, "Xl": 22}}', 31, 'Synthetic Textile', 'https://product.hstatic.net/200000410665/product/that-lung-nam-jymg24405-01_f4556c8ffe944c898636cd633a5b7a71.jpg', '["https://product.hstatic.net/200000410665/product/that-lung-nam-jymg24405-02_4c58c795a5964a2286630b54cbeb2858.jpg","https://product.hstatic.net/200000410665/product/that-lung-nam-jymg24405-07_fa095ab6f3814ad3a35bffaba6d39803.jpg","https://product.hstatic.net/200000410665/product/that-lung-nam-jymg24405-08_102c714e7ee64bab905a8da3c706b3c5.jpg"]', 12, 1, '2025-06-14'),
+
+('TTS JYMG24409 Belt', 'Elegant clutch bag made of high quality cowhide, perfect for formal occasions.', 3890000, 3890000, 0, 12, '["Black"]', '{"Black": {"M": 23, "L": 13, "Xl": 12}}', 31, 'Synthetic Textile', 'https://product.hstatic.net/200000410665/product/that-lung-nam-1__1__b9c37fed60f844efb295dcb8d49cd33e.jpg', '["https://product.hstatic.net/200000410665/product/that-lung-nam-1__2__1f45746a29504e189ed8a9935145b494.jpg","https://product.hstatic.net/200000410665/product/that-lung-nam-jymg24404-05_aadf9a4b9dd3460bb1f6e45c1dfefec4.jpg","https://product.hstatic.net/200000410665/product/that-lung-nam-jymg24404-04_e30fa516ec564e37add44a0431a2929c.jpg"]', 13, 1, '2025-06-13'),
+
+('TTS JYMG24405 Belt', 'Elegant clutch bag made of high quality cowhide, perfect for formal occasions.', 890000, 890000, 0, 12, '["Black"]', '{"Black": {"M": 23, "L": 13, "Xl": 12}}', 31, 'Synthetic Textile', 'https://product.hstatic.net/200000410665/product/that-lung-nam-jymg24401-01_9f676fa1483b445d916fde1fc5082682.jpg', '["https://product.hstatic.net/200000410665/product/that-lung-nam-jymg24401-02_c26a5a00065e4dc59ce74ddaca48db5b.jpg","https://product.hstatic.net/200000410665/product/that-lung-nam-jymg24401-07_8aad35eb47e043678667db84c03482da.jpg","https://product.hstatic.net/200000410665/product/that-lung-nam-jymg24401-08_47fc292dce6646d3ac955929ce08e9da.jpg"]', 13, 1, '2025-06-12'),
+
+('TTS JYMG24406 Belt', 'Elegant clutch bag made of high quality cowhide, perfect for formal occasions.', 2890000, 2890000, 0, 12, '["Black"]', '{"Black": {"M": 13, "L": 33, "Xl": 25}}', 31, 'Synthetic Textile', 'https://product.hstatic.net/200000410665/product/dsc06311_b6d4a90c123a4eeab9320353efef3c7c.jpg', '["https://product.hstatic.net/200000410665/product/dsc06312_9168d726c2734cd08bdcb2bf542f0c53.jpg","https://product.hstatic.net/200000410665/product/dsc06317_6969eed55b474478aee90cf9d3d389bd.jpg","https://product.hstatic.net/200000410665/product/dsc06314_8813595964a84ea98937ff46fcda00ad.jpg"]', 14, 1, '2025-06-11'),
+
+('TTS JYMG24408 Belt', 'Elegant clutch bag made of high quality cowhide, perfect for formal occasions.', 1990000, 1990000, 0, 12, '["Black"]', '{"Black": {"M": 22, "L": 23, "Xl": 17}}', 31, 'Synthetic Textile', 'https://product.hstatic.net/200000410665/product/dsc06208_874de56e27af4c529efd5256ddbd6595.jpg', '["https://product.hstatic.net/200000410665/product/dsc06208-1_b9a5da8e8cee4a0c9154b5a209e0d98f.jpg","https://product.hstatic.net/200000410665/product/dsc06199_953292cc7eee4d5695aae4faebaf002c.jpg","https://product.hstatic.net/200000410665/product/dsc06209_09f14bb5caa34db9bae0171498988085.jpg"]', 14, 1, '2025-06-17');
+
+
+INSERT INTO orders (user_id, shipping_address, shipping_method, payment_method, total_amount, order_details, status, created_at)
+VALUES
+(1, '123 Le Loi St, District 1, Ho Chi Minh City', 'Express Delivery', 'Cash on Delivery', 950000, '{"items": [{"product_id": 1, "quantity": 1}]}', 'Processing', '2025-06-01 10:00:00'),
+(2, '456 Tran Hung Dao St, District 5, Ho Chi Minh City', 'Standard Delivery', 'Credit Card', 2150000, '{"items": [{"product_id": 2, "quantity": 1}]}', 'Delivered', '2025-06-02 11:00:00'),
+(3, '789 Nguyen Hue St, District 1, Ho Chi Minh City', 'Economy Delivery', 'Momo', 3780000, '{"items": [{"product_id": 3, "quantity": 1}]}', 'Processing', '2025-06-03 09:30:00'),
+(4, '321 Hai Ba Trung St, District 3, Ho Chi Minh City', 'Express Delivery', 'Cash on Delivery', 2990000, '{"items": [{"product_id": 4, "quantity": 1}]}', 'Delivered', '2025-06-04 14:00:00'),
+(5, '654 Cach Mang Thang 8 St, District 10, Ho Chi Minh City', 'Standard Delivery', 'ATM Card', 4690000, '{"items": [{"product_id": 5, "quantity": 1}]}', 'Cancelled', '2025-06-05 16:00:00'),
+(6, '123 Le Loi St, District 1, Ho Chi Minh City', 'Economy Delivery', 'Momo', 1790000, '{"items": [{"product_id": 7, "quantity": 2}]}', 'Shipping', '2025-06-06 10:20:00'),
+(7, '456 Tran Hung Dao St, District 5, Ho Chi Minh City', 'Express Delivery', 'Cash on Delivery', 1450000, '{"items": [{"product_id": 10, "quantity": 1}]}', 'Delivered', '2025-06-07 17:00:00'),
+(8, '789 Nguyen Hue St, District 1, Ho Chi Minh City', 'Express Delivery', 'Credit Card', 1590000, '{"items": [{"product_id": 8, "quantity": 1}]}', 'Delivered', '2025-06-08 12:45:00'),
+(9, '321 Hai Ba Trung St, District 3, Ho Chi Minh City', 'Economy Delivery', 'Momo', 1990000, '{"items": [{"product_id": 9, "quantity": 1}]}', 'Processing', '2025-06-09 13:30:00'),
+(10, '654 Cach Mang Thang 8 St, District 10, Ho Chi Minh City', 'Express Delivery', 'ATM Card', 3860000, '{"items": [{"product_id": 6, "quantity": 1}]}', 'Processing', '2025-06-10 08:30:00');
+
+
+INSERT INTO favorites (user_id, product_id, created_at)
+VALUES
+(1, 1, '2025-02-01 09:00:00'),
+(2, 2, '2025-02-02 09:30:00'),
+(3, 3, '2025-03-03 10:00:00'),
+(4, 4, '2025-03-04 11:00:00'),
+(5, 5, '2025-04-05 12:00:00'),
+(6, 6, '2025-04-06 13:00:00'),
+(7, 7, '2025-05-07 14:00:00'),
+(8, 8, '2025-05-08 15:00:00'),
+(9, 9, '2025-06-09 16:00:00'),
+(10, 10, '2025-06-10 17:00:00');
+
+
+
+INSERT INTO product_reviews (user_id, product_id, rating, comment, created_at)
+VALUES
+(1, 1, 5, 'Very satisfied with the product quality.', '2025-02-01 10:00:00'),
+(2, 2, 4, 'Nice shoes, carefully packaged.', '2025-02-02 11:00:00'),
+(3, 3, 5, 'Very comfortable to wear, worth the price.', '2025-03-03 12:00:00'),
+(4, 4, 4, 'Okay, but the toe box is a bit stiff.', '2025-03-04 13:00:00'),
+(5, 5, 5, 'Standard shoe form, nice color.', '2025-04-05 14:00:00'),
+(6, 6, 4, 'Beautiful item, delivered on time.', '2025-04-06 15:00:00'),
+(7, 7, 5, 'Color is slightly different from the photo but still okay.', '2025-05-07 16:00:00'),
+(8, 8, 4, 'Reasonable price, good quality.', '2025-05-08 17:00:00'),
+(9, 9, 5, 'Quality did not meet expectations.', '2025-06-09 18:00:00'),
+(10, 10, 4, 'Good for the price.', '2025-06-10 19:00:00');
+
+
+INSERT INTO promotions (
+    title, slug, excerpt, content, image_url
+) VALUES (
+    'Mulgati Summer Sale 2025: Style Meets Comfort at 20% Off',
+    'mulgati-summer-sale-2025',
+    'Refresh your wardrobe with Mulgati\'s Summer 2025 collection – now 20% off.',
+    '
+    <p>As summer sets in, Mulgati invites you to experience a season of transformation — in both comfort and style. The <strong>Summer 2025 Collection</strong> is more than a seasonal sale; it’s a celebration of elegance, craftsmanship, and individuality. From July 1st to August 15th, enjoy an exclusive <strong>20% discount</strong> on premium leather shoes designed specifically for the modern gentleman during warmer days.</p>
+
+    <h4>1. A Season to Reinvent Your Step</h4>
+    <p>Summer is not just a change in temperature — it’s a shift in energy, attitude, and attire. This season, Mulgati focuses on helping men rediscover confidence through every step they take. The Summer 2025 Collection features light, breathable footwear that doesn’t compromise on refinement. Whether you are navigating the heat of the city or attending a breezy seaside event, your shoes should reflect the best version of yourself.</p>
+
+    <h4>2. Promotion Timeline & Accessibility</h4>
+    <p>The campaign runs from <strong>July 1st to August 15th, 2025</strong>, and is available through all official Mulgati channels. Customers can shop online at mulgati.vn or visit our nationwide boutique stores to experience the fit and feel of each design firsthand. Availability may vary by location, so we recommend early visits for best selection.</p>
+
+    <h4>3. Highlights from the Summer 2025 Collection</h4>
+    <p>This season’s collection offers a carefully curated range of designs, each built for summer function and year-round flair:</p>
+    <ul>
+        <li><strong>Breathable Oxfords:</strong> Updated with airflow panels and flexible soles to provide comfort during long days.</li>
+        <li><strong>Summer Loafers:</strong> Easy to slip on, these loafers bring casual sophistication to any warm-weather outfit.</li>
+        <li><strong>Low-top Leather Sneakers:</strong> Ideal for weekend getaways or creative work environments, these sneakers blend luxury with leisure.</li>
+    </ul>
+    <p>All styles are <strong>handmade using genuine Italian leather</strong> and finished with meticulous attention to detail. This season also introduces three limited-run shades: <em>Sand Beige</em>, <em>Stone Gray</em>, and <em>Midnight Blue</em>.</p>
+
+    <div style=\"text-align:center; margin: 20px 0;\">
+        <img src=\"https://scontent.fhan14-3.fna.fbcdn.net/v/t39.30808-6/514698139_714007704745108_8163515679581454171_n.jpg?_nc_cat=111&ccb=1-7&_nc_sid=127cfc&_nc_ohc=PjvErvWE40QQ7kNvwFx47eD&_nc_oc=Adki0MnbiYp6YaxXQg7lnpt3CzLbm0MPl6Jm2b3B2pP5YIxfZDklrQqeM-yo0JTeVn0&_nc_zt=23&_nc_ht=scontent.fhan14-3.fna&_nc_gid=Hxm_BOphQi_COfa4BdDnDA&oh=00_AfTcp_OhGgCd7cgNn3IX8KZsuutab5Svlr0TYEx1SZ7q6Q&oe=6873A302\" alt=\"Summer 2025 Leather Collection\" style=\"width:600px; height:auto;\">
+    </div>
+
+    <h4>4. Bonus Offers & Member Privileges</h4>
+    <p>Beyond the core discount, Mulgati adds thoughtful bonuses for our discerning clientele:</p>
+    <ul>
+        <li><strong>Free Leather Care Kit</strong> (valued at 250,000 VND) for purchases over 1.5 million VND</li>
+        <li><strong>Exclusive early access</strong> to our upcoming Fall-Winter 2025 Collection for newsletter subscribers</li>
+        <li><strong>Free nationwide shipping</strong> for all orders exceeding 1 million VND</li>
+    </ul>
+    <p>These bonuses are designed not only to reward loyal customers but also to ensure long-term care and satisfaction with each purchase. Gifts are limited and distributed on a first-come, first-served basis.</p>
+
+    <h4>5. The Philosophy Behind the Collection</h4>
+    <p>Mulgati’s Summer 2025 line is rooted in a philosophy that values timeless design and purposeful innovation. Every pair is made not just for aesthetics, but for real-life functionality — keeping the wearer stylish, supported, and cool even in the most demanding settings. We believe luxury should feel as good as it looks, and this collection embodies that belief with every stitch.</p>
+
+    <div style=\"text-align:center; margin: 20px 0;\">
+        <img src=\"https://scontent.fhan14-5.fna.fbcdn.net/v/t39.30808-6/515089735_714007691411776_5294515433206784777_n.jpg?_nc_cat=104&ccb=1-7&_nc_sid=127cfc&_nc_ohc=TCZkbtvF1QMQ7kNvwGqn0rV&_nc_oc=Adlp2sjfDRXtRdCkRXk1EvWoWFtjm2heXUTl7o4zxLSHWMeSoOZP2UdmXBrwnpnLyqQ&_nc_zt=23&_nc_ht=scontent.fhan14-5.fna&_nc_gid=DJujJGb8ORkQ9sRdiSb9IQ&oh=00_AfSUFtoF7LhVDFe_5RvidykDm6mjfEvS_CdkNF6wZ1rmng&oe=6873BBFD\" alt=\"Craftsmanship Philosophy\" style=\"width:600px; height:auto;\">
+    </div>
+
+    <h4>6. How to Shop</h4>
+    <p>Purchasing your next statement pair has never been easier. Visit mulgati.vn to explore the collection in detail, read customer reviews, and enjoy smooth checkout. Prefer an in-person experience? Our stores nationwide are open daily with personalized fitting sessions and expert style consultants ready to assist. Need help online? Our support team is available via live chat, phone, or email from 9AM to 9PM, seven days a week.</p>
+
+    <h4>7. Terms & Conditions</h4>
+    <ul>
+        <li>This campaign applies only to selected products within the Summer 2025 collection.</li>
+        <li>Discounts and gifts cannot be combined with other offers or loyalty points.</li>
+        <li>Promotional items and gifts are limited in quantity and will be provided while stock lasts.</li>
+        <li>Exchanges and returns are accepted within 7 days with original receipt and packaging.</li>
+    </ul>
+    <p>For more information on policies, please visit our website or consult staff at any official Mulgati store.</p>',
+    'https://scontent.fhan14-2.fna.fbcdn.net/v/t39.30808-6/515288944_719251830887362_8482219988441527828_n.jpg?_nc_cat=108&ccb=1-7&_nc_sid=cc71e4&_nc_ohc=pMP2uqYSsW0Q7kNvwFXvcIQ&_nc_oc=Adl4Vj_XH6_7sMNeVVhJL7ResRTKVUIUxt5OGK2FekwpHSO5zJWZZTUbk_Fu9uVWqM4&_nc_zt=23&_nc_ht=scontent.fhan14-2.fna&_nc_gid=lDeZLCZUhwf0pJHTM7r8sA&oh=00_AfTVG1j6LfkG6Ll8uDQ6SBNAqCyiqkxT46QiwOWqc_TXgw&oe=6877D458'
+),
+ (
+    'Mulgati Heritage Line Launch: Timeless Elegance at 10% Off',
+    'mulgati-heritage-line-2025',
+    'Introducing the Heritage Line – a refined collection rooted in tradition, now at 10% off for a limited time.',
+    '
+    <p>The <strong>Mulgati Heritage Line</strong> marks a bold return to timeless elegance, crafted for the discerning gentleman who values sophistication beyond trends. For a limited time only, enjoy an exclusive <strong>10% launch discount</strong> on this handcrafted leather footwear collection, available from <strong>September 1st to October 10th, 2025</strong>.</p>
+
+    <h4>1. Honoring Tradition with Modern Craft</h4>
+    <p>Inspired by European shoemaking heritage, the Mulgati Heritage Line features rich materials, classic silhouettes, and intricate hand-stitched details. These shoes are built to last and designed to elevate your wardrobe across seasons and occasions.</p>
+
+    <h4>2. Launch Campaign Duration</h4>
+    <p>This special offer is valid from <strong>September 1st to October 10th</strong> across all Mulgati platforms. The collection will be available online at mulgati.vn and at selected flagship stores nationwide. Due to limited stock, early purchase is recommended.</p>
+
+    <h4>3. What Sets the Heritage Line Apart</h4>
+    <p>The Heritage Line redefines premium footwear with a return to handcrafted excellence. Key highlights include:</p>
+    <ul>
+        <li><strong>Full-grain Patina Leather:</strong> Aged naturally for depth of color and durability.</li>
+        <li><strong>Goodyear Welt Construction:</strong> Ensures long-term structure and easy resoling.</li>
+        <li><strong>Custom Insole Molding:</strong> Adapts to the wearer’s feet for enduring comfort.</li>
+    </ul>
+    
+    <div style=\"text-align:center; margin: 20px 0;\">
+        <img src=\"https://scontent.fhan14-3.fna.fbcdn.net/v/t39.30808-6/514860350_716578551154690_2814706547505830419_n.jpg?_nc_cat=110&ccb=1-7&_nc_sid=127cfc&_nc_ohc=cJmS7Kas6DkQ7kNvwG4D23l&_nc_oc=Adkk5OUvpx9wI6lFWLK3lPtDaY3UuNb-Yw5MS0PcNQaeGlmxe-W3VOsfJVjfafucIE8&_nc_zt=23&_nc_ht=scontent.fhan14-3.fna&_nc_gid=nSQ9tpiQeeGj8EscJBPL5A&oh=00_AfSM-LhLI4uz-k4Hg4_2AlxNJPxeNVIY9cgEfDSwcETLZA&oe=6873B926\" alt=\"Heritage Line Collection\" style=\"width:600px; height:auto;\">
+    </div>
+
+    <h4>4. Exclusive Launch Rewards</h4>
+    <p>In celebration of this debut, we’re offering extra perks for early adopters:</p>
+    <ul>
+        <li><strong>Complimentary Shoe Trees</strong> for all Heritage Line purchases</li>
+        <li><strong>Invitation-only Mulgati Club membership</strong> for purchases over 3 million VND</li>
+        <li><strong>Launch-only Packaging</strong>: Each pair arrives in a special edition box with a handwritten thank-you card</li>
+    </ul>
+
+    <h4>5. Craft Behind the Collection</h4>
+    <p>This line reflects Mulgati’s commitment to quality and storytelling through design. Each shoe takes over 40 hours to complete, with skilled artisans overseeing every step. The Heritage Line is a blend of form, function, and narrative — shoes that tell a story and stand the test of time.</p>
+
+    <div style=\"text-align:center; margin: 20px 0;\">
+        <img src=\"https://scontent.fhan14-1.fna.fbcdn.net/v/t39.30808-6/516095686_716578594488019_6659525083717145488_n.jpg?_nc_cat=101&ccb=1-7&_nc_sid=127cfc&_nc_ohc=0-z-LpWrDaIQ7kNvwGJKlx6&_nc_oc=AdkNBAOKhY_OJfhIRlRk04uMvU8UTftdGZhv0zvLbj2xAVcNI2DOezHrqHS0N85Sbw0&_nc_zt=23&_nc_ht=scontent.fhan14-1.fna&_nc_gid=N76VAinSQ1ldMh05BZ8eow&oh=00_AfTHdhBisE237bPSzlAYVlh-WmZzrXWdsDtz7DhhUn8hLg&oe=6873AE29\" alt=\"Heritage Craftsmanship\" style=\"width:600px; height:auto;\">
+    </div>
+
+    <h4>6. Where and How to Buy</h4>
+    <p>The Heritage Line is now available for preview and pre-order at mulgati.vn. Customers can also schedule private fittings at select locations. Support is available via live chat, hotline, and email. Our consultants are ready to walk you through sizing, materials, and styling tips — online or in-store.</p>
+
+    <h4>7. Launch Terms & Notes</h4>
+    <ul>
+        <li>Offer applies only to designated products within the Heritage Line.</li>
+        <li>Discounts cannot be combined with loyalty points or other promotions.</li>
+        <li>Limited-edition packaging available only during the campaign period.</li>
+        <li>Exchanges accepted within 7 days with original receipt and undamaged condition.</li>
+    </ul>
+    <p>For further information or assistance, please visit our FAQ section or contact our customer support team.</p>',
+    'https://lnk.ink/Zpaxn'
+),
+
+(
+    'Mulgati Russian Leather Collection – A New Chapter of Elegance in Summer 2025',
+    'mulgati-russian-leather-summer-2025',
+    'Introducing Mulgati – the Russian luxury leather brand – now available in Vietnam with its signature Summer 2025 collection.',
+    '
+    <p><strong>Mulgati</strong>, a name synonymous with refined masculinity and heritage craftsmanship, proudly enters the Vietnamese market with the official launch of its <strong>Summer 2025 Leather Collection</strong>. From timeless formal silhouettes to modern casual statements, the brand offers a full spectrum of premium footwear rooted in Russian elegance, built for the world.</p>
+
+    <h4>1. A Legacy of Russian Craftsmanship</h4>
+    <p>For decades, Mulgati has stood at the intersection of classic design and meticulous handcrafting. Born from a lineage of master shoemakers in Russia, the brand embodies precision, discipline, and timeless appeal. Every shoe is more than a product — it’s a manifestation of cultural heritage, patience, and artisan mastery.</p>
+    
+    <p>Through refined materials such as full-grain leather, Italian cowhide, and advanced linings for climate adaptability, Mulgati’s approach is both luxurious and functional. Each pair is designed to elevate the everyday — whether you’re leading a boardroom meeting, traveling abroad, or enjoying a quiet afternoon stroll.</p>
+
+    <h4>2. Summer 2025 Collection Highlights</h4>
+    <p>This season, the Mulgati lineup is a celebration of contrast: heritage meets minimalism, tradition meets comfort. The collection includes:</p>
+    <ul>
+        <li><strong>Oxford Dress Shoes:</strong> Carefully stitched, classically shaped shoes made for formal statements and professional prestige.</li>
+        <li><strong>Leather Loafers:</strong> Lightweight and versatile, offering effortless style from the office to after-hours gatherings.</li>
+        <li><strong>Low-Top Sneakers:</strong> Designed with full-grain leather and cushioned insoles for contemporary mobility.</li>
+        <li><strong>Premium Summer Sandals:</strong> Open, structured, and breathable – created for warm climates without compromising class.</li>
+        <li><strong>Matching Leather Accessories:</strong> Hand-finished belts and wallets to complete the gentleman’s set.</li>
+    </ul>
+
+    <div style=\"text-align:center; margin: 20px 0;\">
+        <img src=\"https://scontent.fhan14-5.fna.fbcdn.net/v/t39.30808-6/506350102_696427833169762_8161442723697433760_n.jpg?_nc_cat=104&ccb=1-7&_nc_sid=127cfc&_nc_ohc=u1dreVKXUPEQ7kNvwGn10fW&_nc_oc=AdlsdTeZh90lOzsE2Oa1XOlAUzO1yZVrokczIJHFg2x-KgMlo-fVqvxqYXZAkdQ4HmE&_nc_zt=23&_nc_ht=scontent.fhan14-5.fna&_nc_gid=9yKdCE3esTZYpHCxPGrcVQ&oh=00_AfT-MOa_bacTNt5bfYSzeARASZ-HkrkFiMHnylWHUi2sSw&oe=6873C64C\" style=\"width:600px; height:auto;\">
+    </div>
+
+    <h4>3. For the Modern Gentleman</h4>
+    <p>Mulgati speaks to a new generation of men — those who value heritage but move with modern purpose. Whether you are stepping into the spotlight or staying grounded in subtlety, your choice of footwear should reflect not just how you dress, but how you live.</p>
+
+    <p>This collection is designed for those who appreciate authenticity. Every curve, stitch, and silhouette is intentional. The experience of wearing Mulgati is as refined as its aesthetic: stable heel counters, arch-supporting footbeds, and moisture-adaptable linings ensure comfort all day long.</p>
+
+    <h4>4. Available Nationwide</h4>
+    <p>Vietnamese customers can now discover Mulgati through our official showroom network and online platform mulgati.vn Whether you prefer the convenience of e-commerce or the charm of a personal fitting, Mulgati’s team is ready to assist with tailored recommendations and expert guidance.</p>
+    
+    <p>Each boutique reflects our brand’s commitment to excellence — with modern interiors, private lounges, and highly trained stylists ready to walk you through every detail, from sole to lace.</p>
+
+    <h4>5. The Philosophy Behind Mulgati</h4>
+    <p>Luxury, for Mulgati, is not loud — it’s deliberate. It’s in the grain of the leather, the weight of the stitching, and the confidence it gives you when you put them on. We don’t chase trends; we craft timeless essentials that remain relevant year after year. Because class never expires.</p>
+
+    <h4>6. Join the Journey</h4>
+    <p>Step into a world where footwear becomes identity. Join a generation of men who walk with purpose, style, and distinction. With Mulgati, you don’t just wear shoes — you wear legacy.</p>
+
+    <p>Visit us at mulgati.vn or follow our official pages to stay updated on exclusive releases, behind-the-scenes stories, and more. We invite you to experience Mulgati — the Russian standard of elegance, now handcrafted for Vietnam.</p>',
+    'https://lnk.ink/te4mB'
+),
+
+(
+    'Experience Russian Precision: Inside Mulgati’s Summer 2025 Leather Showcase in Vietnam',
+    'mulgati-summer-2025-vietnam-expansion',
+    'Heritage. Elegance. Purpose. Mulgati opens a new chapter in Vietnam with its timeless Summer 2025 collection, redefining luxury for the modern man.',
+    '
+    <p><strong>Mulgati</strong> — a name long held in esteem across Russia and Eastern Europe — now carves its place into Vietnam’s premium fashion landscape. With the launch of its <strong>Summer 2025 Leather Collection</strong>, the brand brings with it more than a catalogue of refined footwear. It brings a way of life. Let us take you through the seven pillars that define the Mulgati experience.</p>
+
+    <h4>1. A Heritage Forged in Discipline</h4>
+    <p>Since its foundation in the workshops of St. Petersburg, Mulgati has stood for discipline, quiet power, and understated confidence. Its early collections served dignitaries, scholars, and executives across the Russian Federation. Today, those same principles of structure, integrity, and timeless form carry over into every product — now presented for discerning Vietnamese gentlemen.</p>
+
+    <p>The brand’s motto is not spoken loudly — it’s lived through the details: the double-stitched soles, the grain alignment of each hide, the measured curvature of each last.</p>
+
+    <h4>2. Design That Moves With You</h4>
+    <p>Each silhouette in the Summer 2025 Collection is created with movement in mind. From urban footpaths to boardroom floors, Mulgati designs are fluid, adaptable, and stable. Oxford shoes feature breathable linings for tropical climates. Loafers incorporate lightweight construction for agility without compromising structure. Leather sneakers are cushioned yet refined, allowing wearers to shift from creative studios to social venues seamlessly.</p>
+
+    <div style="text-align:center; margin: 20px 0;">
+        <img src="https://scontent.fhan14-1.fna.fbcdn.net/v/t39.30808-6/503703090_692014690277743_3458251276575163658_n.jpg?_nc_cat=105&ccb=1-7&_nc_sid=127cfc&_nc_ohc=PePqjQY8EBQQ7kNvwFj9Lau&_nc_oc=AdlzZM8-JROhInUSniWFdhenEakXheeC5HZN7qqMDoYLm8TLZ3RFN0gFzvGXdj6Mr24&_nc_zt=23&_nc_ht=scontent.fhan14-1.fna&_nc_gid=4u71RMB7Ot9ho0AMHoHy7w&oh=00_AfRiD_U3CDv683EXiLWF0IP78WudJqW_PDw6bOp-R8-3DA&oe=6873C8D4" alt="Mulgati Boutique Vietnam" style="width:600px; height:auto;">
+    </div>
+
+    <h4>3. The Vietnam Boutique Philosophy</h4>
+    <p>More than a shop — Mulgati’s Vietnamese flagship is a cultural encounter. From its warm oak interiors to curated lighting and tailored staff uniforms, the space reflects Mulgati’s belief: elegance should feel intimate. Customers aren’t rushed — they’re hosted. Fitting sessions include refreshments, leather consultation, and walk testing on natural flooring to ensure proper foot flex and fit.</p>
+
+    <p>The boutique in Hai Phong is only the beginning. Plans for Ho Chi Minh City and Hanoi are underway, each promising a unique design tied to the local architectural context but unified by global brand DNA.</p>
+
+    <h4>4. Collection Highlights</h4>
+    <ul>
+        <li><strong>Signature Oxfords:</strong> Premium full-grain leather, stitched cap-toe detailing, built on a stable stacked heel for posture support.</li>
+        <li><strong>Smart Loafers:</strong> Slip-on formality redefined, with hand-finished tassels and moc-stitched edges.</li>
+        <li><strong>Summer Sandals:</strong> Reinforced ankle straps, Italian rubber soles, minimal seams for ventilation — a resort essential.</li>
+        <li><strong>Mid-top Sneakers:</strong> Suede + leather hybrid, ideal for travel, creative workspaces, or high-street expression.</li>
+        <li><strong>Accessories:</strong> Matching belts, wallets, and card holders — each piece cut from the same hide lot as your shoes for tonal perfection.</li>
+    </ul>
+
+    <div style="text-align:center; margin: 20px 0;">
+        <img src="https://scontent.fhan14-4.fna.fbcdn.net/v/t39.30808-6/506066780_695831019896110_8436188565530088248_n.jpg?_nc_cat=107&ccb=1-7&_nc_sid=127cfc&_nc_ohc=SMEQmpo56HAQ7kNvwGzSNl_&_nc_oc=AdnL1ZzeBp8yL9BOKDUDgVV-u1fLYZPU15S1wDtadpWBZdVkOr_QA1bwqIRN9277pfw&_nc_zt=23&_nc_ht=scontent.fhan14-4.fna&_nc_gid=pZFLRHyyu-cUhPT1omFOEA&oh=00_AfRLkLPz2_OYWM-odTfdU-gaAjpLAWM7cQg0aST5ae4jVA&oe=6873B68C" alt="Mulgati Summer Product Display" style="width:600px; height:auto;">
+    </div>
+
+    <h4>5. Material Matters</h4>
+    <p>From Russian calfskin to Italian veg-tanned leather, every Mulgati product begins with material selection. Each hide is aged, inspected, and conditioned in-house. Dyeing follows a small-batch process, ensuring tonal richness that doesn’t fade with time. The outsoles — made with a blend of natural latex and compressed oak powder — are shock-absorbing yet elegant.</p>
+
+    <p>We believe the foundation of any product is the material. Which is why Mulgati works directly with tanneries — bypassing mass suppliers — to preserve transparency and traceability.</p>
+
+    <h4>6. A Brand That Speaks Without Shouting</h4>
+    <p>Mulgati doesn’t rely on celebrity endorsements or viral campaigns. Its authority is built in the quiet confidence of the men who wear it. Entrepreneurs. Architects. Artists. Diplomats. The brand philosophy is simple: fashion fades, but class endures.</p>
+
+    <div style="text-align:center; margin: 20px 0;">
+        <img src="https://scontent.fhan14-5.fna.fbcdn.net/v/t39.30808-6/506137803_696608899818322_2550123442072114851_n.jpg?_nc_cat=104&ccb=1-7&_nc_sid=127cfc&_nc_ohc=ImD9s6BwS78Q7kNvwEo0A0y&_nc_oc=Admc3fLDgy-9xP_aoO3Mi8tCdGWJJN9_1t7xnqyFwVMNZpjiDjrS6bnrsyFzzsAEHWI&_nc_zt=23&_nc_ht=scontent.fhan14-5.fna&_nc_gid=VwmHWv_enPCZmf3YiiZQNw&oh=00_AfQATyh6KNCFt-VzQ-9M-lw5H-SkhjCeROaglfDukiBVqw&oe=6873A6EC" alt="Mulgati Leather Crafting Philosophy" style="width:600px; height:auto;">
+    </div>
+
+    <h4>7. Your Invitation to Join the Journey</h4>
+    <p>The door is open. Whether you walk in through a physical boutique or land on <a href="https://mulgati.vn">mulgati.vn</a>, your Mulgati journey begins with intent. We invite you to explore footwear that’s designed to last, crafted with purpose, and worn with quiet pride.</p>
+
+    <p>This isn’t just another pair of shoes. This is the pair you’ll remember years later. When your son asks about it. When you gift it forward. When it reminds you how style isn’t just about how we look — but how we stand.</p>',
+    'https://scontent.fhan14-4.fna.fbcdn.net/v/t39.30808-6/488018570_643828481763031_564560014957514868_n.jpg?_nc_cat=107&ccb=1-7&_nc_sid=86c6b0&_nc_ohc=128rSSS_VsMQ7kNvwHg9-9U&_nc_oc=AdmIiLW5IreOWE-ore4T4prA7S7zHe6ac0RFeAQdb6BUYkM9zEY2C2xa7EkLgzUU1Bg&_nc_zt=23&_nc_ht=scontent.fhan14-4.fna&_nc_gid=ZmF5XS0X00q40dnxcmsONQ&oh=00_AfT2kW-iy31eCtJea3a5PSKbuN8vXDAloOAMdJMJ56IEkg&oe=6877D383'
+),
+
+(
+    'CEO CLASS by Mulgati: Footwear for Men Who Lead',
+    'mulgati-ceo-class-collection-2025',
+    'Mulgati’s CEO CLASS Collection redefines executive presence — one handcrafted pair at a time. For visionaries who don’t just wear shoes, but wear stature.',
+    '
+    <p><strong>There are shoes.</strong> And then there is <strong>CEO CLASS</strong>.</p>
+    <p>Crafted for the accomplished man — the founder, the investor, the strategist — Mulgati’s latest limited edition, <strong>CEO CLASS</strong>, brings together elevated design, uncompromising materials, and quiet power. This is not a seasonal collection. This is a symbol. Below, we unveil the seven truths that define CEO CLASS — and the men it was made for.</p>
+
+    <h4>1. Built for the Boardroom, Forged in Purpose</h4>
+    <p>The CEO CLASS collection isn’t fashion for attention — it’s fashion for authority. Every curve, seam, and finish is designed with executive intent. The silhouettes are strong, angular yet fluid, built to project confidence without shouting. Slip on a pair and feel how balance meets strength, comfort meets command.</p>
+
+    <h4>2. Aesthetic That Speaks Strategy</h4>
+    <p>In a world that values first impressions, CEO CLASS offers a silent yet unmistakable message: I know where I’m going. From the all-black Italian leather to the gunmetal-tone horsebit detail, the design draws from tactical elegance — refined, minimal, unmistakable. It’s the kind of footwear that looks just as commanding in a C-suite as it does in a Bentley.</p>
+
+    <div style="text-align:center; margin: 20px 0;">
+        <img src="https://wtco.com.vn/wp-content/uploads/2022/04/bi-quyet-chon-giay-tay-nam-dep-cho-nguoi-lan-dau-mua-giay-hinh-4.png" alt="Mulgati CEO Class Limited Edition" style="width:600px; height:auto;">
+    </div>
+
+    <h4>3. Power is in the Details</h4>
+    <p>Each shoe in the collection is assembled by hand — not just for tradition, but for precision. The stitching follows a 2.5mm tolerance, ensuring structural integrity across seasons of wear. The soles are fused with shock-absorbent oak-tanned leather, layered over Italian natural rubber for silent steps and posture support.</p>
+
+    <ul>
+        <li><strong>Signature Finish:</strong> Black matte sheen that resists scuffs and reflects discipline.</li>
+        <li><strong>Custom Heel Engraving:</strong> Featuring the Mulgati monogram and CEO CLASS serial ID.</li>
+        <li><strong>Memory Fit Insole:</strong> Temperature-responsive for all-day boardroom comfort.</li>
+    </ul>
+
+    <h4>4. Limited in Number, Unlimited in Statement</h4>
+    <p>This is not mass production. The CEO CLASS collection is strictly limited to 1,000 pairs worldwide, each serialized and accompanied by a Certificate of Craftsmanship. Owning a pair isn’t just a purchase — it’s a signature of taste, belonging to an unspoken brotherhood of leaders who invest in permanence over noise.</p>
+
+    <h4>5. Designed with a Leader’s Lifestyle in Mind</h4>
+    <p>Whether stepping out of a private jet, entering an investor dinner, or commanding the stage at a summit — the CEO CLASS shoe adapts. The vamp is shaped for long meetings; the instep supports active schedules. And because executives don’t always walk on carpets, the outsole features a discreet anti-slip gradient to ensure silent control, even on marble or glass floors.</p>
+
+    <h4>6. Styling Beyond Fashion – It’s Armor</h4>
+    <p>For those who understand that style is not vanity, but readiness. Pair CEO CLASS with a tailored charcoal suit, a midnight cashmere roll-neck, or a crisp white shirt and silver cufflinks. Or go smart casual: pair it with selvedge jeans and an unstructured navy blazer. The common thread? Intention.</p>
+
+    <div style="text-align:center; margin: 20px 0;">
+        <img src="https://scontent.fhan14-5.fna.fbcdn.net/v/t39.30808-6/514706761_712737964872082_444930716341701249_n.jpg?_nc_cat=106&ccb=1-7&_nc_sid=127cfc&_nc_ohc=pBDDp8lbgh4Q7kNvwEtaFck&_nc_oc=AdlgSVb7IRqvEwlli2jy21Bgfe5TpRKcVBUtz-2cAoNEMfrP1t52FlcvL3B4ST9hfT0&_nc_zt=23&_nc_ht=scontent.fhan14-5.fna&_nc_gid=hdKCFYpeyqQmQ-4AhmkF6Q&oh=00_AfRBhsi05P_tYABi-NHr6gMpj_Gi00vuZVHO_I-qFsey5w&oe=6873B8DE" alt="Craftsmanship Philosophy" style="width:600px; height:auto;">
+    </div>
+
+    <h4>7. The Last Step is Yours</h4>
+    <p>The world sees your shoes before they hear your voice. What do yours say?</p>
+    <p>Join the CEO CLASS — not to show status, but to step into it. Limited pairs are now available exclusively at Mulgati flagship boutiques and online at mulgati. Elevate not just your wardrobe, but your walk.</p>',
+    'https://lnk.ink/qHsup'
+);
+
+
+
+
+INSERT INTO discount_codes (code, discount_type, discount_value, max_uses, used_count, min_order_amount, valid_from, valid_until)
+VALUES 
+('sale10', 'percent', 10, 100, 5, 3000000, '2025-06-01 00:00:00', '2025-12-01 23:59:59'),
+('sale12', 'percent', 12, 100, 5, 5000000, '2025-06-01 00:00:00', '2025-12-01 23:59:59'),
+('sale7', 'percent', 7, 100, 5, 1200000, '2025-06-01 00:00:00', '2025-6-20 23:59:59'),
+('freeship30', 'fixed', 30000, NULL, 0, 0, '2025-06-01 00:00:00', '2025-12-31 23:59:59'),
+('freeship50', 'fixed', 50000, NULL, 0, 0, '2025-06-01 00:00:00', '2025-6-20 23:59:59'),
+('se06303', 'percent', 99, 100, 5, 1000000, '2025-06-01 00:00:00', '2025-12-01 23:59:59');
+

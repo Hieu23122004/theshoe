@@ -34,13 +34,13 @@
         <p>With the philosophy of "putting customers at the heart of every activity," every Mulgati product is meticulously invested in, and the shopping experience as well as after-sales services will satisfy every customer.</p>
         <p>With a symbol of a faceted diamond stylized from the letters M (Manners) - G (Gentleman) - T (Timeless), these are also the three qualities every true gentleman aspires to—strength, power, and class.</p>
         <div class="text-center my-4">
-          <img src="https://scontent.fhan14-2.fna.fbcdn.net/v/t39.30808-6/472727534_581506751315511_4563420414291115545_n.jpg?_nc_cat=100&ccb=1-7&_nc_sid=cc71e4&_nc_ohc=DJyj8rlfZ1oQ7kNvwGl3-a6&_nc_oc=AdkQVjv-wOgOQtIvbMgDoB1f39Di6K_hGpQU9t15iMxzm0j13rczE7elsXn9frxeBI4&_nc_zt=23&_nc_ht=scontent.fhan14-2.fna&_nc_gid=CjeOuiOga7VrK50Z0GaAuw&oh=00_AfQCjXALuRRD-dSDxicZRPC-uwjtxdxS4QlN6tPwNImPbQ&oe=6871852B" alt="Mulgati Store" class="img-fluid rounded shadow-sm" style="max-width:600px;">
+          <img src="/assets/images//access1.jpg" alt="Mulgati Store" class="img-fluid rounded shadow-sm" style="max-width:800px;">
         </div>
         <h2 class="intro-section-title mt-4">What makes Mulgati products different?</h2>
         <p>Throughout its development, Mulgati has focused mainly on premium leather shoes, constantly exploring, learning, and researching to bring customers the best quality products. Every pair of Mulgati leather shoes is made from 100% genuine leather with meticulous attention to every stitch.</p>
         <p>That's why the leather shoes here have a natural shine, are sturdy, and remain beautiful over time. With high-quality materials and the skillful hands of experienced craftsmen, the final products not only meet quality standards but also fit the feet of Vietnamese people.</p>
         <div class="text-center my-4">
-          <img src="https://scontent.fhan14-4.fna.fbcdn.net/v/t39.30808-6/450533759_459528903526324_5894021628706207037_n.png?stp=dst-jpg_tt6&_nc_cat=107&ccb=1-7&_nc_sid=86c6b0&_nc_ohc=RxzpbO2tAzcQ7kNvwGteQni&_nc_oc=AdnwhMLJW9wJ0Hsm08yhadDoMmTPlSU5hWcvMp3_6BZpWGhR4xxtIB5l6W_9IX1bd-g&_nc_zt=23&_nc_ht=scontent.fhan14-4.fna&_nc_gid=GRXv3uzOPxywza2bmzvBdw&oh=00_AfQxHQCunz7_9yb2CUFEpPUh0s2b-NksJ93FMfDESnBRlg&oe=687165E3" alt="Mulgati Men Shoes" class="img-fluid rounded shadow-sm" style="max-width:600px;">
+          <img src="/assets/images/type2.jpeg" style="max-width:800px;">
         </div>
         <h2 class="intro-section-title mt-4">Brand Vision</h2>
         <p>Mulgati aims to become the number one leather shoe brand in Vietnam, offering the best quality products with the style of an elegant, luxurious, and trendy gentleman.</p>
