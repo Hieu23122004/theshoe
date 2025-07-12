@@ -57,10 +57,12 @@ $selected_category = isset($_GET['category']) ? (int)$_GET['category'] : 0;
 
 // Lấy danh sách categories có parent_id = 2
 $filter_categories = [];
+$category_ids = [];
 $cat_filter_result = $conn->query("SELECT category_id, name FROM categories WHERE parent_id = 2");
 if ($cat_filter_result) {
     while ($cat = $cat_filter_result->fetch_assoc()) {
         $filter_categories[] = $cat;
+        $category_ids[] = (int)$cat['category_id'];
     }
 }
 
@@ -89,12 +91,12 @@ $current_page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $offset = ($current_page - 1) * $items_per_page;
 
 // Base query for counting total products
-if ($selected_category && in_array($selected_category, [9, 10, 11])) {
-    // Nếu chọn 1 trong 3 loại con của Footwear thì chỉ lấy sản phẩm thuộc loại đó
+if ($selected_category && in_array($selected_category, $category_ids)) {
+    // Nếu chọn 1 trong các loại con của parent_id=2 thì chỉ lấy sản phẩm thuộc loại đó
     $count_query = "SELECT COUNT(*) as total FROM products WHERE category_id = $selected_category";
     $query = "SELECT * FROM products WHERE category_id = $selected_category";
 } else {
-    // Mặc định: lấy tất cả sản phẩm có danh mục cha là Footwear (id=1)
+    // Mặc định: lấy tất cả sản phẩm có danh mục cha là parent_id=2
     $count_query = "SELECT COUNT(*) as total FROM products p JOIN categories c ON p.category_id = c.category_id WHERE c.parent_id = 2";
     $query = "SELECT p.* FROM products p JOIN categories c ON p.category_id = c.category_id WHERE c.parent_id = 2";
 }

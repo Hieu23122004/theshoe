@@ -809,7 +809,7 @@ window.addEventListener('DOMContentLoaded', function() {
     if (selected.length === 0) {
         if (mainContent) mainContent.style.display = 'none';
         emptyDiv.style.display = '';
-        emptyDiv.innerHTML = '<i class="fa fa-shopping-cart" style="font-size:48px;color:#bbb;"></i><br>Không có sản phẩm nào để thanh toán!';
+        emptyDiv.innerHTML = '';
         return;
     } else {
         if (mainContent) mainContent.style.display = '';
@@ -1049,64 +1049,5 @@ document.getElementById('confirmOrderBtn').addEventListener('click', function(e)
             });
             return false;
         }
-    }
-});
-
-document.addEventListener('DOMContentLoaded', function() {
-    var emailInput = document.getElementById('emailInput');
-    var emailError = document.getElementById('emailError');
-    var provinceSelect = document.getElementById('provinceSelect');
-    var districtSelect = document.getElementById('districtSelect');
-    var wardSelect = document.getElementById('wardSelect');
-    function setAddressSelectsDisabled(disabled) {
-        if (provinceSelect) provinceSelect.disabled = disabled;
-        if (districtSelect) districtSelect.disabled = true;
-        if (wardSelect) wardSelect.disabled = true;
-        if (disabled) {
-            if (provinceSelect) provinceSelect.value = '';
-            if (districtSelect) districtSelect.value = '';
-            if (wardSelect) wardSelect.value = '';
-        }
-    }
-    if (emailInput && emailError) {
-        // Kiểm tra lần đầu khi load
-        if (!emailInput.validity.valid) {
-            emailError.style.display = 'block';
-            emailInput.classList.add('is-invalid');
-            setAddressSelectsDisabled(true);
-        } else {
-            emailError.style.display = 'none';
-            emailInput.classList.remove('is-invalid');
-            setAddressSelectsDisabled(false);
-        }
-        emailInput.addEventListener('input', function() {
-            if (emailInput.validity.valid) {
-                emailError.style.display = 'none';
-                emailInput.classList.remove('is-invalid');
-                setAddressSelectsDisabled(false);
-            } else {
-                emailError.style.display = 'block';
-                emailInput.classList.add('is-invalid');
-                setAddressSelectsDisabled(true);
-            }
-        });
-    }
-});
-// --- Thêm đoạn này để cập nhật tên ngân hàng vào input ẩn ---
-document.addEventListener('DOMContentLoaded', function() {
-    var bankSelect = document.getElementById('bankSelect');
-    var bankNameInput = document.getElementById('bankNameInput');
-    if (bankSelect && bankNameInput) {
-        bankSelect.addEventListener('change', function() {
-            let bankName = '';
-            switch (bankSelect.value) {
-                case 'vcb': bankName = 'Vietcombank'; break;
-                case 'tcb': bankName = 'Techcombank'; break;
-                case 'mb': bankName = 'MB Bank'; break;
-                case 'bidv': bankName = 'BIDV'; break;
-                default: bankName = '';
-            }
-            bankNameInput.value = bankName;
-        });
     }
 });

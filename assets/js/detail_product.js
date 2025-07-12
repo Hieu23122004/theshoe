@@ -143,4 +143,12 @@ document.getElementById('fundiinLearnMore').addEventListener('click', function (
   }, 100);
 });
 
+// --- Hiển thị tự động popup Fundiin khi vào trang ---
+window.addEventListener('DOMContentLoaded', function() {
+  const fundiinBtn = document.getElementById('fundiinLearnMore');
+  if (fundiinBtn) {
+    fundiinBtn.click();
+  }
+});
+
 
