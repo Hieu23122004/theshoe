@@ -91,6 +91,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
+// Nếu có checkout_selected trong localStorage (qua JS), ưu tiên render sản phẩm đó
+$checkout_selected = [];
+if (isset($_COOKIE['checkout_selected'])) {
+    $checkout_selected = json_decode($_COOKIE['checkout_selected'], true);
+}
+if ($checkout_selected && is_array($checkout_selected)) {
+    $cart = [];
+    foreach ($checkout_selected as $item) {
+        $cart[] = [
+            'product_id' => $item['pid'],
+            'color' => $item['color'],
+            'size' => $item['size'],
+            'quantity' => $item['qty'] ?? 1
+        ];
+    }
+}
+
 // Lấy giỏ hàng từ session hoặc DB (chỉ render nếu KHÔNG có checkout_selected)
 $cart = [];
 if (isset($_SESSION['user_id'])) {
@@ -133,13 +150,15 @@ foreach ($cart as $item) {
 }
 $shipping_fee = 0; // Có thể tính động sau
 $total = $subtotal + $shipping_fee;
+// Nếu không có sản phẩm nào để thanh toán thì redirect về trang chủ
+if (empty($cart)) {
+    header('Location: /pages/home.php');
+    exit;
+}
 include '../includes/header.php';
 ?>
 <!-- Thêm div thông báo khi không có sản phẩm được chọn -->
-<div id="checkout-empty-message" style="display:none;text-align:center;margin:120px auto;font-size:1.2rem;color:#888;">
-    <i class="fa fa-shopping-cart" style="font-size:48px;color:#bbb;"></i><br>
-    Không có sản phẩm nào để thanh toán!
-</div>
+
 <div class="container-fluid" style="margin-top:20px;padding:0;">
     <div class="row g-0 bg-white" style="min-height:100vh;">
         <div class="col-md-7 p-5" style="min-height:100vh;">
@@ -163,7 +182,8 @@ include '../includes/header.php';
                 </div>
                 <div class="row g-2 mb-2">
                     <div class="col-6">
-                        <input type="email" class="form-control" name="email" placeholder="Email" required value="<?php echo htmlspecialchars($user_info['email']); ?>">
+                        <input type="email" class="form-control" name="email" id="emailInput" placeholder="Email" required pattern="^[^@\s]+@[^@\s]+\.[^@\s]+$" value="<?php echo htmlspecialchars($user_info['email']); ?>">
+                        <div class="invalid-feedback" id="emailError" style="display:none;">Invalid email</div>
                     </div>
                     <div class="col-6">
                         <input type="tel" class="form-control" name="phone" placeholder="Số điện thoại" required value="<?php echo htmlspecialchars($user_info['phone']); ?>">
@@ -291,32 +311,12 @@ include '../includes/header.php';
         </div>
     </div>
 </div>
-<?php include '../includes/footer.php'; ?>
+
 <?php include '../includes/truck.php'; ?>
+<?php include '../includes/footer.php'; ?>
 <?php include '../includes/floating_contact.php'; ?>
 <script src="/assets/js/auto_logout.js"></script>
 <script src="/assets/js/checkout.js"></script>
 <!-- Bootstrap 5 JS Bundle (with Popper) -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-// --- Thêm đoạn này để cập nhật tên ngân hàng vào input ẩn ---
-document.addEventListener('DOMContentLoaded', function() {
-    var bankSelect = document.getElementById('bankSelect');
-    var bankNameInput = document.getElementById('bankNameInput');
-    if (bankSelect && bankNameInput) {
-        bankSelect.addEventListener('change', function() {
-            let bankName = '';
-            switch (bankSelect.value) {
-                case 'vcb': bankName = 'Vietcombank'; break;
-                case 'tcb': bankName = 'Techcombank'; break;
-                case 'mb': bankName = 'MB Bank'; break;
-                case 'bidv': bankName = 'BIDV'; break;
-                default: bankName = '';
-            }
-            bankNameInput.value = bankName;
-        });
-    }
-});
-</script>
-<!-- Bootstrap 5 CSS -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
