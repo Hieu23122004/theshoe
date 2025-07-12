@@ -239,7 +239,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 colorSelect.selectedIndex = 0;
                 colorSelect.innerHTML = '<option value="all">All Color</option>';
                 const catVal = select.value;
-                fetch(`/public/get_colors_accessory.php?category=${catVal}`)
+                fetch(`/public/get_colors.php?category=${catVal}`)
                     .then(r => r.json())
                     .then(data => {
                         if (data.success && Array.isArray(data.colors)) {

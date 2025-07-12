@@ -63,6 +63,8 @@ if ($cat_filter_result) {
         $filter_categories[] = $cat;
     }
 }
+// Lấy mảng category_id con của parent_id = 3
+$child_category_ids = array_column($filter_categories, 'category_id');
 
 // Lấy danh sách màu sắc có trong category đang chọn
 $color_options = [];
@@ -89,8 +91,8 @@ $current_page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $offset = ($current_page - 1) * $items_per_page;
 
 // Base query for counting total products
-if ($selected_category && in_array($selected_category, [9, 10, 11])) {
-    // Nếu chọn 1 trong 3 loại con của Footwear thì chỉ lấy sản phẩm thuộc loại đó
+if ($selected_category && in_array($selected_category, $child_category_ids)) {
+    // Nếu chọn 1 trong các loại con của parent_id = 3 thì chỉ lấy sản phẩm thuộc loại đó
     $count_query = "SELECT COUNT(*) as total FROM products WHERE category_id = $selected_category";
     $query = "SELECT * FROM products WHERE category_id = $selected_category";
 } else {

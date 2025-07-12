@@ -194,13 +194,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Xóa khỏi popup
                     const item = btn.closest('.d-flex');
                     if (item) item.remove();
-                    // Cập nhật badge header
+                   
                     fetch('/public/get_favorite_count.php')
                         .then(r => r.json())
                         .then(data => {
                             if (data.success && typeof updateFavoriteBadge === 'function') updateFavoriteBadge(data.count);
                         });
-                    // Cập nhật icon tim trên danh sách sản phẩm (nếu có)
+                  
                     document.querySelectorAll('.favorite-btn').forEach(function(favBtn) {
                         if (favBtn.onclick && favBtn.onclick.toString().includes(pid)) {
                             const icon = favBtn.querySelector('i');
@@ -223,23 +223,21 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Đảm bảo khi chọn category sẽ lọc ngay lập tức
-    // (thay vì onchange="filterProducts()" trên select, dùng event listener để tránh reload trang)
     const form = document.getElementById('filterForm');
     if (form) {
-        // Bỏ onchange="filterProducts()" trên select category và color trong HTML (chỉ dùng JS)
+    
         form.querySelectorAll('select[name="category"]').forEach(function(select) {
             select.onchange = null;
             select.addEventListener('change', function() {
-                // Reset các filter khác về mặc định khi đổi category
+              
                 form.querySelector('select[name="sort"]').selectedIndex = 0;
                 form.querySelector('select[name="price"]').selectedIndex = 0;
-                // Lấy lại màu động theo category
+               
                 const colorSelect = form.querySelector('select[name="color"]');
                 colorSelect.selectedIndex = 0;
                 colorSelect.innerHTML = '<option value="all">All Color</option>';
                 const catVal = select.value;
-                fetch(`/public/get_colors_accessory.php?category=${catVal}`)
+                fetch(`/public/get_colors.php?category=${catVal}`)
                     .then(r => r.json())
                     .then(data => {
                         if (data.success && Array.isArray(data.colors)) {

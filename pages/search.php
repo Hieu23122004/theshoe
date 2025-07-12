@@ -139,8 +139,14 @@ input.addEventListener('input', function() {
         fetch('/public/search_suggest.php?q=' + encodeURIComponent(val))
             .then(res => res.json())
             .then(data => {
-                if (data.length > 0) {
-                    suggestions.innerHTML = data.map(item => `<button type="button" class="list-group-item list-group-item-action" data-name="${item.name.replace(/"/g, '&quot;')}"><img src="${item.image_url}" style="width:60px;height:60px;object-fit:cover;margin-right:8px;">${item.name}</button>`).join('');
+                if (data.success && Array.isArray(data.suggestions) && data.suggestions.length > 0) {
+                    suggestions.innerHTML = data.suggestions.map(item => `
+                        <button type="button" class="list-group-item list-group-item-action d-flex align-items-center" data-name="${item.name.replace(/"/g, '&quot;')}">
+                            <img src="${item.image_url}" style="width:60px;height:60px;object-fit:cover;margin-right:10px;border-radius:6px;">
+                            <span style="flex:1;text-align:left;">${item.name}</span>
+                            ${item.discount_percent > 0 ? `<span class="badge bg-danger ms-2">-${item.discount_percent}%</span>` : ''}
+                        </button>
+                    `).join('');
                     suggestions.style.display = 'block';
                 } else {
                     suggestions.innerHTML = '';
