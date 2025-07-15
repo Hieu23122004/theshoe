@@ -159,3 +159,110 @@
   .promotion-card { width: 100%; min-width: unset; }
   .promotion-img-fixed { max-width: 100%; }
 }
+
+#imagePreview {
+    max-width: 100%;
+    margin-top: 10px;
+}
+
+.image-preview-container {
+    position: relative;
+    display: inline-block;
+    border: 2px solid #ddd;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #f8f9fa;
+    max-width: 100%;
+    width: 100px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.image-preview-container img {
+    width: 70px;
+    height: 70px;
+    object-fit: cover;
+    display: block;
+}
+
+.image-remove-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 10;
+    height: 10px;
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    transition: all 0.2s ease;
+}
+
+.image-remove-btn:hover {
+    background: #c82333;
+    transform: scale(1.1);
+}
+
+.image-info {
+    padding: 12px;
+    font-size: 13px;
+    color: #6c757d;
+    border-top: 1px solid #ddd;
+    background: white;
+    font-weight: 500;
+}
+
+.loading-placeholder {
+    padding: 30px;
+    text-align: center;
+    color: #6c757d;
+    font-style: italic;
+    border: 2px dashed #ddd;
+    border-radius: 12px;
+    background: #f8f9fa;
+    font-size: 14px;
+}
+
+.error-placeholder {
+    padding: 30px;
+    text-align: center;
+    color: #dc3545;
+    border: 2px dashed #dc3545;
+    border-radius: 12px;
+    background: #f8f9fa;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .image-preview-container img {
+        height: 250px;
+    }
+    
+    .image-remove-btn {
+        width: 28px;
+        height: 28px;
+        font-size: 14px;
+        top: 8px;
+        right: 8px;
+    }
+}
+
+@media (max-width: 576px) {
+    .image-preview-container img {
+        height: 200px;
+    }
+    
+    .loading-placeholder,
+    .error-placeholder {
+        padding: 20px;
+        font-size: 13px;
+    }
+}
