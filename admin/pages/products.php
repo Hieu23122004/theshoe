@@ -1,8 +1,11 @@
 <?php
-// Display errors during development
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
+
+// Include auth first (which handles session_start())
+include '../../includes/auth.php';
+include '../../includes/database.php';
 
 // Function to ensure proper JSON encoding of colors
 function getColorOptionsJson() {
@@ -17,10 +20,6 @@ function showAlert($msg, $type = 'success')
             </div>";
 }
 
-// Start session
-session_start();
-
-include '../../includes/database.php';
 include '../../includes/header_ad.php';
 
 $hasError = false;
