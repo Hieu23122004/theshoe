@@ -94,67 +94,109 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['login'])) {
                     $_SESSION['last_activity'] = time(); // lưu thời gian hoạt động cuối
                     $message = "Login successful!";
 
-                    // --- Đồng bộ cart session vào database sau khi đăng nhập ---
-                    if (isset($_SESSION['cart']) && !empty($_SESSION['cart'])) {
-                        $user_id = $user['user_id'];
-                        foreach ($_SESSION['cart'] as $product_id => $item) {
-                            $color = $item['color'] ?? '';
-                            $size = $item['size'] ?? '';
-                            $quantity = (int)($item['quantity'] ?? 1);
-                            // Kiểm tra đã có sản phẩm này trong cart_items chưa
-                            $stmt_check = $conn->prepare("SELECT quantity FROM cart_items WHERE user_id = ? AND product_id = ? AND color = ? AND size = ?");
-                            $stmt_check->bind_param("iiss", $user_id, $product_id, $color, $size);
-                            $stmt_check->execute();
-                            $result_check = $stmt_check->get_result();
-                            if ($result_check && $result_check->num_rows > 0) {
-                                // Đã có, cộng dồn số lượng
-                                $row = $result_check->fetch_assoc();
-                                $new_qty = $row['quantity'] + $quantity;
-                                $stmt_update = $conn->prepare("UPDATE cart_items SET quantity = ? WHERE user_id = ? AND product_id = ? AND color = ? AND size = ?");
-                                $stmt_update->bind_param("iiiss", $new_qty, $user_id, $product_id, $color, $size);
-                                $stmt_update->execute();
-                                $stmt_update->close();
-                            } else {
-                                // Chưa có, insert mới
-                                $stmt_insert = $conn->prepare("INSERT INTO cart_items (user_id, product_id, color, size, quantity) VALUES (?, ?, ?, ?, ?)");
-                                $stmt_insert->bind_param("iissi", $user_id, $product_id, $color, $size, $quantity);
-                                $stmt_insert->execute();
-                                $stmt_insert->close();
+                    // --- Đồng bộ cart session và favorites vào database sau khi đăng nhập ---
+                    try {
+                        // Đồng bộ cart session vào database
+                        if (isset($_SESSION['cart']) && !empty($_SESSION['cart'])) {
+                            $user_id = $user['user_id'];
+                            foreach ($_SESSION['cart'] as $product_id => $item) {
+                                // Kiểm tra product_id có tồn tại trong database không
+                                $stmt_product_check = $conn->prepare("SELECT product_id FROM products WHERE product_id = ?");
+                                $stmt_product_check->bind_param("i", $product_id);
+                                $stmt_product_check->execute();
+                                $product_exists = $stmt_product_check->get_result();
+                                $stmt_product_check->close();
+                                
+                                // Chỉ xử lý nếu product_id tồn tại
+                                if ($product_exists && $product_exists->num_rows > 0) {
+                                    $color = $item['color'] ?? '';
+                                    $size = $item['size'] ?? '';
+                                    $quantity = (int)($item['quantity'] ?? 1);
+                                    
+                                    // Kiểm tra đã có sản phẩm này trong cart_items chưa
+                                    $stmt_check = $conn->prepare("SELECT quantity FROM cart_items WHERE user_id = ? AND product_id = ? AND color = ? AND size = ?");
+                                    $stmt_check->bind_param("iiss", $user_id, $product_id, $color, $size);
+                                    $stmt_check->execute();
+                                    $result_check = $stmt_check->get_result();
+                                    
+                                    if ($result_check && $result_check->num_rows > 0) {
+                                        // Đã có, cộng dồn số lượng
+                                        $row = $result_check->fetch_assoc();
+                                        $new_qty = $row['quantity'] + $quantity;
+                                        $stmt_update = $conn->prepare("UPDATE cart_items SET quantity = ? WHERE user_id = ? AND product_id = ? AND color = ? AND size = ?");
+                                        $stmt_update->bind_param("iiiss", $new_qty, $user_id, $product_id, $color, $size);
+                                        $stmt_update->execute();
+                                        $stmt_update->close();
+                                    } else {
+                                        // Chưa có, insert mới
+                                        $stmt_insert = $conn->prepare("INSERT INTO cart_items (user_id, product_id, color, size, quantity) VALUES (?, ?, ?, ?, ?)");
+                                        $stmt_insert->bind_param("iissi", $user_id, $product_id, $color, $size, $quantity);
+                                        $stmt_insert->execute();
+                                        $stmt_insert->close();
+                                    }
+                                    $stmt_check->close();
+                                }
+                                // Nếu product không tồn tại, bỏ qua item này (không báo lỗi)
                             }
-                            $stmt_check->close();
+                            // Xóa cart session sau khi đồng bộ
+                            unset($_SESSION['cart']);
                         }
-                        // Xóa cart session sau khi đồng bộ (tùy chọn)
-                        unset($_SESSION['cart']);
-                    }
-                    // --- Đồng bộ sản phẩm yêu thích nếu có pending_favorite hoặc session favorites ---
-                    $user_id = $user['user_id'];
-                    $favorites_to_add = [];
-                    if (isset($_SESSION['pending_favorite']) && $_SESSION['pending_favorite']) {
-                        $favorites_to_add[] = (int)$_SESSION['pending_favorite'];
-                        unset($_SESSION['pending_favorite']);
-                    }
-                    if (isset($_SESSION['favorites']) && is_array($_SESSION['favorites'])) {
-                        foreach ($_SESSION['favorites'] as $pid) {
-                            $favorites_to_add[] = (int)$pid;
+                        
+                        // Đồng bộ sản phẩm yêu thích
+                        $user_id = $user['user_id'];
+                        $favorites_to_add = [];
+                        if (isset($_SESSION['pending_favorite']) && $_SESSION['pending_favorite']) {
+                            $favorites_to_add[] = (int)$_SESSION['pending_favorite'];
+                            unset($_SESSION['pending_favorite']);
                         }
-                        unset($_SESSION['favorites']);
-                    }
-                    // Loại bỏ trùng lặp
-                    $favorites_to_add = array_unique($favorites_to_add);
-                    foreach ($favorites_to_add as $fav_pid) {
-                        // Kiểm tra đã có chưa
-                        $stmt = $conn->prepare("SELECT 1 FROM favorites WHERE user_id = ? AND product_id = ?");
-                        $stmt->bind_param("ii", $user_id, $fav_pid);
-                        $stmt->execute();
-                        $stmt->store_result();
-                        if ($stmt->num_rows == 0) {
-                            $stmt_insert = $conn->prepare("INSERT INTO favorites (user_id, product_id) VALUES (?, ?)");
-                            $stmt_insert->bind_param("ii", $user_id, $fav_pid);
-                            $stmt_insert->execute();
-                            $stmt_insert->close();
+                        if (isset($_SESSION['favorites']) && is_array($_SESSION['favorites'])) {
+                            foreach ($_SESSION['favorites'] as $pid) {
+                                $favorites_to_add[] = (int)$pid;
+                            }
+                            unset($_SESSION['favorites']);
                         }
-                        $stmt->close();
+                        // Loại bỏ trùng lặp
+                        $favorites_to_add = array_unique($favorites_to_add);
+                        foreach ($favorites_to_add as $fav_pid) {
+                            // Kiểm tra product_id có tồn tại trong database không
+                            $stmt_product_check = $conn->prepare("SELECT product_id FROM products WHERE product_id = ?");
+                            $stmt_product_check->bind_param("i", $fav_pid);
+                            $stmt_product_check->execute();
+                            $product_exists = $stmt_product_check->get_result();
+                            $stmt_product_check->close();
+                            
+                            // Chỉ xử lý nếu product_id tồn tại
+                            if ($product_exists && $product_exists->num_rows > 0) {
+                                // Kiểm tra đã có chưa
+                                $stmt = $conn->prepare("SELECT 1 FROM favorites WHERE user_id = ? AND product_id = ?");
+                                $stmt->bind_param("ii", $user_id, $fav_pid);
+                                $stmt->execute();
+                                $stmt->store_result();
+                                if ($stmt->num_rows == 0) {
+                                    $stmt_insert = $conn->prepare("INSERT INTO favorites (user_id, product_id) VALUES (?, ?)");
+                                    $stmt_insert->bind_param("ii", $user_id, $fav_pid);
+                                    $stmt_insert->execute();
+                                    $stmt_insert->close();
+                                }
+                                $stmt->close();
+                            }
+                            // Nếu product không tồn tại, bỏ qua item này
+                        }
+                    } catch (Exception $sync_error) {
+                        // Ghi log lỗi nhưng không ngăn đăng nhập thành công
+                        error_log("Cart/Favorites sync error for user " . $user['user_id'] . ": " . $sync_error->getMessage());
                     }
+
+                    // Role-based redirection
+                    if ($user['role'] === 'admin') {
+                        $redirect = '../admin/pages/dashboard.php'; // Fixed relative path for admin
+                    } else {
+                        // Customer goes to home or original redirect
+                        if ($redirect === '/pages/home.php' || strpos($redirect, 'login.php') !== false) {
+                            $redirect = '/pages/home.php';
+                        }
+                    }
+
                     // Nếu redirect về checkout thì reload lại để JS lấy localStorage (tránh autofill từ trình duyệt)
                     if (strpos($redirect, 'checkout.php') !== false) {
                         echo "<script>window.location.replace('" . htmlspecialchars($redirect, ENT_QUOTES) . "');</script>";
@@ -214,7 +256,7 @@ if (isset($_GET['pending_favorite']) && is_numeric($_GET['pending_favorite'])) {
 }
 
 if (isset($_SESSION['user']) && isset($_SESSION['last_activity'])) {
-    if (time() - $_SESSION['last_activity'] > 900) { // 900s = 15 phút
+    if (time() - $_SESSION['last_activity'] > 30) { // 900s = 15 phút
         session_unset();
         session_destroy();
         session_start();
