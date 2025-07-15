@@ -14,7 +14,6 @@ $main_result = $conn->query($main_sql);
 <div class="container-fluid py-4 main-promotions-content" style="background:#fff;">
     <div class="row">
 
-
         <?php
 
         // Lấy tất cả bài báo mới nhất (để hiệu ứng chuyển tiếp hoạt động đúng)
@@ -60,7 +59,7 @@ $main_result = $conn->query($main_sql);
                         <img src="/assets/images/hom1.jpeg" class="d-block w-100" alt="Banner 1">
                     </div>
                     <div class="carousel-item">
-                        <img src="/assets/images/hom2.jpeg" class="d-block w-100" alt="Banner 2">
+                        <img src="/assets/images/hom1.jpeg" class="d-block w-100" alt="Banner 2">
                     </div>
                 </div>
             </div>
@@ -146,7 +145,7 @@ $main_result = $conn->query($main_sql);
                         <span class="follow-title mt-2" style="font-size:1.3rem;font-weight:700;">AND GET COUPON</span>
                     </div>
                     <div class="col-12 col-md-6 p-0">
-                        <img src="https://scontent.fhan14-2.fna.fbcdn.net/v/t39.30808-6/316293206_113733768226071_7477217734953569236_n.png?_nc_cat=111&ccb=1-7&_nc_sid=cc71e4&_nc_ohc=e-dFnh-4QQUQ7kNvwG4Ay-f&_nc_oc=Admiek7aYDNRdLVwykCByEahn95eQbfEgZTnP1DJF5XSptvO07H-7rwdo7iMfSVSz7I&_nc_zt=23&_nc_ht=scontent.fhan14-2.fna&_nc_gid=KvfDJsSNgRkLCfgOZ0nwfw&oh=00_AfSXno_xO4LwJyw-SijakudSM5EkDGQwrGdrkhl6TUOPMA&oe=68727AB5" alt="Mulgati Store" class="img-fluid w-100" style="max-height:320px;object-fit:cover;">
+                        <img src="/assets/images/qc.jpg" alt="Mulgati Store" class="img-fluid w-100" style="max-height:320px;object-fit:cover;">
                     </div>
                 </div>
             </div>
@@ -215,6 +214,7 @@ $main_result = $conn->query($main_sql);
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
         </html>
         <?php include '../includes/truck.php'; ?>
-        <?php include '../includes/footer.php'; ?>
+  
         <?php include '../includes/floating_contact.php'; ?>
         <script src="/assets/js/auto_logout.js"></script>
+        <?php include '../includes/footer.php'; ?>
