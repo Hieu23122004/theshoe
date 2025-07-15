@@ -79,5 +79,13 @@
             </div>
         </div>
 
-        <p>© By MULGATI – Russian-origin footwear brand.</p>
+        <p class="copyright-text">
+            <span class="highlight-word">©</span>
+            <span class="highlight-word">By</span>
+            <span class="highlight-word">MULGATI</span>
+            <span class="highlight-word">–</span>
+            <span class="highlight-word">Russian-origin</span>
+            <span class="highlight-word">footwear</span>
+            <span class="highlight-word">brand.</span>
+        </p>
     </footer>

@@ -146,9 +146,9 @@ footer {
 
 footer p {
   text-align: center;
-  margin-top: 25px;
   color: #555;
   font-size: 13px;
+  margin: 0;
 }
 
 /* Responsive */
@@ -214,4 +214,124 @@ footer p {
   width: 100%;
   height: 2px;
   background-color: rgba(0, 0, 0, 0.3);
+}
+
+  .truck-section {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .truck-item {
+    transition: all 0.3s ease;
+    position: relative;
+  }
+  
+  .truck-icon {
+    transition: all 0.4s ease;
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.1));
+  }
+  
+  /* Hiệu ứng riêng cho ảnh delivery - chuyển động ngang như xe giao hàng */
+  .delivery-icon {
+    animation: delivery-move 4s ease-in-out infinite;
+  }
+  
+  @keyframes delivery-move {
+    0%, 100% {
+      transform: translateX(0px);
+    }
+    25% {
+      transform: translateX(10px);
+    }
+    75% {
+      transform: translateX(-10px);
+    }
+  }
+  
+  /* Hiệu ứng riêng cho ảnh russian - xoay nhẹ như biểu tượng chất lượng */
+  .russian-icon {
+    animation: quality-rotate 3s ease-in-out infinite;
+  }
+  
+  @keyframes quality-rotate {
+    0%, 100% {
+      transform: rotate(0deg) scale(1);
+    }
+    50% {
+      transform: rotate(5deg) scale(1.1);
+    }
+  }
+  
+  /* Hiệu ứng riêng cho ảnh warranty - nhấp nháy như dấu kiểm bảo hành */
+  .warranty-icon {
+    animation: warranty-pulse 2.5s ease-in-out infinite;
+  }
+  
+  @keyframes warranty-pulse {
+    0%, 100% {
+      transform: scale(1);
+      filter: brightness(1);
+    }
+    50% {
+      transform: scale(1.15);
+      filter: brightness(1.2) drop-shadow(0 0 15px rgba(0,123,255,0.6));
+    }
+  }
+  
+  .truck-text {
+    transition: all 0.3s ease;
+  }
+
+/* Hiệu ứng chữ sáng lên từ trái qua phải cho copyright - chuyên nghiệp hơn */
+.copyright-text {
+  position: relative;
+  display: block;
+  text-align: center;
+  overflow: hidden;
+  margin: 25px auto 0 auto;
+  padding: 10px 0;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+.copyright-text .highlight-word {
+  display: inline-block;
+  position: relative;
+  color: #777;
+  margin: 0 2px;
+  transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: professional-glow 12s ease-in-out infinite;
+}
+
+.copyright-text .highlight-word:nth-child(1) { animation-delay: 0s; }
+.copyright-text .highlight-word:nth-child(2) { animation-delay: 0.3s; }
+.copyright-text .highlight-word:nth-child(3) { animation-delay: 0.6s; }
+.copyright-text .highlight-word:nth-child(4) { animation-delay: 0.9s; }
+.copyright-text .highlight-word:nth-child(5) { animation-delay: 1.2s; }
+.copyright-text .highlight-word:nth-child(6) { animation-delay: 1.5s; }
+.copyright-text .highlight-word:nth-child(7) { animation-delay: 1.8s; }
+
+@keyframes professional-glow {
+  0%, 15% {
+    color: #777;
+    text-shadow: none;
+    transform: translateY(0) scale(1);
+    opacity: 0.7;
+  }
+  20% {
+    color: #fff;
+    text-shadow: 
+      0 0 5px rgba(255,255,255,0.8),
+      0 0 10px rgba(255,255,255,0.6),
+      0 0 15px rgba(255,255,255,0.4);
+    transform: translateY(-2px) scale(1.05);
+    opacity: 1;
+  }
+  25%, 100% {
+    color: #777;
+    text-shadow: none;
+    transform: translateY(0) scale(1);
+    opacity: 0.7;
+  }
 }
