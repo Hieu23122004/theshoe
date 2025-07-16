@@ -164,6 +164,18 @@ include '../includes/header.php';
             font-size: 10px;
         }
     }
+    a.btn {
+    color: white;
+    background-color: #000; /* hoặc màu nền bạn muốn */
+    transition: none;
+}
+
+a.btn:hover {
+    color: white; /* Giữ màu chữ trắng khi hover */
+    background-color: #333; /* Hoặc màu nền khác nếu muốn hover hiệu ứng */
+    text-decoration: none; /* Loại bỏ gạch chân nếu có */
+}
+
 </style>
 <div class="order-details-container">
     <?php if (empty($orders)): ?>
@@ -202,7 +214,36 @@ include '../includes/header.php';
                 </div>
 
                 <div class="order-details-products">
-                    <?php foreach ($order['order_details'] as $item): ?>
+                    <?php 
+                    // Debug: Log order details để kiểm tra
+                    error_log("Order " . $order['order_id'] . " details: " . json_encode($order['order_details']));
+                    
+                    // Deduplicate items trong order_details nếu có duplicate
+                    $unique_items = [];
+                    $item_keys = [];
+                    
+                    foreach ($order['order_details'] as $item) {
+                        if (!isset($item['product_id'])) {
+                            continue;
+                        }
+                        
+                        $product_id = $item['product_id'];
+                        $color = $item['color'] ?? '';
+                        $size = $item['size'] ?? '';
+                        $quantity = (int)($item['quantity'] ?? 1);
+                        
+                        $item_key = $product_id . '|' . $color . '|' . $size;
+                        
+                        if (isset($item_keys[$item_key])) {
+                            // Merge quantities if duplicate found
+                            $unique_items[$item_keys[$item_key]]['quantity'] += $quantity;
+                        } else {
+                            $item_keys[$item_key] = count($unique_items);
+                            $unique_items[] = $item;
+                        }
+                    }
+                    
+                    foreach ($unique_items as $item): ?>
                         <?php
                         $item_price = isset($item['price']) ? $item['price'] : 0;
                         $item_name = $item['name'] ?? '';
@@ -254,11 +295,7 @@ include '../includes/header.php';
                                         Description: <?php echo htmlspecialchars($item_desc); ?>
                                     </div>
                                 <?php endif; ?>
-                                <div class="order-details-meta" style="margin-left:0;padding-left:0; margin-top:2px;">
-                                    <b>Order Date:</b> <?php echo date('d/m/Y H:i', strtotime($order['created_at'])); ?>
-                                    | <b>Payment:</b> <?php echo htmlspecialchars($order['payment_method']); ?>
-                                    | <b>Total:</b> <span style="color:black;font-weight:800;font-size:1rem;"><?php echo number_format($order['total_amount'], 0, ',', '.'); ?>₫</span>
-                                </div>
+                                <!-- Meta info removed from individual products -->
                             </div>
                             <div class="order-details-product-price ms-auto">
                                 <?php echo number_format($item_price * $item_qty, 0, ',', '.'); ?>₫
@@ -266,6 +303,23 @@ include '../includes/header.php';
                         </div>
                     <?php endforeach; ?>
                 </div>
+                
+                <!-- Order Summary - hiển thị một lần cho toàn bộ đơn hàng -->
+                <div class="order-summary" style="background-color:#f8f9fa;padding:15px;border-radius:8px;margin-top:15px;">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span><b>Order Date:</b> <?php echo date('d/m/Y H:i', strtotime($order['created_at'])); ?></span>
+                        <span><b>Payment:</b> <?php echo htmlspecialchars($order['payment_method']); ?></span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span style="font-size:1.1rem;font-weight:600;">
+                            Total (<?php echo count($unique_items); ?> item<?php echo count($unique_items) > 1 ? 's' : ''; ?>):
+                        </span>
+                        <span style="color:#e74c3c;font-weight:800;font-size:1.3rem;">
+                            <?php echo number_format($order['total_amount'], 0, ',', '.'); ?>₫
+                        </span>
+                    </div>
+                </div>
+                
                 <div class="order-details-action">
                     <a href="/pages/home.php" class="btn">Back to Home</a>
                     <?php if ($order['status'] === 'Pending'): ?>
