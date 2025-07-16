@@ -178,6 +178,22 @@ function updateCheckoutTotals() {
     let discount = 0;
     let discountType = null;
     let discountValue = 0;
+    
+    // Đếm số sản phẩm đang hiển thị
+    const itemCount = document.querySelectorAll('.checkout-cart-item').length;
+    
+    // Cập nhật label tổng tiền dựa trên số lượng sản phẩm
+    const totalLabelEl = document.getElementById('totalLabel');
+    if (totalLabelEl) {
+        if (itemCount === 0) {
+            totalLabelEl.textContent = 'Total Amount';
+        } else if (itemCount === 1) {
+            totalLabelEl.textContent = 'Total Amount';
+        } else {
+            totalLabelEl.textContent = `Total (${itemCount} items)`;
+        }
+    }
+    
     // Lấy danh sách sản phẩm đang hiển thị
     document.querySelectorAll('.checkout-cart-item').forEach(function(item) {
         // Lấy giá đúng từ text node đầu tiên (loại bỏ badge)

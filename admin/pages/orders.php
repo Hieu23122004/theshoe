@@ -1,5 +1,5 @@
 ﻿<?php
-include '../../includes/auth.php';
+
 include '../../includes/database.php';
 $status_filter = isset($_GET['status']) ? $_GET['status'] : '';
 $message = isset($_GET['message']) && !empty($_GET['message']) ? $_GET['message'] : null;

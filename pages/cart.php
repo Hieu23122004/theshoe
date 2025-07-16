@@ -101,8 +101,8 @@ foreach ($cart as $item) $total_quantity += $item['quantity'];
         <div class="cart-summary">
             <div class="cart-summary-title">Order Information</div>
             <div class="cart-summary-label">Total Payment Due:</div>
-            <div class="cart-summary-total">0₫</div>
-            <div style="font-size:14px;color:#444;margin-bottom:10px;">Shipping fees will be calculated the checkout page.<br>You can also enter a discount code below</div>
+            <div class="cart-summary-total" style="font-size:1.4rem;font-weight:700;color:#e74c3c;">0₫</div>
+            <div style="font-size:14px;color:#444;margin-bottom:10px;">Shipping fees will be calculated on the checkout page.<br>You can also enter a discount code below</div>
             <form class="cart-summary-form">
                 <button type="button" class="cart-summary-btn">CHECKOUT NOW</button>
             </form>

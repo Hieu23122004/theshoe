@@ -117,7 +117,7 @@ document.getElementById('fundiinLearnMore').addEventListener('click', function (
         flex-shrink: 0 !important;
       }
       .swal2-toast-custom-small .swal2-title {
-        font-size: 14px !important;
+        font-size: 17px !important;
         line-height: 1 !important;
         margin: 0 !important;
         white-space: nowrap !important;
@@ -141,7 +141,7 @@ document.getElementById('fundiinLearnMore').addEventListener('click', function (
           toast: true,
                 position: 'top-end',
                 icon: 'success',
-                title: `Coupon code: <b>${code}</b>`,
+                title: `<b>Code: ${code}</b>`,
                 background: '#222',
                 color: '#fff',
                 showConfirmButton: false,

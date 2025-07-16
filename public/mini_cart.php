@@ -234,7 +234,7 @@ $grand_total = 0;
 </div>
 <hr class="my-1">
 <div class="d-flex justify-content-between align-items-center mb-2">
-    <span class="fw-bold" style="font-size:1.1rem;">Total Amount:</span>
+    <span class="fw-bold" style="font-size:1.1rem;" id="miniCartTotalLabel">Total Amount:</span>
     <span class="cart-mini-total fw-bold text-danger" style="font-size:1.3rem;">0₫</span>
 </div>
 <div class="cart-mini-btns d-flex gap-3" style="margin-bottom: 10px;">
@@ -304,21 +304,37 @@ $grand_total = 0;
 
     function updateMiniCartTotal() {
         let total = 0;
+        let checkedCount = 0;
+        
         document.querySelectorAll('.cart-mini-list > .d-flex.align-items-center').forEach(function(item) {
             var checkbox = item.querySelector('.mini-cart-item-select');
             if (checkbox && checkbox.checked) {
+                checkedCount++;
                 var priceVal = parseFloat(item.getAttribute('data-price'));
                 var qtyEl = item.querySelector('span.mx-1');
                 var qtyVal = qtyEl ? parseInt(qtyEl.textContent) : 1;
                 if (!isNaN(priceVal) && !isNaN(qtyVal)) total += priceVal * qtyVal;
             }
         });
+        
         var totalEl = document.querySelector('.cart-mini-total');
+        var labelEl = document.getElementById('miniCartTotalLabel');
+        
         if (totalEl) {
             if (total === 0) {
                 totalEl.textContent = '0₫';
             } else {
                 totalEl.textContent = total.toLocaleString('vi-VN') + '₫';
+            }
+        }
+        
+        if (labelEl) {
+            if (checkedCount === 0) {
+                labelEl.textContent = 'Total Amount:';
+            } else if (checkedCount === 1) {
+                labelEl.textContent = 'Total Amount:';
+            } else {
+                labelEl.textContent = `Total (${checkedCount} items):`;
             }
         }
     }

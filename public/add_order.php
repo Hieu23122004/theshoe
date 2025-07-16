@@ -89,6 +89,45 @@ if (!$order_details) {
     exit;
 }
 
+// Validate và deduplicate order_details
+$order_data = json_decode($order_details, true);
+if (!is_array($order_data)) {
+    echo json_encode(['success' => false, 'message' => 'Invalid cart data format!']);
+    exit;
+}
+
+// Deduplicate items by product_id + color + size
+$unique_items = [];
+$item_keys = [];
+
+foreach ($order_data as $item) {
+    if (!isset($item['product_id'])) {
+        continue; // Skip items without product_id
+    }
+    
+    $product_id = $item['product_id'];
+    $color = $item['color'] ?? '';
+    $size = $item['size'] ?? '';
+    $quantity = (int)($item['quantity'] ?? 1);
+    
+    // Tạo key unique cho sản phẩm
+    $item_key = $product_id . '|' . $color . '|' . $size;
+    
+    if (isset($item_keys[$item_key])) {
+        // Nếu đã tồn tại, cộng dồn số lượng
+        $unique_items[$item_keys[$item_key]]['quantity'] += $quantity;
+        error_log("Duplicate item found - Product ID: $product_id, Color: $color, Size: $size. Merged quantities.");
+    } else {
+        // Thêm item mới
+        $item_keys[$item_key] = count($unique_items);
+        $unique_items[] = $item;
+    }
+}
+
+// Cập nhật order_details với dữ liệu đã deduplicate
+$order_details = json_encode($unique_items);
+error_log("Order details after deduplication: " . $order_details);
+
 // Kiểm tra và xử lý mã giảm giá nếu có
 $discount_code_id = null;
 if ($discount_code) {

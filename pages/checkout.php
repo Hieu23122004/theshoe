@@ -304,8 +304,8 @@ include '../includes/header.php';
                 </div>
                 <hr>
                 <div class="d-flex justify-content-between align-items-center" style="font-size:18px;font-weight:700;">
-                    <span>Total Amount</span>
-                    <span><span style="font-size:13px;font-weight:400;color:#888;">VND</span> <span id="checkoutTotal"><?php echo number_format($total, 0, ',', '.'); ?></span>₫</span>
+                    <span id="totalLabel">Total Amount</span>
+                    <span style="color:#e74c3c;"><span style="font-size:13px;font-weight:400;color:#888;">VND</span> <span id="checkoutTotal"><?php echo number_format($total, 0, ',', '.'); ?></span>₫</span>
                 </div>
             </div>
         </div>

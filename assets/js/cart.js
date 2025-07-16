@@ -206,20 +206,31 @@ function showCartToast(type, product) {
      // Tính tổng tiền chỉ các sản phẩm đã tích
     function updateCartTotalBySelection() {
         let total = 0;
+        let selectedCount = 0;
+        
         document.querySelectorAll('.cart-item').forEach(function(item) {
             const checkbox = item.querySelector('.cart-item-select');
             if (checkbox && checkbox.checked) {
+                selectedCount++;
                 const price = parseFloat(item.querySelector('.cart-item-price').textContent.replace(/[^\d]/g, ''));
                 const qty = parseInt(item.querySelector('.qty-input').value);
                 if (!isNaN(price) && !isNaN(qty)) total += price * qty;
             }
         });
+        
         const totalEl = document.querySelector('.cart-summary-total');
-        if (totalEl) {
-            if (total === 0) {
+        const labelEl = document.querySelector('.cart-summary-label');
+        
+        if (totalEl && labelEl) {
+            if (selectedCount === 0) {
                 totalEl.textContent = '0₫';
+                labelEl.textContent = 'Total Payment Due:';
+            } else if (selectedCount === 1) {
+                totalEl.textContent = total.toLocaleString('vi-VN') + '₫';
+                labelEl.textContent = 'Total Payment Due:';
             } else {
                 totalEl.textContent = total.toLocaleString('vi-VN') + '₫';
+                labelEl.textContent = `Total (${selectedCount} items):`;
             }
         }
     }

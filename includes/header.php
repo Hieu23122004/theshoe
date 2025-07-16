@@ -133,7 +133,11 @@ $current_page = basename($_SERVER['PHP_SELF']);
                             </span>
                         <?php endif; ?>
                     </button>
-                    <a href="/pages/login.php"><button class="icon-btn"><i class="bi bi-box-arrow-in-right fs-4"></i></button></a>
+                    <?php if (isset($_SESSION['is_logged_in']) && $_SESSION['is_logged_in']): ?>
+                        <a href="/public/logout.php"><button class="icon-btn" title="Logout"><i class="bi bi-box-arrow-right fs-4"></i></button></a>
+                    <?php else: ?>
+                        <a href="/pages/login.php"><button class="icon-btn" title="Login"><i class="bi bi-box-arrow-in-right fs-4"></i></button></a>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
@@ -463,6 +467,8 @@ $current_page = basename($_SERVER['PHP_SELF']);
                 }
             });
             var totalEl = document.querySelector('.cart-mini-total');
+            var labelEl = document.getElementById('miniCartTotalLabel');
+            
             if (totalEl) {
                 if (total === 0) {
                     totalEl.textContent = '0₫';
@@ -470,6 +476,17 @@ $current_page = basename($_SERVER['PHP_SELF']);
                     totalEl.textContent = total.toLocaleString('vi-VN') + '₫';
                 }
             }
+            
+            if (labelEl) {
+                if (checkedCount === 0) {
+                    labelEl.textContent = 'Total Amount:';
+                } else if (checkedCount === 1) {
+                    labelEl.textContent = 'Total Amount:';
+                } else {
+                    labelEl.textContent = `Total (${checkedCount} items):`;
+                }
+            }
+            
             var count = document.querySelectorAll('.cart-mini-list .d-flex.align-items-center').length;
             updateCartBadge(count);
         }
