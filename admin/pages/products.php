@@ -1,17 +1,15 @@
-<?php
+﻿<?php
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
-
 // Include auth first (which handles session_start())
 include '../../includes/auth.php';
 include '../../includes/database.php';
-
 // Function to ensure proper JSON encoding of colors
-function getColorOptionsJson() {
+function getColorOptionsJson()
+{
     return json_encode(['Black', 'Brown'], JSON_UNESCAPED_UNICODE);
 }
-
 function showAlert($msg, $type = 'success')
 {
     return "<div class='alert alert-{$type} alert-dismissible fade show' role='alert'>
@@ -19,12 +17,8 @@ function showAlert($msg, $type = 'success')
                 <button type='button' class='btn-close' data-bs-dismiss='alert' aria-label='Close'></button>
             </div>";
 }
-
-include '../../includes/header_ad.php';
-
 $hasError = false;
 $message = '';
-
 try {
     if (!$conn || $conn->connect_errno) {
         throw new Exception('Cannot connect to database: ' . $conn->connect_error);
@@ -33,19 +27,16 @@ try {
     $hasError = true;
     $message = "<div class='alert alert-danger'>{$e->getMessage()}</div>";
 }
-
 // Handle session messages
 if (isset($_SESSION['message'])) {
     $message = $_SESSION['message'];
     unset($_SESSION['message']);
 }
-
 // Handle GET messages
 if (empty($message) && $_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['msg'])) {
     if ($_GET['msg'] === 'success') $message = showAlert('Product saved successfully!');
     if ($_GET['msg'] === 'deleted') $message = showAlert('Product deleted successfully!');
 }
-
 // Get all categories with hierarchy information
 $categories_result = $conn->query("
     SELECT 
@@ -58,7 +49,6 @@ $categories_result = $conn->query("
     ORDER BY c1.parent_id ASC, c1.name ASC
 ");
 $all_categories = $categories_result ? $categories_result->fetch_all(MYSQLI_ASSOC) : [];
-
 // Separate parent and child categories
 $parent_categories = [];
 $child_categories = [];
@@ -69,7 +59,6 @@ foreach ($all_categories as $cat) {
         $child_categories[$cat['parent_id']][] = $cat;
     }
 }
-
 function shortenUrl($url)
 {
     // Nếu URL chứa Google Drive
@@ -84,7 +73,6 @@ function shortenUrl($url)
     }
     return $url;
 }
-
 // Handle form submission
 if (isset($_POST['submit'])) {
     $name = trim($_POST['name']);
@@ -97,7 +85,6 @@ if (isset($_POST['submit'])) {
     $image_url = shortenUrl(trim($_POST['image_url']));
     $category_id = intval($_POST['category_id']);
     $is_featured = isset($_POST['is_featured']) ? 1 : 0;
-
     // Process color options from form input - Only allow Black and Brown
     $color_options = json_encode(['Black', 'Brown'], JSON_UNESCAPED_UNICODE);
     if (!empty($_POST['color_options'])) {
@@ -108,11 +95,12 @@ if (isset($_POST['submit'])) {
                 // Validate that only Black and Brown are allowed
                 $allowed_colors = ['Black', 'Brown'];
                 $valid_colors = array_intersect($colors, $allowed_colors);
-                
                 // Only accept if exactly these 2 colors are present
-                if (count($valid_colors) === 2 && 
-                    in_array('Black', $valid_colors) && 
-                    in_array('Brown', $valid_colors)) {
+                if (
+                    count($valid_colors) === 2 &&
+                    in_array('Black', $valid_colors) &&
+                    in_array('Brown', $valid_colors)
+                ) {
                     $color_options = json_encode(['Black', 'Brown'], JSON_UNESCAPED_UNICODE);
                     error_log("DEBUG: color_options validated and set to default");
                 } else {
@@ -131,9 +119,7 @@ if (isset($_POST['submit'])) {
     } else {
         error_log("DEBUG: color_options POST field is empty, using default");
     }
-    
     error_log("DEBUG: Final color_options before database: " . $color_options);
-
     // Process size_stock - Only allow Black and Brown colors
     $size_stock_json = '{}';
     if (!empty($_POST['size_stock'])) {
@@ -142,9 +128,7 @@ if (isset($_POST['submit'])) {
             if (json_last_error() === JSON_ERROR_NONE && is_array($sizeData)) {
                 // Only process for Black and Brown colors - no custom colors allowed
                 $colors_for_stock = ['Black', 'Brown'];
-                
                 $validSizeStock = [];
-                
                 // Process only Black and Brown colors
                 foreach ($colors_for_stock as $color) {
                     $validSizeStock[$color] = [];
@@ -154,7 +138,6 @@ if (isset($_POST['submit'])) {
                         }
                     }
                 }
-                
                 $size_stock_json = json_encode($validSizeStock, JSON_UNESCAPED_UNICODE);
             }
         } catch (Exception $e) {
@@ -162,7 +145,6 @@ if (isset($_POST['submit'])) {
             $size_stock_json = json_encode(['Black' => [], 'Brown' => []], JSON_UNESCAPED_UNICODE);
         }
     }
-
     // Xử lý image_urls
     $image_urls = null;
     if (!empty($_POST['image_urls'])) {
@@ -183,17 +165,13 @@ if (isset($_POST['submit'])) {
     } else {
         error_log("DEBUG: image_urls POST field is empty or not set");
     }
-
     $edit_id = isset($_POST['product_id']) && $_POST['product_id'] !== '' ? (int)$_POST['product_id'] : null;
-
     try {
         $conn->begin_transaction();
-
         if (empty($name)) throw new Exception('Product name cannot be empty');
         if ($price <= 0) throw new Exception('Price must be greater than 0');
         if ($original_price <= 0) throw new Exception('Original price must be greater than 0');
         if ($stock_quantity < 0) throw new Exception('Stock quantity cannot be negative');
-
         // Check for duplicate product name
         $stmt = $conn->prepare("SELECT product_id FROM products WHERE name = ? AND (product_id != ? OR ? IS NULL)");
         $stmt->bind_param("sii", $name, $edit_id, $edit_id);
@@ -201,15 +179,13 @@ if (isset($_POST['submit'])) {
         if ($stmt->get_result()->num_rows > 0) {
             throw new Exception('Product name already exists!');
         }
-
         if ($edit_id) {
-           $stmt = $conn->prepare("UPDATE products SET 
+            $stmt = $conn->prepare("UPDATE products SET 
     name = ?, description = ?, price = ?, original_price = ?, 
     discount_percent = ?, stock_quantity = ?, color_options = CAST(? AS JSON),
     size_stock = CAST(? AS JSON), material = ?, image_url = ?, image_urls = CAST(? AS JSON),
     category_id = ?, is_featured = ? 
     WHERE product_id = ?");
-
             $stmt->bind_param(
                 "ssddiisssssiii",
                 $name,
@@ -228,12 +204,11 @@ if (isset($_POST['submit'])) {
                 $edit_id
             );
         } else {
-           $stmt = $conn->prepare("INSERT INTO products (
+            $stmt = $conn->prepare("INSERT INTO products (
     name, description, price, original_price, discount_percent,
     stock_quantity, color_options, size_stock, sold_quantity, material, 
     image_url, image_urls, category_id, is_featured
 ) VALUES (?, ?, ?, ?, ?, ?, CAST(? AS JSON), CAST(? AS JSON), 0, ?, ?, CAST(? AS JSON), ?, ?)");
-
             $stmt->bind_param(
                 "ssddiisssssii",
                 $name,
@@ -251,11 +226,9 @@ if (isset($_POST['submit'])) {
                 $is_featured
             );
         }
-
         if (!$stmt->execute()) {
             throw new Exception('Cannot save product: ' . $stmt->error);
         }
-
         $conn->commit();
         header('Location: ' . $_SERVER['PHP_SELF'] . '?msg=success');
         exit();
@@ -264,25 +237,20 @@ if (isset($_POST['submit'])) {
         $message = showAlert($e->getMessage(), 'danger');
     }
 }
-
 // Handle delete
 if (isset($_POST['delete'])) {
     $id = (int)$_POST['delete'];
-
     try {
         $conn->begin_transaction();
-
         $stmt = $conn->prepare("SELECT product_id FROM products WHERE product_id = ?");
         $stmt->bind_param("i", $id);
         $stmt->execute();
         if ($stmt->get_result()->num_rows === 0) {
             throw new Exception('Product does not exist');
         }
-
         $stmt = $conn->prepare("DELETE FROM products WHERE product_id = ?");
         $stmt->bind_param("i", $id);
         $stmt->execute();
-
         $conn->commit();
         header('Location: ' . $_SERVER['PHP_SELF'] . '?msg=deleted');
         exit();
@@ -291,7 +259,6 @@ if (isset($_POST['delete'])) {
         $message = showAlert($e->getMessage(), 'danger');
     }
 }
-
 // Fetch all products with category names (including parent category info)
 $result = $conn->query("
     SELECT 
@@ -304,66 +271,59 @@ $result = $conn->query("
     ORDER BY p.product_id DESC
 ");
 $products = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
+include '../../includes/header_ad.php';
 ?>
-<!DOCTYPE html>
-<html lang="en">
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <title>Product Management</title>
-    <style>
-        .product-image {
-            width: 140px;
-            height: 120px;
-            object-fit: cover;
-        }
+<style>
+    .product-image {
+        width: 140px;
+        height: 120px;
+        object-fit: cover;
+    }
 
-        .url-preview {
-            display: inline-block;
-            margin: 5px;
-            position: relative;
-        }
+    .url-preview {
+        display: inline-block;
+        margin: 5px;
+        position: relative;
+    }
 
-        .url-preview img {
-            width: 50px;
-            height: 50px;
-            object-fit: cover;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
+    .url-preview img {
+        width: 50px;
+        height: 50px;
+        object-fit: cover;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+    }
 
-        .url-preview .remove-url {
-            position: absolute;
-            top: -8px;
-            right: -8px;
-            background: #dc3545;
-            color: white;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            text-align: center;
-            line-height: 20px;
-            cursor: pointer;
-            font-size: 12px;
-        }
+    .url-preview .remove-url {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        background: #dc3545;
+        color: white;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        text-align: center;
+        line-height: 20px;
+        cursor: pointer;
+        font-size: 12px;
+    }
 
-        .preview-container {
-            margin-top: 10px;
-        }
-    </style>
+    .preview-container {
+        margin-top: 10px;
+    }
+</style>
 </head>
 
 <body>
     <div class="container-fluid px-2" style="margin-top: 110px;">
         <?= $message ?>
         <div class="card mb-4">
-            <div class="card-header bg-primary" ><strong>Add / Edit Product</strong></div>
+            <div class="card-header bg-primary"><strong>Add / Edit Product</strong></div>
             <div class="card-body">
                 <form method="POST" id="productForm">
                     <input type="hidden" name="product_id" id="edit_id">
-
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label>Product Name</label>
@@ -382,7 +342,6 @@ $products = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
                             <input type="number" name="price" id="price" placeholder="Giá cuối tự tính" class="form-control" readonly>
                         </div>
                     </div>
-
                     <div class="row mb-3">
                         <div class="col-md-4">
                             <label>Description</label>
@@ -410,14 +369,11 @@ $products = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
                                 <option value="">Sub category</option>
                             </select>
                         </div>
-
                         <div class="col-md-2">
                             <label>Material</label>
                             <input type="text" name="material" placeholder="Chất liệu gì" id="material" class="form-control">
                         </div>
-                       
                     </div>
-
                     <div class="row mb-3">
                         <div class="col-md-10">
                             <label>Colors and Sizes</label>
@@ -430,12 +386,11 @@ $products = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
                                 </div>
                             </div>
                         </div>
-                         <div class="col-md-2">
+                        <div class="col-md-2">
                             <label>Total Quantity</label>
                             <input type="number" name="stock_quantity" id="stock_quantity" min="0" max="1000" placeholder="0-1000" class="form-control" readonly>
                         </div>
                     </div>
-
                     <!-- Templates for size inputs based on category -->
                     <template id="shoeSizesTemplate">
                         <div class="row">
@@ -461,7 +416,6 @@ $products = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
                             </div>
                         </div>
                     </template>
-
                     <template id="bagSizesTemplate">
                         <div class="row">
                             <div class="col">
@@ -478,7 +432,6 @@ $products = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
                             </div>
                         </div>
                     </template>
-
                     <template id="beltSizesTemplate">
                         <div class="row">
                             <div class="col">
@@ -495,7 +448,6 @@ $products = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
                             </div>
                         </div>
                     </template>
-
                     <div class="row mb-3">
                         <div class="col-md-3">
                             <label>Main Image URL</label>
@@ -514,17 +466,14 @@ $products = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
                             </div>
                         </div>
                     </div>
-
                     <!-- Hidden inputs for form data -->
                     <input type="hidden" name="size_stock" id="size_stock_data">
                     <input type="hidden" name="image_urls" id="image_urls">
-
                     <button type="submit" name="submit" class="btn btn-primary">Save Product</button>
                     <button type="button" onclick="resetForm()" class="btn btn-secondary">Reset</button>
                 </form>
             </div>
         </div>
-
         <div class="card">
             <div class="card-header"><strong>Product List</strong></div>
             <div class="card-body table-responsive">
@@ -593,20 +542,17 @@ $products = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
             </div>
         </div>
     </div>
-
     <script src="../../assets/js/ad_product.js"></script>
     <script>
         // Category data from PHP
         const childCategories = <?= json_encode($child_categories) ?>;
-        
+
         function loadChildCategories() {
             const parentId = document.getElementById('parent_category').value;
             const childSelect = document.getElementById('category_id');
-            
             // Clear child categories
             childSelect.innerHTML = '<option value="">Select sub category</option>';
             childSelect.disabled = true;
-            
             if (parentId && childCategories[parentId]) {
                 // Add child categories
                 childCategories[parentId].forEach(function(category) {
@@ -618,19 +564,14 @@ $products = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
                 childSelect.disabled = false;
             }
         }
-        
         // Initialize color sections when category changes
         document.getElementById('category_id').addEventListener('change', function() {
             initializeColorSections();
         });
-        
         // Initialize color sections on page load
         document.addEventListener('DOMContentLoaded', function() {
             initializeColorSections();
         });
     </script>
 
-</body>
-
-</html>
-<?php include '../../includes/footer.php'; ?>
+    <?php include '../../includes/footer.php'; ?>
