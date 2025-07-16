@@ -36,6 +36,7 @@ $main_result = $conn->query($main_sql);
             }
         }
         ?>
+
         <!DOCTYPE html>
         <html lang="en">
 
@@ -52,6 +53,7 @@ $main_result = $conn->query($main_sql);
         </head>
 
         <body>
+
             <!-- Banner Carousel sát viền, không bị padding -->
             <div id="bannerCarousel" class="carousel slide container-fluid p-0" data-bs-ride="carousel">
                 <div class="carousel-inner">
@@ -209,12 +211,12 @@ $main_result = $conn->query($main_sql);
             </div>
 
 
-        </body>
-        <!-- Bootstrap 5 JS Bundle (with Popper) -->
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-        </html>
-        <?php include '../includes/truck.php'; ?>
-  
-        <?php include '../includes/floating_contact.php'; ?>
-        <script src="/assets/js/auto_logout.js"></script>
-        <?php include '../includes/footer.php'; ?>
+            <!-- Bootstrap 5 JS Bundle (with Popper) -->
+            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+            <!-- Custom JavaScript -->
+            <script src="/assets/js/home.js"></script>
+
+            <?php include '../includes/truck.php'; ?>
+            <?php include '../includes/floating_contact.php'; ?>
+            <script src="/assets/js/auto_logout.js"></script>
+            <?php include '../includes/footer.php'; ?>

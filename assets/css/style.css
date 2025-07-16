@@ -1,3 +1,10 @@
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+}
+
 .top-bar {
   background-color: #000;
   color: white;
@@ -55,9 +62,12 @@
 footer {
   background-color: #222;
   color: #ddd;
-  padding: 40px 20px 40px 10px;
+  padding: 40px 20px 0px 10px;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   font-size: 14px;
+  margin-top: auto;
+  position: relative;
+  bottom: 0;
 }
 
 .footer-content {
@@ -66,8 +76,7 @@ footer {
   justify-content: space-between;
   gap: 30px;
   max-width: 1200px;
-  margin-top: 100px;
-  margin: 0 auto;
+  margin: 0px auto 0px auto;
   border-bottom: 1px solid #444;
 }
 

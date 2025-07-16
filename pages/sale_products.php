@@ -1,10 +1,8 @@
 <?php
 session_start();
 include '../includes/database.php';
-// Handle favorite toggle via AJAX (đặt lên đầu, trước khi include header.php)
 if (isset($_POST['toggle_favorite']) && isset($_SESSION['user_id'])) {
     $user_id = $_SESSION['user_id'];
-    // Lấy danh sách favorites hiện tại
     $favorites = array();
     $fav_query = "SELECT product_id FROM favorites WHERE user_id = ?";
     $stmt = $conn->prepare($fav_query);
@@ -25,13 +23,8 @@ if (isset($_POST['toggle_favorite']) && isset($_SESSION['user_id'])) {
     header('Content-Type: application/json');
     exit(json_encode(['success' => true]));
 }
-
 include '../includes/header.php';
-
-// Check if user is logged in
 $user_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : null;
-
-// Get user's favorites
 $favorites = array();
 if ($user_id) {
     $fav_query = "SELECT product_id FROM favorites WHERE user_id = ?";
@@ -43,29 +36,17 @@ if ($user_id) {
         $favorites[] = $fav['product_id'];
     }
 }
-
-// Khi bấm yêu thích mà chưa đăng nhập, lưu product_id vào session pending_favorite
 if (isset($_GET['pending_favorite'])) {
     $_SESSION['pending_favorite'] = (int)$_GET['pending_favorite'];
 }
-
-// Get filter parameters
 $sort = isset($_GET['sort']) ? $_GET['sort'] : 'newest';
 $price_range = isset($_GET['price']) ? $_GET['price'] : 'all';
 $color = isset($_GET['color']) ? $_GET['color'] : 'all';
-
-// Pagination settings
 $items_per_page = 8;
 $current_page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $offset = ($current_page - 1) * $items_per_page;
-
-// Base query for counting total products
 $count_query = "SELECT COUNT(*) as total FROM products p JOIN categories c ON p.category_id = c.category_id WHERE c.parent_id = 1 AND p.discount_percent >= 20";
-
-// Base query for fetching products
 $query = "SELECT p.* FROM products p JOIN categories c ON p.category_id = c.category_id WHERE c.parent_id = 1 AND p.discount_percent >= 20";
-
-// Add price range filter to both queries
 $price_filter = "";
 switch ($price_range) {
     case 'under1m':
@@ -80,15 +61,11 @@ switch ($price_range) {
 }
 $query .= $price_filter;
 $count_query .= $price_filter;
-
-// Add color filter to both queries
 if ($color != 'all') {
     $color_filter = " AND JSON_CONTAINS(color_options, '\"$color\"')";
     $query .= $color_filter;
     $count_query .= $color_filter;
 }
-
-// Add sorting and filtering
 if ($sort === 'featured') {
     $query .= " AND is_featured = 1";
     $count_query .= " AND is_featured = 1";
@@ -102,18 +79,11 @@ if ($sort === 'featured') {
 } else {
     $query .= " ORDER BY created_at DESC";
 }
-
-// Add pagination
 $query .= " LIMIT $items_per_page OFFSET $offset";
-
-// Get total number of products
 $count_result = $conn->query($count_query);
 $total_items = $count_result->fetch_assoc()['total'];
 $total_pages = ceil($total_items / $items_per_page);
-
 $result = $conn->query($query);
-
-// Lấy danh sách loại sản phẩm (categories)
 $category_map = [];
 $cat_result = $conn->query("SELECT category_id, name FROM categories");
 if ($cat_result) {
@@ -122,7 +92,6 @@ if ($cat_result) {
     }
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -142,7 +111,6 @@ if ($cat_result) {
 </head>
 
 <body>
-
     <!-- Banner Carousel -->
     <div id="bannerCarousel" class="carousel slide" data-bs-ride="carousel">
         <div class="carousel-inner">
@@ -152,13 +120,11 @@ if ($cat_result) {
             <div class="carousel-item">
                 <img src="/assets/images/sale2.jpeg" class="d-block w-100" alt="Banner 2">
             </div>
-
         </div>
     </div>
-
     <!-- Filter Section -->
     <div class="filter-section">
-        <div class="container">
+        <div class="container-fluid" style="margin-top:8px;">
             <form id="filterForm" class="row g-3">
                 <div class="col-md-4">
                     <select name="sort" class="form-select" onchange="filterProducts()">
@@ -191,9 +157,8 @@ if ($cat_result) {
             </div>
         </div>
     </div>
-
     <!-- Products Grid -->
-    <div class="container products-container py-4">
+    <div class="container-fluid products-container py-4">
         <div class="row gy-3 gx-3">
             <?php
             if ($result->num_rows > 0) {
@@ -205,13 +170,11 @@ if ($cat_result) {
                             <button class="favorite-btn" onclick="handleFavorite(event, <?php echo $row['product_id']; ?>)">
                                 <i class="fa<?php echo in_array($row['product_id'], $favorites) ? 's' : 'r'; ?> fa-heart"></i>
                             </button>
-
                             <div class="color-options">
                                 <?php foreach ($colors as $color): ?>
                                     <div class="color-dot" style="background-color: <?php echo strtolower($color); ?>" title="<?php echo $color; ?>"></div>
                                 <?php endforeach; ?>
                             </div>
-
                             <a href="detail_products.php?id=<?php echo $row['product_id']; ?>" class="product-link">
                                 <div class="product-image-container" style="position:relative;">
                                     <img src="<?php echo $row['image_url']; ?>" class="product-image" alt="<?php echo $row['name']; ?>">
@@ -245,7 +208,6 @@ if ($cat_result) {
             }
             ?>
         </div>
-
         <!-- Pagination with reduced spacing -->
         <?php if ($total_pages > 1): ?>
             <div class="row mt-3">
@@ -259,12 +221,9 @@ if ($cat_result) {
                                     </a>
                                 </li>
                             <?php endif; ?>
-
                             <?php
-                            // Show max 5 pages with current page in the middle when possible
                             $start_page = max(1, min($current_page - 2, $total_pages - 4));
                             $end_page = min($total_pages, max(5, $current_page + 2));
-
                             if ($start_page > 1): ?>
                                 <li class="page-item">
                                     <a class="page-link" href="?page=1&sort=<?php echo $sort; ?>&price=<?php echo $price_range; ?>&color=<?php echo $color; ?>">1</a>
@@ -273,13 +232,11 @@ if ($cat_result) {
                                     <li class="page-item disabled"><span class="page-link">...</span></li>
                                 <?php endif;
                             endif;
-
                             for ($i = $start_page; $i <= $end_page; $i++): ?>
                                 <li class="page-item <?php echo $i == $current_page ? 'active' : ''; ?>">
                                     <a class="page-link" href="?page=<?php echo $i; ?>&sort=<?php echo $sort; ?>&price=<?php echo $price_range; ?>&color=<?php echo $color; ?>"><?php echo $i; ?></a>
                                 </li>
                             <?php endfor;
-
                             if ($end_page < $total_pages): ?>
                                 <?php if ($end_page < $total_pages - 1): ?>
                                     <li class="page-item disabled"><span class="page-link">...</span></li>
@@ -288,7 +245,6 @@ if ($cat_result) {
                                     <a class="page-link" href="?page=<?php echo $total_pages; ?>&sort=<?php echo $sort; ?>&price=<?php echo $price_range; ?>&color=<?php echo $color; ?>"><?php echo $total_pages; ?></a>
                                 </li>
                             <?php endif; ?>
-
                             <?php if ($current_page < $total_pages): ?>
                                 <li class="page-item">
                                     <a class="page-link" href="?page=<?php echo $current_page + 1; ?>&sort=<?php echo $sort; ?>&price=<?php echo $price_range; ?>&color=<?php echo $color; ?>" aria-label="Next">
@@ -308,7 +264,8 @@ if ($cat_result) {
     <script src="/assets/js/auto_logout.js"></script>
     <script src="/assets/js/sale_products.js"></script>
     <!-- Bootstrap 5 JS Bundle (with Popper) -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
 </body>
 
 </html>

@@ -57,10 +57,12 @@ $selected_category = isset($_GET['category']) ? (int)$_GET['category'] : 0;
 
 // Lấy danh sách categories có parent_id = 1
 $filter_categories = [];
+$type_category_ids = [];
 $cat_filter_result = $conn->query("SELECT category_id, name FROM categories WHERE parent_id = 1");
 if ($cat_filter_result) {
     while ($cat = $cat_filter_result->fetch_assoc()) {
         $filter_categories[] = $cat;
+        $type_category_ids[] = (int)$cat['category_id'];
     }
 }
 
@@ -89,12 +91,12 @@ $current_page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $offset = ($current_page - 1) * $items_per_page;
 
 // Base query for counting total products
-if ($selected_category && in_array($selected_category, [4, 5, 6, 7, 8])) {
-    // Nếu chọn 1 trong các loại con của Footwear thì chỉ lấy sản phẩm thuộc loại đó
+if ($selected_category && in_array($selected_category, $type_category_ids)) {
+    // Nếu chọn 1 trong các loại con của parent_id=1 thì chỉ lấy sản phẩm thuộc loại đó
     $count_query = "SELECT COUNT(*) as total FROM products WHERE category_id = $selected_category";
     $query = "SELECT * FROM products WHERE category_id = $selected_category";
 } else {
-    // Mặc định: lấy tất cả sản phẩm có danh mục cha là Footwear (id=1)
+    // Mặc định: lấy tất cả sản phẩm có danh mục cha là parent_id=1
     $count_query = "SELECT COUNT(*) as total FROM products p JOIN categories c ON p.category_id = c.category_id WHERE c.parent_id = 1";
     $query = "SELECT p.* FROM products p JOIN categories c ON p.category_id = c.category_id WHERE c.parent_id = 1";
 }
@@ -181,10 +183,10 @@ if ($cat_result) {
     <div id="bannerCarousel" class="carousel slide" data-bs-ride="carousel">
         <div class="carousel-inner">
             <div class="carousel-item active">
-                <img src="/assets/images/type1.jpeg" class="d-block w-100" alt="Banner 1">
+                <img src="/assets/images/access1.jpg" class="d-block w-100" alt="Banner 1">
             </div>
             <div class="carousel-item">
-                <img src="/assets/images/type2.jpeg" class="d-block w-100" alt="Banner 2">
+                <img src="/assets/images/access2.jpg" class="d-block w-100" alt="Banner 2">
             </div>
 
         </div>
@@ -192,7 +194,7 @@ if ($cat_result) {
 
     <!-- Filter Section -->
     <div class="filter-section">
-        <div class="container">
+        <div class="container-fluid" style="margin-top: 18px;">
             <form id="filterForm" class="row g-3">
                 <div class="col-md-3">
                     <select name="category" class="form-select" onchange="filterProducts()">
@@ -236,7 +238,7 @@ if ($cat_result) {
     </div>
 
     <!-- Products Grid -->
-    <div class="container products-container py-4">
+    <div class="container-fluid products-container py-4">
         <div class="row gy-3 gx-3">
             <?php
             if ($result->num_rows > 0) {
@@ -292,7 +294,7 @@ if ($cat_result) {
                         <ul class="pagination justify-content-center">
                             <?php if ($current_page > 1): ?>
                                 <li class="page-item">
-                                    <a class="page-link" href="?page=<?php echo $current_page - 1; ?>&sort=<?php echo $sort; ?>&price=<?php echo $price_range; ?>&color=<?php echo $color; ?>" aria-label="Previous">
+                                    <a class="page-link" href="?page=<?php echo $current_page - 1; ?>&category=<?php echo $selected_category; ?>&sort=<?php echo $sort; ?>&price=<?php echo $price_range; ?>&color=<?php echo $color; ?>" aria-label="Previous">
                                         <span aria-hidden="true">&laquo;</span>
                                     </a>
                                 </li>
@@ -305,7 +307,7 @@ if ($cat_result) {
 
                             if ($start_page > 1): ?>
                                 <li class="page-item">
-                                    <a class="page-link" href="?page=1&sort=<?php echo $sort; ?>&price=<?php echo $price_range; ?>&color=<?php echo $color; ?>">1</a>
+                                    <a class="page-link" href="?page=1&category=<?php echo $selected_category; ?>&sort=<?php echo $sort; ?>&price=<?php echo $price_range; ?>&color=<?php echo $color; ?>">1</a>
                                 </li>
                                 <?php if ($start_page > 2): ?>
                                     <li class="page-item disabled"><span class="page-link">...</span></li>
@@ -314,7 +316,7 @@ if ($cat_result) {
 
                             for ($i = $start_page; $i <= $end_page; $i++): ?>
                                 <li class="page-item <?php echo $i == $current_page ? 'active' : ''; ?>">
-                                    <a class="page-link" href="?page=<?php echo $i; ?>&sort=<?php echo $sort; ?>&price=<?php echo $price_range; ?>&color=<?php echo $color; ?>"><?php echo $i; ?></a>
+                                    <a class="page-link" href="?page=<?php echo $i; ?>&category=<?php echo $selected_category; ?>&sort=<?php echo $sort; ?>&price=<?php echo $price_range; ?>&color=<?php echo $color; ?>"><?php echo $i; ?></a>
                                 </li>
                             <?php endfor;
 
@@ -323,13 +325,13 @@ if ($cat_result) {
                                     <li class="page-item disabled"><span class="page-link">...</span></li>
                                 <?php endif; ?>
                                 <li class="page-item">
-                                    <a class="page-link" href="?page=<?php echo $total_pages; ?>&sort=<?php echo $sort; ?>&price=<?php echo $price_range; ?>&color=<?php echo $color; ?>"><?php echo $total_pages; ?></a>
+                                    <a class="page-link" href="?page=<?php echo $total_pages; ?>&category=<?php echo $selected_category; ?>&sort=<?php echo $sort; ?>&price=<?php echo $price_range; ?>&color=<?php echo $color; ?>"><?php echo $total_pages; ?></a>
                                 </li>
                             <?php endif; ?>
 
                             <?php if ($current_page < $total_pages): ?>
                                 <li class="page-item">
-                                    <a class="page-link" href="?page=<?php echo $current_page + 1; ?>&sort=<?php echo $sort; ?>&price=<?php echo $price_range; ?>&color=<?php echo $color; ?>" aria-label="Next">
+                                    <a class="page-link" href="?page=<?php echo $current_page + 1; ?>&category=<?php echo $selected_category; ?>&sort=<?php echo $sort; ?>&price=<?php echo $price_range; ?>&color=<?php echo $color; ?>" aria-label="Next">
                                         <span aria-hidden="true">&raquo;</span>
                                     </a>
                                 </li>

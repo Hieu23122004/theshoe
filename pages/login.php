@@ -1,33 +1,25 @@
 <?php
 session_start();
 include '../includes/database.php';
-
-// Get redirect parameter from GET or POST
 $redirect = isset($_GET['redirect']) ? $_GET['redirect'] : (isset($_POST['redirect']) ? $_POST['redirect'] : '/pages/new_products.php');
-
-$message = ""; // tránh lỗi nếu chưa nhấn login
-
+$message = "";
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['login'])) {
     $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
     $max_attempts = 5;
     $block_time = 15 * 60;
     $now = time();
-
-    // Check login_attempts table for this IP
     $stmt = $conn->prepare("SELECT attempts, blocked_until FROM login_attempts WHERE ip = ?");
     $stmt->bind_param("s", $ip);
     $stmt->execute();
     $stmt->bind_result($db_attempts, $db_blocked_until);
     $has_row = $stmt->fetch();
     $stmt->close();
-
     if ($has_row && $db_blocked_until !== null && $now < $db_blocked_until) {
         $minutes = ceil(($db_blocked_until - $now) / 60);
         $_SESSION['login_error'] = 'You have entered the wrong password too many times. Please try again in ' . $minutes . ' minutes.';
     } else {
         if ($has_row && $db_blocked_until !== null && $now >= $db_blocked_until) {
-            // Unblock IP if block expired
-            $stmt = $conn->prepare("UPDATE login_attempts SET attempts = 0, blocked_until = NULL WHERE ip = ?");
+            $stmt = $conn->prepare("UPDATE login_attempts SET attempts = 0, blocked_until = NULL, created_at = NOW() WHERE ip = ?");
             $stmt->bind_param("s", $ip);
             $stmt->execute();
             $stmt->close();
@@ -36,26 +28,22 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['login'])) {
         }
         $email = trim($_POST['email']);
         $password = $_POST['password'];
-
         $stmt = $conn->prepare("SELECT * FROM users WHERE email = ?");
         if ($stmt) {
             $stmt->bind_param("s", $email);
             $stmt->execute();
             $result = $stmt->get_result();
-
             if ($result && $result->num_rows > 0) {
                 $user = $result->fetch_assoc();
-
                 if (!password_verify($password, $user['password_hash'])) {
-                    // Increase failed attempts in DB
                     $new_attempts = ($has_row ? $db_attempts : 0) + 1;
                     if ($new_attempts >= $max_attempts) {
                         $blocked_until = $now + $block_time;
                         if ($has_row) {
-                            $stmt2 = $conn->prepare("UPDATE login_attempts SET attempts = ?, blocked_until = ? WHERE ip = ?");
+                            $stmt2 = $conn->prepare("UPDATE login_attempts SET attempts = ?, blocked_until = ?, created_at = NOW() WHERE ip = ?");
                             $stmt2->bind_param("iis", $new_attempts, $blocked_until, $ip);
                         } else {
-                            $stmt2 = $conn->prepare("INSERT INTO login_attempts (ip, attempts, blocked_until) VALUES (?, ?, ?)");
+                            $stmt2 = $conn->prepare("INSERT INTO login_attempts (ip, attempts, blocked_until, created_at) VALUES (?, ?, ?, NOW())");
                             $stmt2->bind_param("sii", $ip, $new_attempts, $blocked_until);
                         }
                         $stmt2->execute();
@@ -64,10 +52,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['login'])) {
                         $_SESSION['login_error'] = 'You have entered the wrong password too many times. Please try again in ' . $minutes_left . ' minutes.';
                     } else {
                         if ($has_row) {
-                            $stmt2 = $conn->prepare("UPDATE login_attempts SET attempts = ?, blocked_until = NULL WHERE ip = ?");
+                            $stmt2 = $conn->prepare("UPDATE login_attempts SET attempts = ?, blocked_until = NULL, created_at = NOW() WHERE ip = ?");
                             $stmt2->bind_param("is", $new_attempts, $ip);
                         } else {
-                            $stmt2 = $conn->prepare("INSERT INTO login_attempts (ip, attempts) VALUES (?, ?)");
+                            $stmt2 = $conn->prepare("INSERT INTO login_attempts (ip, attempts, created_at) VALUES (?, ?, NOW())");
                             $stmt2->bind_param("si", $ip, $new_attempts);
                         }
                         $stmt2->execute();
@@ -75,52 +63,45 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['login'])) {
                         $_SESSION['login_error'] = "Wrong password. You have " . ($max_attempts - $new_attempts) . " attempts left.";
                     }
                 } else {
-                    // Đăng nhập thành công, reset đếm trong DB
                     if ($has_row) {
-                        $stmt2 = $conn->prepare("UPDATE login_attempts SET attempts = 0, blocked_until = NULL WHERE ip = ?");
+                        $stmt2 = $conn->prepare("UPDATE login_attempts SET attempts = 0, blocked_until = NULL, created_at = NOW() WHERE ip = ?");
+                        $stmt2->bind_param("s", $ip);
+                        $stmt2->execute();
+                        $stmt2->close();
+                    } else {
+                        $stmt2 = $conn->prepare("INSERT INTO login_attempts (ip, attempts, blocked_until, created_at) VALUES (?, 0, NULL, NOW())");
                         $stmt2->bind_param("s", $ip);
                         $stmt2->execute();
                         $stmt2->close();
                     }
-                    // Lưu thông tin người dùng vào session
                     $_SESSION['user'] = [
                         'user_id' => $user['user_id'],
                         'fullname' => $user['fullname'],
                         'email' => $user['email'],
                         'role' => $user['role']
                     ];
-                    $_SESSION['user_id'] = $user['user_id']; // for cart logic
-                    $_SESSION['is_logged_in'] = true; // đánh dấu đã đăng nhập
-                    $_SESSION['last_activity'] = time(); // lưu thời gian hoạt động cuối
+                    $_SESSION['user_id'] = $user['user_id'];
+                    $_SESSION['is_logged_in'] = true;
+                    $_SESSION['last_activity'] = time();
                     $message = "Login successful!";
-
-                    // --- Đồng bộ cart session và favorites vào database sau khi đăng nhập ---
                     try {
-                        // Đồng bộ cart session vào database
                         if (isset($_SESSION['cart']) && !empty($_SESSION['cart'])) {
                             $user_id = $user['user_id'];
                             foreach ($_SESSION['cart'] as $product_id => $item) {
-                                // Kiểm tra product_id có tồn tại trong database không
                                 $stmt_product_check = $conn->prepare("SELECT product_id FROM products WHERE product_id = ?");
                                 $stmt_product_check->bind_param("i", $product_id);
                                 $stmt_product_check->execute();
                                 $product_exists = $stmt_product_check->get_result();
                                 $stmt_product_check->close();
-                                
-                                // Chỉ xử lý nếu product_id tồn tại
                                 if ($product_exists && $product_exists->num_rows > 0) {
                                     $color = $item['color'] ?? '';
                                     $size = $item['size'] ?? '';
                                     $quantity = (int)($item['quantity'] ?? 1);
-                                    
-                                    // Kiểm tra đã có sản phẩm này trong cart_items chưa
                                     $stmt_check = $conn->prepare("SELECT quantity FROM cart_items WHERE user_id = ? AND product_id = ? AND color = ? AND size = ?");
                                     $stmt_check->bind_param("iiss", $user_id, $product_id, $color, $size);
                                     $stmt_check->execute();
                                     $result_check = $stmt_check->get_result();
-                                    
                                     if ($result_check && $result_check->num_rows > 0) {
-                                        // Đã có, cộng dồn số lượng
                                         $row = $result_check->fetch_assoc();
                                         $new_qty = $row['quantity'] + $quantity;
                                         $stmt_update = $conn->prepare("UPDATE cart_items SET quantity = ? WHERE user_id = ? AND product_id = ? AND color = ? AND size = ?");
@@ -128,7 +109,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['login'])) {
                                         $stmt_update->execute();
                                         $stmt_update->close();
                                     } else {
-                                        // Chưa có, insert mới
                                         $stmt_insert = $conn->prepare("INSERT INTO cart_items (user_id, product_id, color, size, quantity) VALUES (?, ?, ?, ?, ?)");
                                         $stmt_insert->bind_param("iissi", $user_id, $product_id, $color, $size, $quantity);
                                         $stmt_insert->execute();
@@ -136,13 +116,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['login'])) {
                                     }
                                     $stmt_check->close();
                                 }
-                                // Nếu product không tồn tại, bỏ qua item này (không báo lỗi)
                             }
-                            // Xóa cart session sau khi đồng bộ
                             unset($_SESSION['cart']);
                         }
-                        
-                        // Đồng bộ sản phẩm yêu thích
                         $user_id = $user['user_id'];
                         $favorites_to_add = [];
                         if (isset($_SESSION['pending_favorite']) && $_SESSION['pending_favorite']) {
@@ -155,19 +131,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['login'])) {
                             }
                             unset($_SESSION['favorites']);
                         }
-                        // Loại bỏ trùng lặp
                         $favorites_to_add = array_unique($favorites_to_add);
                         foreach ($favorites_to_add as $fav_pid) {
-                            // Kiểm tra product_id có tồn tại trong database không
                             $stmt_product_check = $conn->prepare("SELECT product_id FROM products WHERE product_id = ?");
                             $stmt_product_check->bind_param("i", $fav_pid);
                             $stmt_product_check->execute();
                             $product_exists = $stmt_product_check->get_result();
                             $stmt_product_check->close();
-                            
-                            // Chỉ xử lý nếu product_id tồn tại
                             if ($product_exists && $product_exists->num_rows > 0) {
-                                // Kiểm tra đã có chưa
                                 $stmt = $conn->prepare("SELECT 1 FROM favorites WHERE user_id = ? AND product_id = ?");
                                 $stmt->bind_param("ii", $user_id, $fav_pid);
                                 $stmt->execute();
@@ -180,42 +151,68 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['login'])) {
                                 }
                                 $stmt->close();
                             }
-                            // Nếu product không tồn tại, bỏ qua item này
                         }
                     } catch (Exception $sync_error) {
-                        // Ghi log lỗi nhưng không ngăn đăng nhập thành công
                         error_log("Cart/Favorites sync error for user " . $user['user_id'] . ": " . $sync_error->getMessage());
                     }
-
-                    // Role-based redirection
                     if ($user['role'] === 'admin') {
-                        $redirect = '../admin/pages/dashboard.php'; // Fixed relative path for admin
+                        $redirect = '/admin/pages/dashboard.php';
                     } else {
-                        // Customer goes to home or original redirect
                         if ($redirect === '/pages/home.php' || strpos($redirect, 'login.php') !== false) {
                             $redirect = '/pages/home.php';
                         }
                     }
-
-                    // Nếu redirect về checkout thì reload lại để JS lấy localStorage (tránh autofill từ trình duyệt)
                     if (strpos($redirect, 'checkout.php') !== false) {
-                        echo "<script>window.location.replace('" . htmlspecialchars($redirect, ENT_QUOTES) . "');</script>";
+                        echo "<script>
+                            fetch('/public/check_ip_status.php')
+                                .then(r => r.json())
+                                .then(data => {
+                                    if (data.blocked) {
+                                        alert('Your IP has been blocked by administrator.');
+                                        fetch('/public/logout.php', { method: 'POST' })
+                                            .finally(() => {
+                                                window.location.href = '/pages/login.php?blocked=1';
+                                            });
+                                    } else {
+                                        window.location.replace('" . htmlspecialchars($redirect, ENT_QUOTES) . "');
+                                    }
+                                })
+                                .catch(() => {
+                                    window.location.replace('" . htmlspecialchars($redirect, ENT_QUOTES) . "');
+                                });
+                        </script>";
                         exit;
                     } else {
-                        header('Location: ' . $redirect);
+                        echo "<script>
+                            fetch('/public/check_ip_status.php')
+                                .then(r => r.json())
+                                .then(data => {
+                                    if (data.blocked) {
+                                        alert('Your IP has been blocked by administrator.');
+                                        fetch('/public/logout.php', { method: 'POST' })
+                                            .finally(() => {
+                                                window.location.href = '/pages/login.php?blocked=1';
+                                            });
+                                    } else {
+                                        window.location.href = '" . htmlspecialchars($redirect, ENT_QUOTES) . "';
+                                    }
+                                })
+                                .catch(() => {
+                                    window.location.href = '" . htmlspecialchars($redirect, ENT_QUOTES) . "';
+                                });
+                        </script>";
                         exit;
                     }
                 }
             } else {
-                // Increase failed attempts in DB
                 $new_attempts = ($has_row ? $db_attempts : 0) + 1;
                 if ($new_attempts >= $max_attempts) {
                     $blocked_until = $now + $block_time;
                     if ($has_row) {
-                        $stmt2 = $conn->prepare("UPDATE login_attempts SET attempts = ?, blocked_until = ? WHERE ip = ?");
+                        $stmt2 = $conn->prepare("UPDATE login_attempts SET attempts = ?, blocked_until = ?, created_at = NOW() WHERE ip = ?");
                         $stmt2->bind_param("iis", $new_attempts, $blocked_until, $ip);
                     } else {
-                        $stmt2 = $conn->prepare("INSERT INTO login_attempts (ip, attempts, blocked_until) VALUES (?, ?, ?)");
+                        $stmt2 = $conn->prepare("INSERT INTO login_attempts (ip, attempts, blocked_until, created_at) VALUES (?, ?, ?, NOW())");
                         $stmt2->bind_param("sii", $ip, $new_attempts, $blocked_until);
                     }
                     $stmt2->execute();
@@ -223,10 +220,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['login'])) {
                     $_SESSION['login_error'] = 'You have entered the wrong password too many times. Please try again in 15 minutes.';
                 } else {
                     if ($has_row) {
-                        $stmt2 = $conn->prepare("UPDATE login_attempts SET attempts = ?, blocked_until = NULL WHERE ip = ?");
+                        $stmt2 = $conn->prepare("UPDATE login_attempts SET attempts = ?, blocked_until = NULL, created_at = NOW() WHERE ip = ?");
                         $stmt2->bind_param("is", $new_attempts, $ip);
                     } else {
-                        $stmt2 = $conn->prepare("INSERT INTO login_attempts (ip, attempts) VALUES (?, ?)");
+                        $stmt2 = $conn->prepare("INSERT INTO login_attempts (ip, attempts, created_at) VALUES (?, ?, NOW())");
                         $stmt2->bind_param("si", $ip, $new_attempts);
                     }
                     $stmt2->execute();
@@ -241,8 +238,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['login'])) {
 } else {
     if (isset($_SESSION['login_error'])) unset($_SESSION['login_error']);
 }
-
-// Lưu pending_favorite vào session nếu có trên URL (GET)
 if (isset($_GET['pending_favorite']) && is_numeric($_GET['pending_favorite'])) {
     if (!isset($_SESSION['favorites']) || !is_array($_SESSION['favorites'])) {
         $_SESSION['favorites'] = [];
@@ -251,12 +246,10 @@ if (isset($_GET['pending_favorite']) && is_numeric($_GET['pending_favorite'])) {
     if (!in_array($pid, $_SESSION['favorites'])) {
         $_SESSION['favorites'][] = $pid;
     }
-    // Để đảm bảo đồng bộ, cũng lưu vào session['pending_favorite']
     $_SESSION['pending_favorite'] = $pid;
 }
-
 if (isset($_SESSION['user']) && isset($_SESSION['last_activity'])) {
-    if (time() - $_SESSION['last_activity'] > 30) { // 900s = 15 phút
+    if (time() - $_SESSION['last_activity'] > 900) { // 15 minutes
         session_unset();
         session_destroy();
         session_start();
@@ -264,11 +257,10 @@ if (isset($_SESSION['user']) && isset($_SESSION['last_activity'])) {
         header('Location: login.php');
         exit;
     } else {
-        $_SESSION['last_activity'] = time(); // cập nhật lại thời gian hoạt động
+        $_SESSION['last_activity'] = time();
     }
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -314,6 +306,13 @@ if (isset($_SESSION['user']) && isset($_SESSION['last_activity'])) {
         <div class="flex-grow-1 d-flex align-items-center justify-content-center">
             <div class="bg-white rounded-3 shadow p-4" style="width: 100%; max-width: 400px; min-height: 480px;">
                 <h4 class="text-center text-dark fw-bold mb-4">LOGIN</h4>
+                <?php if (isset($_GET['blocked']) && $_GET['blocked'] == '1'): ?>
+                    <div class="alert alert-danger text-center">
+                        <i class="bi bi-shield-x me-2"></i>
+                        <strong>Access Blocked</strong><br>
+                        Your IP address has been blocked by the administrator. Please contact support if you believe this is an error.
+                    </div>
+                <?php endif; ?>
                 <?php if (!empty($message)): ?>
                     <div class="alert alert-info text-center"><?= htmlspecialchars($message) ?></div>
                 <?php endif; ?>
@@ -325,7 +324,6 @@ if (isset($_SESSION['user']) && isset($_SESSION['last_activity'])) {
                     <div class="mb-3">
                         <input type="password" class="form-control" name="password" placeholder="Mật khẩu" required>
                     </div>
-
                     <?php if (isset($_SESSION['login_error'])): ?>
                         <div class="alert alert-danger text-center small">
                             <?= $_SESSION['login_error']; ?>
@@ -334,7 +332,6 @@ if (isset($_SESSION['user']) && isset($_SESSION['last_activity'])) {
                     <?php endif; ?>
                     <button type="submit" class="btn btn-dark w-100" name="login">Login</button>
                 </form>
-
                 <div class="text-center mt-3">
                     <a href="#" onclick="document.getElementById('forgotModal').style.display='block'; return false;" class="text-decoration-none text-primary small">Forgot Password</a> |
                     <a href="#" class="text-decoration-none text-primary small">Privacy Policy</a>
@@ -343,17 +340,14 @@ if (isset($_SESSION['user']) && isset($_SESSION['last_activity'])) {
                 <div id="forgotModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.2);">
                     <div style="background:white;padding:20px;max-width:400px;margin:100px auto;position:relative;border-radius:8px;">
                         <h4 class="mb-4 text-center">Forgot Password</h4>
-
                         <div class="mb-3">
                             <label for="forgotEmail" class="form-label">Email</label>
                             <input type="email" id="forgotEmail" class="form-control" required>
                         </div>
-
                         <div class="d-grid mb-3">
                             <button class="btn btn-dark" onclick="sendCode()">Send Verification Code</button>
                             <div id="loadingTextEMAIL" class="text-primary small mt-1" style="display:none;">🔄 Sending code...</div>
                         </div>
-
                         <div id="codeSection" style="display:none;">
                             <div class="mb-3">
                                 <label for="verifyCode" class="form-label">Enter Verification Code (OTP)</label>
@@ -365,19 +359,14 @@ if (isset($_SESSION['user']) && isset($_SESSION['last_activity'])) {
                                 <button id="resendEmailBtn" class="btn btn-secondary" onclick="resendCode()" style="display:none;">Resend Code</button>
                             </div>
                         </div>
-
                         <p id="forgotMessage" class="mt-3 text-center text-primary small"></p>
                         <p id="forgotMessageloi" class="mt-3 text-center text-danger small"></p>
-
                         <button onclick="document.getElementById('forgotModal').style.display='none'" style="position:absolute;top:10px;right:10px;width:32px;height:32px;border:none;border-radius:4px;background:#ccc;color:#000;cursor:pointer;">X</button>
                     </div>
                 </div>
-
                 <div class="text-center mt-3">
                     <hr>
                 </div>
-
-
                 <div class="text-center mt-3">
                     <small>Don't have an account? <a href="/pages/register.php?redirect=<?= urlencode($redirect) ?>" class="text-danger">Sign up</a></small>
                 </div>

@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 const alert = new bootstrap.Alert(alertEl);
                 alert.close();
             }
-        }, 0);
+        }, 1000);
     }
 
     // Reload lại trang sau 2.5s nếu có msg
