@@ -3,7 +3,7 @@
 <!-- Bootstrap 5 CSS -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 <link href="https://fonts.googleapis.com/css?family=Roboto:400,700,800&display=swap" rel="stylesheet">
-<div class="container-fluid py-4 introduction-main-bg" style="margin-top: 100px;">
+<div class="container-fluid py-4 introduction-main-bg">
   <div class="row">
     <!-- Sidebar -->
     <div class="col-lg-2 col-md-3 mb-4">
@@ -19,7 +19,6 @@
             <li class="list-group-item"><a href="/pages/detail_orders.php" class="text-dark text-decoration-none">Detail Order</a></li>
             <li class="list-group-item"><a href="/pages/introduction.php" class="text-dark text-decoration-none">Introduction</a></li>
             <li class="list-group-item"><a href="/pages/new_promotions.php" class="text-dark text-decoration-none">Promotions</a></li>
-
           </ul>
         </div>
       </div>

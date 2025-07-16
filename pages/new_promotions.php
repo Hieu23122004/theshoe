@@ -1,12 +1,8 @@
 <?php
 include '../includes/database.php';
 include '../includes/header.php';
-
-// Fetch latest 5 articles for sidebar
 $latest_sql = "SELECT post_id, title, image_url, created_at FROM promotions WHERE is_published = 1 ORDER BY created_at DESC LIMIT 5";
 $latest_result = $conn->query($latest_sql);
-
-// Fetch all promotions for main grid
 $main_sql = "SELECT post_id, title, excerpt, image_url, created_at FROM promotions WHERE is_published = 1 ORDER BY created_at DESC";
 $main_result = $conn->query($main_sql);
 ?>

@@ -28,8 +28,17 @@ $selected_category = isset($_GET['category']) ? (int)$_GET['category'] : 0;
 $items_per_page = 8;
 $offset = ($page - 1) * $items_per_page;
 
-// Sửa đoạn này: Nếu chọn category con (9-11) thì chỉ lấy sản phẩm thuộc category đó, còn lại lấy tất cả sản phẩm có parent_id=1
-if ($selected_category && in_array($selected_category, [9,10,11])) {
+// Lấy danh sách category_id có parent_id = 2 từ database
+$handbag_category_ids = [];
+$handbag_cat_result = $conn->query("SELECT category_id FROM categories WHERE parent_id = 2");
+if ($handbag_cat_result) {
+    while ($cat = $handbag_cat_result->fetch_assoc()) {
+        $handbag_category_ids[] = (int)$cat['category_id'];
+    }
+}
+
+// Nếu chọn category con thuộc parent_id=2 thì chỉ lấy sản phẩm thuộc category đó, còn lại lấy tất cả sản phẩm có parent_id=2
+if ($selected_category && in_array($selected_category, $handbag_category_ids)) {
     $count_query = "SELECT COUNT(*) as total FROM products WHERE category_id = $selected_category";
     $query = "SELECT * FROM products WHERE category_id = $selected_category";
 } else {

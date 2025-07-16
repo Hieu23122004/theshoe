@@ -68,7 +68,7 @@
   }
 </style>
 
-<div class="container py-4 border-top border-bottom truck-section">
+<div class="container py-3 border-top border-bottom truck-section">
   <div class="row text-center">
     <div class="col-md-4 mb-4 mb-md-0 truck-item">
       <div class="mb-3">

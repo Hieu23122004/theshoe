@@ -1,4 +1,34 @@
-/* Container cách top 100px */
+/* Đảm bảo không có scrollbar ngang trên toàn trang */
+html, body {
+  overflow-x: hidden !important;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+html::-webkit-scrollbar-track, 
+body::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+html::-webkit-scrollbar, 
+body::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+  display: none !important;
+}
+
+.container, .container-fluid, .row, .col, [class*="col-"] {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+.container::-webkit-scrollbar, 
+.container-fluid::-webkit-scrollbar, 
+.row::-webkit-scrollbar, 
+.col::-webkit-scrollbar, 
+[class*="col-"]::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
 #bannerCarousel {
     /* Điều chỉnh theo chiều cao của header */
     position: relative;
@@ -13,13 +43,13 @@
     border-radius: 0 !important;
 }
 .carousel-item img {
-    height: 490px;
+    height: 500px;
     width: 100%;
     object-fit: cover;
 }
 
 .main-promotions-content {
-  margin-top: 80px !important;
+  margin-top: 60px !important;
 }
 
 /* Sidebar Latest Articles */
@@ -187,28 +217,39 @@
 }
 
 /* Đảm bảo newsRow luôn chỉ có 4 bài trên 1 hàng, không wrap */
-#newsRow {
-  display: flex !important;
-  flex-wrap: nowrap !important;
-  overflow: hidden;
-}
-
 /* Marquee effect for newsRow */
 .news-marquee-wrapper {
   display: flex;
   width: max-content;
   animation: news-marquee 30s linear infinite;
   gap: 20px;
+  overflow: visible !important;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
+.news-marquee-wrapper::-webkit-scrollbar {
+  display: none;
+}
+
 @keyframes news-marquee {
   0% { transform: translateX(0); }
   100% { transform: translateX(-50%); }
 }
-#newsRow {
-  overflow: hidden;
+
+#newsRow, #featuredRow {
+  overflow: hidden !important;
   width: 100%;
   flex-wrap: nowrap !important;
   display: block !important;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+#newsRow::-webkit-scrollbar, 
+#featuredRow::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
 }
 .news-card-item {
   flex: 0 0 270px;
@@ -541,10 +582,5 @@
   transform: translateY(-8px) scale(1.025);
   z-index: 21;
 }
-.news-marquee-wrapper {
-  overflow: visible !important;
-}
-#newsRow {
-  overflow: visible !important;
-}
+
 

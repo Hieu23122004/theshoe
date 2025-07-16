@@ -60,4 +60,4 @@ setInterval(function() {
             window.location.href = '/pages/login.php?timeout=1';
         }
     }
-}, 5 * 1000); // kiểm tra mỗi 5 giây
+}, 1 * 1000); // kiểm tra mỗi 5 giây

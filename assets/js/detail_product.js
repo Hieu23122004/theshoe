@@ -104,22 +104,32 @@ document.getElementById('fundiinLearnMore').addEventListener('click', function (
   setTimeout(function() {
     const style = document.createElement('style');
     style.innerHTML = `
-      .swal2-toast-custom {
+      .swal2-toast-custom-small {
+        height: 70px !important;
+        min-height: 50px !important;
         display: flex !important;
-        align-items: center;
-        gap: 8px;
+        align-items: center !important;
       }
-      .swal2-toast-custom span {
-        margin-top: 0 !important;
-        margin-right: 8px;
+      .swal2-toast-custom-small .swal2-icon {
+        width: 25px !important;
+        height: 25px !important;
+        margin: 0 10px 0 0 !important;
+        flex-shrink: 0 !important;
       }
-      .swal2-popup .swal2-html-container::-webkit-scrollbar {
-        width: 6px;
-        background: #f0f0f0;
+      .swal2-toast-custom-small .swal2-title {
+        font-size: 14px !important;
+        line-height: 1 !important;
+        margin: 0 !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
       }
-      .swal2-popup .swal2-html-container::-webkit-scrollbar-thumb {
-        background: #e0e0e0;
-        border-radius: 4px;
+      .swal2-toast-custom-small .swal2-content {
+        margin: 0 !important;
+        padding: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        width: 100% !important;
       }
     `;
     document.head.appendChild(style);
@@ -129,14 +139,19 @@ document.getElementById('fundiinLearnMore').addEventListener('click', function (
         navigator.clipboard.writeText(code);
         Swal.fire({
           toast: true,
-          position: 'top-end',
-          icon: 'success',
-          title: `<span style="color:#fff;margin-top:100px">Coupon code copied: <b>${code}</b></span>`,
-          background: '#222',
-          color: '#fff',
-          showConfirmButton: false,
-          timer: 1200,
-          customClass: { popup: 'swal2-toast-custom' }
+                position: 'top-end',
+                icon: 'success',
+                title: `Coupon code: <b>${code}</b>`,
+                background: '#222',
+                color: '#fff',
+                showConfirmButton: false,
+                timer: 2500,
+                timerProgressBar: true,
+                width: 280,
+                padding: '8px 12px',
+                customClass: { 
+                  popup: 'swal2-toast-custom-small'
+                }
         });
       });
     });

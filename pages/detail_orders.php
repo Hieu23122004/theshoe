@@ -10,9 +10,49 @@ if (!isset($_SESSION['user_id'])) {
     exit;
 }
 include '../includes/database.php';
-$user_id = $_SESSION['user_id'];
 
-// Get all orders of the user
+// Function để xác định class CSS cho từng bước trong timeline
+function getStepClass($currentStatus, $stepStatus)
+{
+    $statusOrder = ['Pending', 'Processing', 'Shipped', 'Delivered'];
+    $currentIndex = array_search($currentStatus, $statusOrder);
+    $stepIndex = array_search($stepStatus, $statusOrder);
+
+    if ($currentStatus === 'Cancelled') {
+        return $stepStatus === 'Pending' ? 'cancelled' : '';
+    }
+
+    if ($currentIndex === false || $stepIndex === false) {
+        return '';
+    }
+
+    if ($stepIndex < $currentIndex) {
+        return 'completed';
+    } elseif ($stepIndex === $currentIndex) {
+        return 'active';
+    }
+
+    return '';
+}
+
+// Function để lấy icon cho từng trạng thái
+function getStatusIcon($status)
+{
+    switch ($status) {
+        case 'Pending':
+            return '⏳';
+        case 'Processing':
+            return '🔄';
+        case 'Shipped':
+            return '🚚';
+        case 'Delivered':
+            return '✅';
+        default:
+            return '○';
+    }
+}
+
+$user_id = $_SESSION['user_id'];
 $stmt = $conn->prepare("SELECT * FROM orders WHERE user_id = ? ORDER BY created_at DESC");
 $stmt->bind_param('i', $user_id);
 $stmt->execute();
@@ -28,6 +68,103 @@ include '../includes/header.php';
 <link rel="stylesheet" href="/assets/css/detail_orders.css">
 <!-- Bootstrap 5 CSS -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+<style>
+    .order-status-timeline {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 20px 0;
+        padding: 0 10px;
+        position: relative;
+    }
+
+    .order-status-timeline::before {
+        content: '';
+        position: absolute;
+        top: 20px;
+        left: 50px;
+        right: 50px;
+        height: 2px;
+        background-color: #e0e0e0;
+        z-index: 1;
+    }
+
+    .status-step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        position: relative;
+        z-index: 2;
+        background: white;
+        padding: 5px;
+    }
+
+    .status-step.active {
+        color: #28a745;
+    }
+
+    .status-step.completed {
+        color: #28a745;
+    }
+
+    .status-step.cancelled {
+        color: #dc3545;
+    }
+
+    .status-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        border: 2px solid #e0e0e0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: white;
+        margin-bottom: 8px;
+        font-size: 18px;
+    }
+
+    .status-step.active .status-circle,
+    .status-step.completed .status-circle {
+        border-color: #28a745;
+        background: #28a745;
+        color: white;
+    }
+
+    .status-step.cancelled .status-circle {
+        border-color: #dc3545;
+        background: #dc3545;
+        color: white;
+    }
+
+    .status-label {
+        font-size: 12px;
+        font-weight: 500;
+        text-align: center;
+        white-space: nowrap;
+    }
+
+    @media (max-width: 768px) {
+        .order-status-timeline {
+            padding: 0 5px;
+        }
+
+        .order-status-timeline::before {
+            left: 25px;
+            right: 25px;
+        }
+
+        .status-circle {
+            width: 30px;
+            height: 30px;
+            font-size: 14px;
+        }
+
+        .status-label {
+            font-size: 10px;
+        }
+    }
+</style>
 <div class="order-details-container">
     <?php if (empty($orders)): ?>
         <div style="text-align:center;color:#888;font-size:1.2rem;">You have no orders yet.</div>
@@ -36,7 +173,32 @@ include '../includes/header.php';
             <div class="order-details-block">
                 <div class="order-details-header">
                     <span class="order-details-shop">Order ID: #<?php echo $order['order_id']; ?></span>
-                    <span class="order-details-status"><?php echo htmlspecialchars($order['status']); ?></span>
+                </div>
+
+                <!-- Order Status Timeline -->
+                <div class="order-status-timeline">
+                    <?php
+                    $statuses = ['Pending', 'Processing', 'Shipped', 'Delivered'];
+                    foreach ($statuses as $status):
+                        $stepClass = getStepClass($order['status'], $status);
+                        $icon = getStatusIcon($status);
+                    ?>
+                        <div class="status-step <?php echo $stepClass; ?>">
+                            <div class="status-circle">
+                                <?php echo $icon; ?>
+                            </div>
+                            <div class="status-label"><?php echo $status; ?></div>
+                        </div>
+                    <?php endforeach; ?>
+
+                    <?php if ($order['status'] === 'Cancelled'): ?>
+                        <div class="status-step cancelled">
+                            <div class="status-circle">
+                                ❌
+                            </div>
+                            <div class="status-label">Cancelled</div>
+                        </div>
+                    <?php endif; ?>
                 </div>
 
                 <div class="order-details-products">
@@ -106,7 +268,7 @@ include '../includes/header.php';
                 </div>
                 <div class="order-details-action">
                     <a href="/pages/home.php" class="btn">Back to Home</a>
-                    <?php if ($order['status'] === 'Processing'): ?>
+                    <?php if ($order['status'] === 'Pending'): ?>
                         <button class="btn btn-dark btn-cancel-order" data-order-id="<?php echo $order['order_id']; ?>" style=" background: linear-gradient(90deg, #000000 0%, #444444 100%);">Cancel Order</button>
                     <?php endif; ?>
                 </div>

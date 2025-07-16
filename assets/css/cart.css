@@ -144,7 +144,6 @@
 .cart-summary-title {
     font-size: 1.2rem;
     font-weight: 700;
-    margin-bottom: 18px;
 }
 
 .cart-summary-total {
@@ -156,7 +155,7 @@
 
 .cart-summary-label {
     color: #222;
-    margin-top: 50px;
+    margin-top: 10px;
     font-size: 16px;
     margin-bottom: 2px;
     font-weight: bold;

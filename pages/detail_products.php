@@ -103,9 +103,67 @@ while ($row = $res->fetch_assoc()) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+    <!-- CSS cho modal phóng to ảnh -->
+    <style>
+        .image-modal {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+        }
+
+        .image-modal-content {
+            position: relative;
+            margin: auto;
+            display: block;
+            max-width: 90%;
+            max-height: 90%;
+            top: 50%;
+            transform: translateY(-50%);
+            border-radius: 10px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            animation: zoomIn 0.3s ease-out;
+        }
+
+        @keyframes zoomIn {
+            from {
+                transform: translateY(-50%) scale(0.8);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(-50%) scale(1);
+                opacity: 1;
+            }
+        }
+
+        .image-modal-close {
+            display: none;
+        }
+
+        .gallery-image {
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .gallery-image:hover {
+            transform: scale(1.02);
+        }
+    </style>
 </head>
 
 <body style="margin-top: 120px;">
+    <!-- Modal phóng to ảnh -->
+    <div id="imageModal" class="image-modal">
+        <span class="image-modal-close">&times;</span>
+        <img class="image-modal-content" id="modalImage" alt="Enlarged product image">
+    </div>
+
     <div class="container detail-product-container">
         <div class="row">
             <!-- Gallery -->
@@ -115,7 +173,7 @@ while ($row = $res->fetch_assoc()) {
                         <?php for ($i = 0; $i < 4; $i++): ?>
                             <div class="gallery-grid-item gallery-grid-item-large">
                                 <?php if (!empty($gallery[$i])): ?>
-                                    <img src="<?php echo htmlspecialchars($gallery[$i]); ?>" alt="Product image <?php echo $i + 1; ?>" class="gallery-main-img gallery-main-img-large">
+                                    <img src="<?php echo htmlspecialchars($gallery[$i]); ?>" alt="Product image <?php echo $i + 1; ?>" class="gallery-main-img gallery-main-img-large gallery-image">
                                 <?php endif; ?>
                             </div>
                         <?php endfor; ?>
@@ -354,6 +412,47 @@ while ($row = $res->fetch_assoc()) {
     </script>
     <script src="/assets/js/detail_product.js"></script>
     <script>
+        // --- Image Modal Logic ---
+        const imageModal = document.getElementById('imageModal');
+        const modalImage = document.getElementById('modalImage');
+        const closeModal = document.querySelector('.image-modal-close');
+
+        // Thêm sự kiện click cho tất cả ảnh trong gallery
+        function addImageClickEvents() {
+            document.querySelectorAll('.gallery-image, .gallery-thumb, .product-image').forEach(function(img) {
+                img.style.cursor = 'pointer';
+                img.classList.add('gallery-image');
+                img.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    imageModal.style.display = 'block';
+                    modalImage.src = this.src;
+                    document.body.style.overflow = 'hidden'; // Ngăn scroll trang
+                });
+            });
+        }
+
+        // Đóng modal khi click vào dấu X
+        closeModal.addEventListener('click', function() {
+            imageModal.style.display = 'none';
+            document.body.style.overflow = 'auto'; // Cho phép scroll lại
+        });
+
+        // Đóng modal khi click bên ngoài ảnh
+        imageModal.addEventListener('click', function(e) {
+            if (e.target === imageModal) {
+                imageModal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }
+        });
+
+        // Đóng modal bằng phím ESC
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && imageModal.style.display === 'block') {
+                imageModal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }
+        });
+
         // --- Gallery logic ---
         document.querySelectorAll('.gallery-thumb').forEach(function(thumb, idx) {
             thumb.addEventListener('click', function() {
@@ -361,6 +460,11 @@ while ($row = $res->fetch_assoc()) {
                 document.querySelectorAll('.gallery-thumb').forEach(t => t.classList.remove('active'));
                 this.classList.add('active');
             });
+        });
+
+        // Khởi tạo sự kiện click cho ảnh khi trang load
+        document.addEventListener('DOMContentLoaded', function() {
+            addImageClickEvents();
         });
 
         // --- Color/Size/Stock logic ---
@@ -514,10 +618,10 @@ while ($row = $res->fetch_assoc()) {
                     allowOutsideClick: false,
                     background: 'transparent',
                     didOpen: () => {
-                        document.getElementById('loginFavBtn').onclick = function () {
+                        document.getElementById('loginFavBtn').onclick = function() {
                             window.location.href = '/pages/login.php?pending_favorite=<?php echo $product_id; ?>';
                         };
-                        document.getElementById('cancelFavBtn').onclick = function () {
+                        document.getElementById('cancelFavBtn').onclick = function() {
                             Swal.close();
                         };
                     }
@@ -540,7 +644,7 @@ while ($row = $res->fetch_assoc()) {
                     icon.classList.toggle('far');
                     // Cập nhật badge số lượng yêu thích trên header
                     fetch('/public/get_favorite_count.php')
-                        .then( r => r.json())
+                        .then(r => r.json())
                         .then(data => {
                             if (data.success && typeof updateFavoriteBadge === 'function') updateFavoriteBadge(data.count);
                         });
@@ -554,7 +658,7 @@ while ($row = $res->fetch_assoc()) {
                     html: `
                     <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 5px;">
                         <div style="font-size: 20px; font-weight: 700;">Successfully added to cart!</div>
-                        <ion-icon name="checkmark-circle-outline" style="font-size: 30px; color: black;"></ion-icon>
+                        <ion-icon name="checkmark-circle-outline" style="font-size: 30px; color: black;margin-left: 160px;"></ion-icon>
                     </div>
                     <div style="display:flex;align-items:center;gap:12px;">
                         <img src="${product.image_url}" style="width:100px;height:100px;object-fit:cover;border-radius:6px;border:1px solid #eee;">
