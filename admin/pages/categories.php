@@ -1,11 +1,11 @@
-<?php
+﻿<?php
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 include '../../includes/auth.php';
 include '../../includes/database.php';
-include '../../includes/header_ad.php';
+
 
 function showAlert($msg, $type = 'success')
 {
@@ -142,9 +142,8 @@ $categories = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
 
 $result2 = $conn->query("SELECT category_id, name FROM categories WHERE parent_id IS NULL ORDER BY name ASC");
 $parents = $result2 ? $result2->fetch_all(MYSQLI_ASSOC) : [];
+include '../../includes/header_ad.php';
 ?>
-<?php if (!defined('INCLUDED_HEADER')) {
-} ?>
 <div class="container-fluid px-2" style="margin-top: 110px;">
     <?= $message ?>
     <div class="card mb-4">
@@ -208,6 +207,6 @@ $parents = $result2 ? $result2->fetch_all(MYSQLI_ASSOC) : [];
         </div>
     </div>
 </div>
-<script src="../assets/js/ad_categories.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="../../assets/js/ad_categories.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 <?php include '../../includes/footer.php'; ?>
