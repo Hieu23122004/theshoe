@@ -29,16 +29,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['register'])) {
       $message = "Database error: " . $conn->error;
     } else {
       $stmt->bind_param("ssssss", $full_name, $email, $password, $phone, $address, $role);
-      if ($stmt->execute()) {
-        $message = "Registration successful! You can now log in.";
-        // Không auto-login, không chuyển trang
-      } else {
-        if ($conn->errno == 1062) {
-          $message = "Email already exists!";
+      try {
+        if ($stmt->execute()) {
+          $message = "Registration successful! You can now log in.";
+          // Không auto-login, không chuyển trang
+        }
+      } catch (mysqli_sql_exception $e) {
+        if ($e->getCode() == 1062) { // Duplicate entry error
+          $message = "Email already exists! Please use a different email.";
         } else {
-          $message = "Error inserting data: " . $conn->error;
+          $message = "Error creating account: " . $e->getMessage();
         }
       }
+      $stmt->close();
     }
   }
 }
@@ -93,7 +96,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['register'])) {
         <h4 class="text-center text-dark fw-bold mb-4">REGISTER</h4>
 
         <?php if ($message): ?>
-          <div class="alert alert-info text-center"><?= htmlspecialchars($message) ?></div>
+          <?php 
+          // Determine alert type based on message content
+          $alertType = 'info';
+          if (strpos($message, 'successful') !== false) {
+            $alertType = 'success';
+          } elseif (strpos($message, 'Error') !== false || strpos($message, 'exists') !== false || strpos($message, 'not allowed') !== false || strpos($message, 'Invalid') !== false) {
+            $alertType = 'danger';
+          }
+          ?>
+          <div class="alert alert-<?= $alertType ?> text-center"><?= htmlspecialchars($message) ?></div>
         <?php endif; ?>
 
         <form method="POST">
