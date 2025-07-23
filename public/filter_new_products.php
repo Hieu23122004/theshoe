@@ -25,12 +25,12 @@ $color = isset($_GET['color']) ? $_GET['color'] : 'all';
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 
 
-$items_per_page = 8;
+$items_per_page = 12;
 $offset = ($page - 1) * $items_per_page;
 
 
-$count_query = "SELECT COUNT(*) as total FROM products p JOIN categories c ON p.category_id = c.category_id WHERE c.parent_id = 1";
-$query = "SELECT p.* FROM products p JOIN categories c ON p.category_id = c.category_id WHERE c.parent_id = 1";
+$count_query = "SELECT COUNT(*) as total FROM products p JOIN categories c ON p.category_id = c.category_id WHERE c.parent_id = 1 AND p.created_at >= DATE_SUB(NOW(), INTERVAL 3 MONTH)";
+$query = "SELECT p.* FROM products p JOIN categories c ON p.category_id = c.category_id WHERE c.parent_id = 1 AND p.created_at >= DATE_SUB(NOW(), INTERVAL 3 MONTH)";
 
 
 $price_filter = "";

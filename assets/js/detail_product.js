@@ -96,7 +96,8 @@ document.getElementById('fundiinLearnMore').addEventListener('click', function (
     width: 540,
     background: '#fff',
     customClass: {
-      popup: 'fundiin-popup-custom'
+      popup: 'fundiin-popup-custom',
+      closeButton: 'swal2-close-no-outline'
     }
   });
 
@@ -130,6 +131,16 @@ document.getElementById('fundiinLearnMore').addEventListener('click', function (
         display: flex !important;
         align-items: center !important;
         width: 100% !important;
+      }
+      .swal2-close-no-outline {
+        outline: none !important;
+        box-shadow: none !important;
+        border: none !important;
+        background: transparent !important;
+      }
+      .swal2-close-no-outline:focus {
+        outline: none !important;
+        box-shadow: none !important;
       }
     `;
     document.head.appendChild(style);

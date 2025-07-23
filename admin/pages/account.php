@@ -1,4 +1,9 @@
-﻿<?php
+﻿
+<?php
+// Ensure session is started before any output
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 require_once '../../includes/database.php';
 $message = '';
@@ -55,7 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             $error = 'Failed to update user.';
                         }
                     } else {
-                        $error = 'Email already exists for another user.';
+                        $error = 'Email already exists.';
                     }
                 } else {
                     $error = 'Full name and email are required.';
@@ -69,7 +74,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $stmt = $conn->prepare("UPDATE users SET password_hash = ? WHERE user_id = ?");
                     $stmt->bind_param("si", $password_hash, $user_id);
                     if ($stmt->execute()) {
-                        $message = 'Password reset successfully.';
+                        $message = 'Password reset success.';
                     } else {
                         $error = 'Failed to reset password.';
                     }
@@ -78,8 +83,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
                 break;
             case 'delete_user':
-                $user_id = $_POST['user_id'];
-                if ($user_id != $_SESSION['user']['user_id']) {
+                $user_id = isset($_POST['user_id']) ? (int)$_POST['user_id'] : 0;
+                if (
+                    isset($_SESSION['user']) &&
+                    is_array($_SESSION['user']) &&
+                    isset($_SESSION['user']['user_id']) &&
+                    $user_id > 0 &&
+                    $user_id != (int)$_SESSION['user']['user_id']
+                ) {
                     $stmt = $conn->prepare("DELETE FROM users WHERE user_id = ?");
                     $stmt->bind_param("i", $user_id);
                     if ($stmt->execute()) {
@@ -100,21 +111,54 @@ include '../../includes/header_ad.php';
 ?>
 <div class="container-fluid px-2" style="margin-top: 110px;">
     <!-- Messages -->
-    <?php if ($message): ?>
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <?= htmlspecialchars($message) ?>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    <?php endif; ?>
-    <?php if ($error): ?>
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <?= htmlspecialchars($error) ?>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    <?php endif; ?>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var isPost = <?= json_encode($_SERVER['REQUEST_METHOD'] === 'POST') ?>;
+        var msg = <?= json_encode($message) ?>;
+        var err = <?= json_encode($error) ?>;
+        if (isPost && msg) {
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: msg,
+                showConfirmButton: false,
+                timer: 2000,
+                background: '#fff',
+                color: '#8c7e71',
+                customClass: {popup: 'swal2-toast-custom'}
+            });
+        }
+        if (isPost && err) {
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'error',
+                title: err,
+                showConfirmButton: false,
+                timer: 2000,
+                background: '#fff',
+                color: '#8c7e71',
+                customClass: {popup: 'swal2-toast-custom'}
+            });
+        }
+    });
+    </script>
+    <style>
+    .swal2-toast-custom {
+        border-radius: 0.75rem !important;
+        box-shadow: 0 0.2rem 1.5rem 0 rgba(140,126,113,0.12) !important;
+         font-size: 1rem;
+        width: 500px !important;
+        height: 80px !important;
+        padding: 1.5rem 2rem !important;
+        text-align: center !important;
+    }
+    </style>
     <!-- Add/Edit User Card -->
     <div class="card mb-4">
-        <div class="card-header bg-primary"><strong>Add / Edit User</strong></div>
+        <div class="card-header" style="background-color: #8c7e71;"><strong>Add / Edit User</strong></div>
         <div class="card-body">
             <form method="POST" id="userForm">
                 <input type="hidden" name="action" id="user_action" value="create_user">
@@ -191,7 +235,12 @@ include '../../includes/header_ad.php';
                                 <button class="btn btn-sm btn-outline-warning" onclick="resetPassword(<?= $user['user_id'] ?>, '<?= htmlspecialchars($user['fullname']) ?>')" title="Reset Password">
                                     Reset
                                 </button>
-                                <?php if ($user['user_id'] != $_SESSION['user']['user_id']): ?>
+                                <?php if (
+                                    isset($_SESSION['user']) &&
+                                    is_array($_SESSION['user']) &&
+                                    isset($_SESSION['user']['user_id']) &&
+                                    $user['user_id'] != (int)$_SESSION['user']['user_id']
+                                ): ?>
                                     <form method="POST" class="d-inline" onsubmit="return deleteUserWithAlert('<?= htmlspecialchars($user['fullname']) ?>');">
                                         <input type="hidden" name="action" value="delete_user">
                                         <input type="hidden" name="user_id" value="<?= $user['user_id'] ?>">

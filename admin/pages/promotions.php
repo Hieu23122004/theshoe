@@ -97,9 +97,43 @@ include '../../includes/header_ad.php';
 ?>
 <link rel="stylesheet" href="../../assets/css/new_promotions.css">
 <div class="container-fluid px-2" style="margin-top:110px;">
-    <?= $message ?>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var msg = <?= json_encode(strip_tags($message)) ?>;
+        if (msg) {
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: msg.includes('success') ? 'success' : (msg.includes('error') || msg.includes('danger') ? 'error' : 'info'),
+                title: msg,
+                showConfirmButton: false,
+                timer: 2000,
+                background: '#fff',
+                color: '#8c7e71',
+                customClass: {popup: 'swal2-toast-custom'}
+            });
+        }
+    });
+    </script>
+    <style>
+    .swal2-toast-custom {
+        border-radius: 0.75rem !important;
+        box-shadow: 0 0.2rem 1.5rem 0 rgba(140,126,113,0.12) !important;
+        font-size: 1.1rem;
+        width: 600px !important;
+        height: 80px !important;
+        padding: 1.5rem 2rem !important;
+        text-align: left !important;
+        display: flex !important;
+        align-items: center !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+    </style>
     <div class="card mb-4">
-        <div class="card-header bg-primary"><strong><?= $edit_data ? 'Edit Article' : 'Add New Article' ?></strong></div>
+        <div class="card-header" style="background-color: #8c7e71;"><strong><?= $edit_data ? 'Edit Article' : 'Add New Article' ?></strong></div>
         <div class="card-body">
             <form method="POST">
                 <?php if ($edit_data): ?>
@@ -108,27 +142,27 @@ include '../../includes/header_ad.php';
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <label class="form-label">Title</label>
-                        <input type="text" class="form-control" name="title" id="title" required value="<?= htmlspecialchars($edit_data['title'] ?? '') ?>">
+                        <input type="text" class="form-control" name="title" id="title" required value="<?= htmlspecialchars($edit_data['title'] ?? '') ?>" placeholder="Nhập tiêu đề bài viết">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Slug</label>
-                        <input type="text" class="form-control" name="slug" id="slug" required value="<?= htmlspecialchars($edit_data['slug'] ?? '') ?>">
+                        <input type="text" class="form-control" name="slug" id="slug" required value="<?= htmlspecialchars($edit_data['slug'] ?? '') ?>" placeholder="Tự động tạo hoặc nhập slug tùy chỉnh">
                     </div>
                 </div>
                 <div class="row mb-3">
                     <div class="col-md-9">
                         <label class="form-label">Excerpt</label>
-                        <textarea class="form-control" name="excerpt" rows="3"><?= htmlspecialchars($edit_data['excerpt'] ?? '') ?></textarea>
+                        <textarea class="form-control" name="excerpt" rows="3" placeholder="Tóm tắt ngắn cho bài viết (không bắt buộc)"><?= htmlspecialchars($edit_data['excerpt'] ?? '') ?></textarea>
                     </div>
                     <div class="col-md-3">
                         <label class="form-label">Featured Image URL</label>
-                        <input type="text" class="form-control" name="image_url" id="image_url" value="<?= htmlspecialchars($edit_data['image_url'] ?? '') ?>" onchange="validateAndPreviewImage(this)" placeholder="Paste image URL here">
+                        <input type="text" class="form-control" name="image_url" id="image_url" value="<?= htmlspecialchars($edit_data['image_url'] ?? '') ?>" onchange="validateAndPreviewImage(this)" placeholder="Dán link ảnh đại diện">
                         <div id="imagePreview" class="mt-3"></div>
                     </div>
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Content</label>
-                    <textarea id="editor" class="form-control" name="content" rows="8"><?= htmlspecialchars($edit_data['content'] ?? '') ?></textarea>
+                    <textarea id="editor" class="form-control" name="content" rows="8" placeholder="Nhập nội dung bài viết tại đây dạng HTML"><?= htmlspecialchars($edit_data['content'] ?? '') ?></textarea>
                 </div>
                 <div class="row mb-3">
                     <div class="col-md-6">
@@ -145,7 +179,7 @@ include '../../includes/header_ad.php';
                         </div>
                     </div>
                 </div>
-                <button class="btn btn-primary" type="submit">Save</button>
+                <button class="btn" style="background-color: #8c7e71;" type="submit">Save</button>
                 <button type="reset" class="btn btn-secondary">Reset</button>
                 <?php if ($edit_data): ?>
                     <a href="?" class="btn btn-outline-secondary">Cancel</a>
@@ -177,7 +211,7 @@ include '../../includes/header_ad.php';
                             <td><?= date('M d, Y H:i', strtotime($post['created_at'])) ?></td>
                             <td>
                                 <a href="?edit=<?= $post['post_id'] ?>" class="btn btn-sm btn-warning">Edit</a>
-                                <a href="?delete=<?= $post['post_id'] ?>" class="btn btn-sm btn-danger" onclick="return confirmDelete('<?= htmlspecialchars($post['title'], ENT_QUOTES) ?>')">Delete</a>
+                                <a href="?delete=<?= $post['post_id'] ?>" class="btn btn-sm btn-danger">Delete</a>
                             </td>
                         </tr>
                     <?php endforeach ?>
@@ -215,10 +249,7 @@ include '../../includes/header_ad.php';
             document.getElementById("slug").value = text;
         }
     });
-    // Xác nhận trước khi xóa
-    function confirmDelete(title) {
-        return confirm('Are you sure you want to delete "' + title + '"?\nThis action cannot be undone.');
-    }
+    // Đã bỏ xác nhận trước khi xóa, xóa phát là xóa luôn
     // Xử lý và validate URL ảnh
     function validateAndPreviewImage(input) {
         const previewContainer = document.getElementById('imagePreview');

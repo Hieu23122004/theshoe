@@ -8,9 +8,8 @@
     flex: 2;
     background: #fff;
     border-radius: 10px;
-    padding: 24px 0 24px 0;
+    padding: 24px;
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
-    padding-left: 0 !important;
 }
 
 .cart-list h3 {
@@ -24,8 +23,7 @@
     align-items: center;
     gap: 24px; /* Cách đều các thành phần trong cart-item */
     border-bottom: 1px solid #eee;
-    padding: 18px 0 18px 0;
-    padding-left: 0 !important;
+    padding: 18px 0;
 }
 
 .cart-item:last-child {
@@ -234,24 +232,17 @@
     font-size: 18px;
 }
 
-/* Thay đổi để checkbox sát mép trái */
+/* Thay đổi để checkbox có khoảng cách hợp lý */
 .cart-item > .cart-item-select {
-    margin-left: 15px !important;
-    margin-right: 0 !important;
+    margin-right: 16px;
     align-self: center;
-    padding-left: 0 !important;
-    border: 0;
+    border: 1.5px solid #bbb;
     box-shadow: none;
 }
 
-/* Nếu vẫn còn khoảng trắng, thêm đoạn này ép sát mọi thành phần con bên trái */
-.cart-list, .cart-item, .container {
+/* Container có padding bình thường */
+.cart-list, .cart-item {
     box-sizing: border-box;
-}
-
-.container {
-    padding-left: 0 !important;
-    margin-left: 0 !important;
 }
 
 /* Hiển thị tối đa 3 sản phẩm, nếu nhiều hơn thì cho scroll dọc */
@@ -260,7 +251,7 @@
     overflow-y: auto;
     scrollbar-width: thin;
     scrollbar-color: #bbb #f5f5f5;
-    padding-right: 16px; /* Thêm khoảng cách bên phải để tránh dính vào giá tiền */
+    padding-right: 8px; /* Khoảng cách cho scrollbar */
     box-sizing: content-box;
 }
 .cart-list-scrollable::-webkit-scrollbar {
@@ -272,9 +263,9 @@
     background: #bbb;
     border-radius: 8px;
 }
-/* Đảm bảo giá tiền không bị sát mép phải */
+/* Đảm bảo giá tiền có khoảng cách hợp lý */
 .cart-item-total {
-    margin-right: 8px;
+    margin-right: 16px;
 }
 /* Đảm bảo checkbox luôn nền trắng, không bị nền đen */
 .cart-item-select[type="checkbox"] {

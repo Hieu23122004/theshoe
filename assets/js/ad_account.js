@@ -75,9 +75,7 @@ function resetPassword(userId, userName) {
 }
 
 function deleteUserWithAlert(userName) {
-    // Show JavaScript alert instead of modal
-    setTimeout(function() {
-        alert('User "' + userName + '" has been deleted successfully!');
-    }, 100);
-    return true; // Allow form submission
+    // Show SweetAlert2 toast after form submission (handled in PHP)
+    // Just allow form submission, notification will be handled by PHP after reload
+    return true;
 }

@@ -42,12 +42,12 @@ $total_quantity = 0;
 foreach ($cart as $item) $total_quantity += $item['quantity'];
 ?>
 
-<div class="container" style="margin-top:65px;">
+<div class="container-fluid" style="margin-top:65px;">
     <div class="cart-main">
         <div class="cart-list cart-list-scrollable">
             <div style="display:flex;align-items:center;justify-content:space-between;">
                 <h3 style="font-size:1.3rem;font-weight:700;">Your cart:</h3>
-                <span style="font-size:15px;color:#222;"><?php echo $total_quantity; ?> items</span>
+                <span id="cart-item-count" style="font-size:15px;color:#222;"><?php echo $total_quantity; ?> items</span>
             </div>
             <?php if (empty($cart)): ?>
                 <div class="alert alert-dark" style="text-align: center;">
@@ -63,9 +63,9 @@ foreach ($cart as $item) $total_quantity += $item['quantity'];
                     $total = $p['price'] * $item['quantity'];
                     $grand_total += $total;
                 ?>
-                    <div class="cart-item" data-pid="<?php echo $pid; ?>" data-color="<?php echo htmlspecialchars($item['color']); ?>" data-size="<?php echo htmlspecialchars($item['size']); ?>" style="display:flex;align-items:center;position:relative;">
-                        <!-- Checkbox sát mép trái -->
-                        <input type="checkbox" class="cart-item-select" style="width:18px;height:18px;margin-right:0;" />
+                    <div class="cart-item" data-pid="<?php echo $pid; ?>" data-color="<?php echo htmlspecialchars($item['color']); ?>" data-size="<?php echo htmlspecialchars($item['size']); ?>">
+                        <!-- Checkbox -->
+                        <input type="checkbox" class="cart-item-select" style="width:18px;height:18px;" />
                         <a href="/pages/detail_products.php?id=<?php echo $pid; ?>">
                             <img src="<?php echo htmlspecialchars($p['image_url']); ?>" class="cart-item-img" alt="">
                         </a>

@@ -75,7 +75,11 @@ $current_page = basename($_SERVER['PHP_SELF']);
 
                    <a href="/admin/pages/account.php"><button class="icon-btn position-relative"><i class="bi bi-person fs-4"></i>
                     </button>
-                    <a href="/pages/login.php"><button class="icon-btn"><i class="bi bi-box-arrow-in-right fs-4"></i></button></a>
+                     <?php if (isset($_SESSION['is_logged_in']) && $_SESSION['is_logged_in']): ?>
+                        <a href="/public/logout.php"><button class="icon-btn" title="Logout"><i class="bi bi-box-arrow-right fs-4"></i></button></a>
+                    <?php else: ?>
+                        <a href="/pages/login.php"><button class="icon-btn" title="Login"><i class="bi bi-box-arrow-in-right fs-4"></i></button></a>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>

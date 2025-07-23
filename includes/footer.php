@@ -69,7 +69,7 @@
                     <div class="logo-row">
                         <img src="https://img.icons8.com/color/48/000000/bank-card-back-side.png" height="32" alt="Bank Payment">
                         <img src="https://img.icons8.com/color/48/000000/jcb.png" height="32" alt="JCB">
-                        <img src="https://upload.wikimedia.org/wikipedia/vi/f/fe/MoMo_Logo.png" alt="MoMo" height="32">
+                        <img src="https://upload.wikimedia.org/wikipedia/vi/f/fe/MoMo_Logo.png" alt="MoMo" height="30">
                     </div>
                     <div class="logo-row">
                         <img src="https://img.icons8.com/color/48/000000/visa.png" height="32" alt="Visa">
