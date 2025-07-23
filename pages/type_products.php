@@ -86,7 +86,7 @@ if ($selected_category) {
 }
 
 // Pagination settings
-$items_per_page = 8;
+$items_per_page = 12;
 $current_page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $offset = ($current_page - 1) * $items_per_page;
 
@@ -99,6 +99,7 @@ if ($selected_category && in_array($selected_category, $type_category_ids)) {
     // Mặc định: lấy tất cả sản phẩm có danh mục cha là parent_id=1
     $count_query = "SELECT COUNT(*) as total FROM products p JOIN categories c ON p.category_id = c.category_id WHERE c.parent_id = 1";
     $query = "SELECT p.* FROM products p JOIN categories c ON p.category_id = c.category_id WHERE c.parent_id = 1";
+    
 }
 
 // Add price range filter to both queries
@@ -183,10 +184,10 @@ if ($cat_result) {
     <div id="bannerCarousel" class="carousel slide" data-bs-ride="carousel">
         <div class="carousel-inner">
             <div class="carousel-item active">
-                <img src="/assets/images/access1.jpg" class="d-block w-100" alt="Banner 1">
+                <img src="/assets/images/type1.jpeg" class="d-block w-100" alt="Banner 1">
             </div>
             <div class="carousel-item">
-                <img src="/assets/images/access2.jpg" class="d-block w-100" alt="Banner 2">
+                <img src="/assets/images/type2.jpeg" class="d-block w-100" alt="Banner 2">
             </div>
 
         </div>

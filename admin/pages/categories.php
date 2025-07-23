@@ -36,8 +36,8 @@ if (isset($_SESSION['message'])) {
 
 // Xử lý thông báo từ GET nếu không có session message
 if (empty($message) && $_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['msg'])) {
-    if ($_GET['msg'] === 'success') $message = showAlert('Category saved successfully!');
-    if ($_GET['msg'] === 'deleted') $message = showAlert('Category deleted successfully!');
+    if ($_GET['msg'] === 'success') $message = showAlert('Category saved success!');
+    if ($_GET['msg'] === 'deleted') $message = showAlert('Category deleted success!');
 }
 
 if (isset($_POST['submit'])) {
@@ -120,7 +120,7 @@ if (isset($_POST['delete'])) {
             $stmt->execute();
             $count = $stmt->get_result()->fetch_row()[0];
             if ($count > 0) {
-                throw new Exception('Cannot delete parent category with subcategories. Use force delete!');
+                throw new Exception('Cannot delete parent.');
             }
         }
 
@@ -145,9 +145,47 @@ $parents = $result2 ? $result2->fetch_all(MYSQLI_ASSOC) : [];
 include '../../includes/header_ad.php';
 ?>
 <div class="container-fluid px-2" style="margin-top: 110px;">
-    <?= $message ?>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Extract plain text from $message (remove all HTML tags)
+        var rawMsg = <?= json_encode($message) ?>;
+        var div = document.createElement('div');
+        div.innerHTML = rawMsg;
+        var msg = div.textContent || div.innerText || '';
+        if (msg.trim()) {
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: msg.toLowerCase().includes('success') ? 'success' : (msg.toLowerCase().includes('error') || msg.toLowerCase().includes('danger') ? 'error' : 'info'),
+                title: msg,
+                showConfirmButton: false,
+                timer: 2000,
+                background: '#fff',
+                color: '#8c7e71',
+                customClass: {popup: 'swal2-toast-custom'}
+            });
+        }
+    });
+    </script>
+    <style>
+    .swal2-toast-custom {
+        border-radius: 0.75rem !important;
+        box-shadow: 0 0.2rem 1.5rem 0 rgba(140,126,113,0.12) !important;
+        font-size: 1.1rem;
+        width: 600px !important;
+        height: 80px !important;
+        padding: 1.5rem 2rem !important;
+        text-align: left !important;
+        display: flex !important;
+        align-items: center !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+    </style>
     <div class="card mb-4">
-        <div class="card-header bg-primary"><strong>Add / Edit Category</strong></div>
+        <div class="card-header" style="background-color: #8c7e71;"><strong>Add / Edit Category</strong></div>
         <div class="card-body">
             <form method="POST" id="categoryForm">
                 <input type="hidden" name="category_id" id="edit_id">
@@ -166,7 +204,7 @@ include '../../includes/header_ad.php';
                         </select>
                     </div>
                     <div class="col-md-3" style="margin-top: 24px;">
-                        <button type="submit" name="submit" class="btn btn-primary">Save</button>
+                        <button type="submit" name="submit" class="btn" style="background-color: #8c7e71;">Save</button>
                         <button type="button" onclick="resetForm()" class="btn btn-secondary">Reset</button>
                     </div>
             </form>
@@ -189,7 +227,7 @@ include '../../includes/header_ad.php';
                         <tr <?= $cat['parent_id'] ? 'class="table-light"' : '' ?>>
                             <td><?= $cat['category_id'] ?></td>
                             <td><?= $cat['parent_id'] ? '└─ ' : '' ?><?= htmlspecialchars($cat['name']) ?></td>
-                            <td><?= $cat['parent_id'] ? htmlspecialchars($cat['parent_name']) : '<span class="badge bg-primary">Parent Category</span>' ?></td>
+                            <td><?= $cat['parent_id'] ? htmlspecialchars($cat['parent_name']) : '<span class="badge" style="background-color: #8c7e71;">Parent Category</span>' ?></td>
                             <td>
                                 <button class="btn btn-sm btn-warning" onclick='editCategory(<?= json_encode($cat) ?>)'>Edit</button>
                                 <form method="POST" class="d-inline">
@@ -197,7 +235,7 @@ include '../../includes/header_ad.php';
                                     <?php if (!$cat['parent_id']): ?>
                                         <input type="hidden" name="force_delete" value="1">
                                     <?php endif; ?>
-                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete?')">Delete</button>
+                                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
                                 </form>
                             </td>
                         </tr>

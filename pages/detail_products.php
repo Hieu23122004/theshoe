@@ -6,8 +6,33 @@ include '../includes/header.php';
 // Get product id
 $product_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 if ($product_id <= 0) {
-    echo '<div class="container py-5 text-center">Sản phẩm không tồn tại.</div>';
+    ?>
+    <!DOCTYPE html>
+    <html lang="vi">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Please select a product</title>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    </head>
+    <body style="margin-top: 100px;">
+        <div class="container py-5 text-center">
+            <div style="width: 400px; margin: 0 auto; padding: 40px 20px;">
+                <div style="font-size: 6rem; color: #ddd; margin-bottom: 20px;">📦</div>
+                <h2 style="color: #333; margin-bottom: 15px;">No Product Selected</h2>
+                <p style="color: #666; font-size: 1.1rem; margin-bottom: 25px;">
+                    Please select a product from our catalog to view detailed information.
+                </p>
+                <a href="/pages/new_products.php" class="btn btn-dark btn-lg" style="padding: 12px 30px; font-weight: 600;">
+                    Browse Products
+                </a>
+            </div>
+        </div>
+      
+    <?php
     include '../includes/footer.php';
+    echo '</body></html>';
     exit;
 }
 

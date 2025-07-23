@@ -86,7 +86,7 @@ if ($selected_category) {
 }
 
 // Pagination settings
-$items_per_page = 8;
+$items_per_page = 12;
 $current_page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $offset = ($current_page - 1) * $items_per_page;
 

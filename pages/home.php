@@ -47,6 +47,8 @@ $main_result = $conn->query($main_sql);
             <link rel="stylesheet" href="/assets/css/home.css">
             <!-- Bootstrap 5 CSS -->
             <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+            <!-- Bootstrap Icons -->
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
 
 
             <title>home</title>
@@ -67,10 +69,10 @@ $main_result = $conn->query($main_sql);
             </div>
 
             <!-- Sản phẩm nổi bật marquee -->
-            <div class="container my-3">
-                <h2 class="text-center fw-bold mb-4" style="font-size:1.5rem;">Featured Products</h2>
-                <div class="d-flex justify-content-center">
-                    <div class="row w-100 justify-content-center" style="max-width:1200px;overflow:hidden;" id="featuredRow">
+            <div class="container-fluid my-3">
+                <h2 class="text-center fw-bold mb-4" style="font-size:1.5rem; color:#000;">Featured Products</h2>
+                <div class="w-100" style="overflow:hidden;">
+                    <div class="row w-100 justify-content-center" style="overflow:hidden;" id="featuredRow">
                         <div class="news-marquee-wrapper">
                             <?php foreach ($featuredList as $product): ?>
                                 <div class="col-12 col-sm-6 col-md-3 mb-3 d-flex justify-content-center news-card-item">
@@ -139,8 +141,10 @@ $main_result = $conn->query($main_sql);
                 </div>
             </div>
 
+    
+
             <!-- Block 2 cột: Bên trái là chữ, bên phải là ảnh (Bootstrap chuẩn, sát nhau tuyệt đối) -->
-            <div class="container my-2" style="margin-bottom:10px !important; margin-top:10px !important;">
+            <div class="container-fluid my-2" style="margin-bottom:10px !important; margin-top:10px !important;">
                 <div class="row align-items-center g-0" style="background:#f8f9fa;overflow:hidden;">
                     <div class="col-12 col-md-6 px-4 py-4 d-flex flex-column justify-content-center align-items-center text-center">
                         <span class="follow-title" style="font-size:1.5rem;font-weight:700;letter-spacing:1px;">FOLLOW MULGATI FOR NEW PRODUCT</span>
@@ -152,10 +156,39 @@ $main_result = $conn->query($main_sql);
                 </div>
             </div>
 
+
+            <!-- Brand Story Section -->
+            <div class="brand-story-section" style="background: linear-gradient(135deg, #8c7e71 0%, #8c7e71 100%); margin:30px 0;">
+                <div class="container-fluid py-5 brand-story-content">
+                    <div class="row align-items-center text-white">
+                        <div class="col-md-6">
+                            <h2 class="fw-bold mb-3 fade-in-up" style="font-size:2rem;">The Mulgati Legacy</h2>
+                            <p class="mb-4 fade-in-up" style="font-size:1.1rem; line-height:1.6; animation-delay:0.2s;">
+                                From the heart of Russia comes a brand that embodies sophistication, craftsmanship, and timeless elegance. 
+                                Every Mulgati shoe tells a story of passion, precision, and the pursuit of perfection.
+                            </p>
+                            <p class="mb-4 fade-in-up" style="opacity:0.9; animation-delay:0.3s;">
+                                "Every step tells a story — a journey of craftsmanship, passion, and timeless elegance."
+                            </p>
+                            <div class="text-left" style="padding-left: 10px; position: relative; z-index: 1000;">
+                                <a href="/pages/introduction.php" class="btn btn-outline-light btn-lg" 
+                                   style="padding: 10px 25px; font-weight: 600; border: 2px solid #fff; color: #fff; text-decoration: none; border-radius: 8px; white-space: nowrap; position: relative; z-index: 1001; pointer-events: auto;">
+                                    learn more
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-md-6 text-center">
+                            <div class="brand-story-emoji" style="font-size:10rem; opacity:0.3;"><img src="/assets/images/homqc.png" alt="" style="width:300px; height:300px;" ></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+    
             <div class="container my-3">
-                <h2 class="text-center fw-bold mb-4" style="font-size:1.5rem;">New news about Mulgati</h2>
-                <div class="d-flex justify-content-center">
-                    <div class="row w-100 justify-content-center" style="max-width:1200px;overflow:hidden;" id="newsRow">
+                <h2 class="fw-bold mb-4 section-title fade-in-up text-center" style="font-size:1.5rem; color:#000;">New news about Mulgati</h2>
+                <div class="w-100" style="overflow:hidden;">
+                    <div class="row w-100 justify-content-center" style="overflow:hidden;" id="newsRow">
                         <div class="news-marquee-wrapper">
                             <?php foreach ($newsList as $news): ?>
                                 <div class="col-12 col-sm-6 col-md-3 mb-3 d-flex justify-content-center news-card-item">
@@ -215,6 +248,64 @@ $main_result = $conn->query($main_sql);
             <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
             <!-- Custom JavaScript -->
             <script src="/assets/js/home.js"></script>
+            
+            <!-- Enhanced Animation Script -->
+            <script>
+                // Intersection Observer for animations
+                const animateElements = document.querySelectorAll('.fade-in-up');
+                
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach((entry) => {
+                        if (entry.isIntersecting) {
+                            entry.target.style.animationPlayState = 'running';
+                        }
+                    });
+                }, {
+                    threshold: 0.1,
+                    rootMargin: '0px 0px -50px 0px'
+                });
+
+                animateElements.forEach((el) => {
+                    observer.observe(el);
+                });
+
+                // Enhanced carousel auto-play with better UX
+                const carousel = document.querySelector('#bannerCarousel');
+                if (carousel) {
+                    const bsCarousel = new bootstrap.Carousel(carousel, {
+                        interval: 4000,
+                        ride: 'carousel',
+                        pause: 'hover'
+                    });
+                }
+
+                // Add smooth scroll behavior
+                document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                    anchor.addEventListener('click', function (e) {
+                        e.preventDefault();
+                        const target = document.querySelector(this.getAttribute('href'));
+                        if (target) {
+                            target.scrollIntoView({
+                                behavior: 'smooth',
+                                block: 'start'
+                            });
+                        }
+                    });
+                });
+
+                // Enhanced hover effects for product cards
+                document.querySelectorAll('.featured-product-card, .promotion-card').forEach(card => {
+                    card.addEventListener('mouseenter', function() {
+                        this.style.transform = 'translateY(-8px) scale(1.02)';
+                        this.style.boxShadow = '0 20px 40px rgba(139, 69, 19, 0.25)';
+                    });
+                    
+                    card.addEventListener('mouseleave', function() {
+                        this.style.transform = 'translateY(0) scale(1)';
+                        this.style.boxShadow = '';
+                    });
+                });
+            </script>
 
             <?php include '../includes/truck.php'; ?>
             <?php include '../includes/floating_contact.php'; ?>

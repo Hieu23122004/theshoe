@@ -16,23 +16,49 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['ip'])) {
     } elseif (isset($_POST['block'])) {
         $blockedUntil = time() + 3600;
         $conn->query("UPDATE login_attempts SET blocked_until = $blockedUntil WHERE ip = '$ip'");
-        $_SESSION['admin_message'] = "IP $ip has been blocked for 1 hour. User will be automatically logged out.";
+        $_SESSION['admin_message'] = "IP $ip has been blocked for 1 hour.";
     }
     header("Location: " . $_SERVER['PHP_SELF']);
     exit;
 }
 include '../../includes/header_ad.php';
 ?>
+<link rel="stylesheet" href="../../assets/css/admin.css">
 <div class="container-fluid px-2" style="margin-top: 110px;">
-    <?php if (isset($_SESSION['admin_message'])): ?>
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <?= htmlspecialchars($_SESSION['admin_message']) ?>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-        <?php unset($_SESSION['admin_message']); ?>
-    <?php endif; ?>
+    <h1 class="page-header">Login Attempts Management</h1>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var msg = <?= json_encode(isset($_SESSION['admin_message']) ? $_SESSION['admin_message'] : '') ?>;
+        if (msg) {
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: msg,
+                showConfirmButton: false,
+                timer: 2000,
+                background: '#fff',
+                color: '#8c7e71',
+                customClass: {popup: 'swal2-toast-custom'}
+            });
+        }
+    });
+    </script>
+    <style>
+    .swal2-toast-custom {
+        border-radius: 0.75rem !important;
+        box-shadow: 0 0.2rem 1.5rem 0 rgba(140,126,113,0.12) !important;
+        font-size: 1rem;
+        width: 500px !important;
+        height: 80px !important;
+        padding: 1.5rem 2rem !important;
+        text-align: center !important;
+    }
+    </style>
+    <?php unset($_SESSION['admin_message']); ?>
     <div class="card mb-4">
-        <div class="card-header bg-primary"><strong>Login Attempts Management</strong></div>
+        <div class="card-header" style="background-color: #8c7e71;"><strong>Login Attempts Management</strong></div>
         <div class="card-body">
             <form method="GET" class="row g-3">
                 <div class="col-md-3">
@@ -40,7 +66,7 @@ include '../../includes/header_ad.php';
                     <input type="date" id="since" name="since" class="form-control" value="<?= $_GET['since'] ?? '' ?>">
                 </div>
                 <div class="col-md-2 align-self-end">
-                    <button class="btn btn-primary w-100"><i class="bi bi-funnel-fill me-1"></i>Filter</button>
+                    <button class="btn" style="background-color: #8c7e71; color: white;" type="submit"><i class="bi bi-funnel-fill me-1"></i>Filter</button>
                 </div>
             </form>
         </div>

@@ -144,12 +144,16 @@
 .navbar-nav .dropdown .dropdown-toggle:hover {
     text-decoration: none !important;
     box-shadow: none !important;
+    font-weight: 700 !important;
+   
 }
 
 .navbar-nav .dropdown .dropdown-toggle.active,
 .navbar-nav .dropdown .dropdown-toggle:active {
     text-decoration: none !important;
     box-shadow: none !important;
+    font-weight: 700 !important;
+
 }
 
 /* Tùy chỉnh dropdown đẹp hơn */
@@ -176,15 +180,29 @@
     color: #8C7E71;
 }
 
+/* Navigation Styles */
+.navbar {
+    border-bottom: 1px solid #eee;
+}
+
+.navbar-brand {
+    font-weight: 700;
+}
+
 /* Gạch chân mỏng khi hover nav-link */
 .navbar-nav .nav-link {
     position: relative;
     padding-bottom: 2px;
     transition: color 0.18s;
+    font-weight: 600 !important;
+    color: #333 !important;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 .navbar-nav .nav-link:hover,
 .navbar-nav .nav-link.active {
-    color: #8C7E71;
+    color: #8C7E71 !important;
+    font-weight: 700 !important;
 }
 .navbar-nav .nav-link::after {
     content: '';
@@ -201,5 +219,5 @@
 }
 .navbar-nav .nav-link:hover::after,
 .navbar-nav .nav-link.active::after {
-    opacity: 1;
+    opacity: 1 !important;
 }

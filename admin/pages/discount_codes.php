@@ -93,7 +93,7 @@ if (isset($_POST['submit'])) {
             throw new Exception("Error saving discount code: " . $stmt->error);
         }
         $conn->commit();
-        $message = "<div class='alert alert-success'>Discount code saved successfully!</div>";
+        $message = "<div class='alert alert-success'>Discount saved success!</div>";
     } catch (Exception $e) {
         $conn->rollback();
         $message = "<div class='alert alert-danger'>Error: " . $e->getMessage() . "</div>";
@@ -126,22 +126,47 @@ $discount_codes = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
     }
 </style>
 <div class="container-fluid px-2" style="margin-top: 110px;">
-    <?= $message ?>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var msg = <?= json_encode(strip_tags($message)) ?>;
+        if (msg) {
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: msg.includes('success') ? 'success' : (msg.includes('error') || msg.includes('danger') ? 'error' : 'info'),
+                title: msg,
+                showConfirmButton: false,
+                timer: 2000,
+                background: '#fff',
+                color: '#8c7e71',
+                customClass: {popup: 'swal2-toast-custom'}
+            });
+        }
+    });
+    </script>
+    <style>
+    .swal2-toast-custom {
+        border-radius: 0.75rem !important;
+        box-shadow: 0 0.2rem 1.5rem 0 rgba(140,126,113,0.12) !important;
+        font-size: 1.1rem;
+    }
+    </style>
     <div class="card mb-4">
-        <div class="card-header bg-primary">
+        <div class="card-header" style="background-color: #8c7e71;">
             <strong>Add / Edit Discount Code</strong>
         </div>
         <div class="card-body">
             <form method="POST" id="discountForm">
                 <input type="hidden" name="code_id" id="edit_id">
                 <div class="row mb-3">
-                    <div class="col-md-2">
+                    <div class="col-md-3">
                         <label class="form-label">Discount Code</label>
                         <input type="text" name="code" id="code" class="form-control"
                             pattern="[A-Za-z0-9]+" title="Only letters and numbers allowed"
                             placeholder="Tên mã giảm giá" required>
                     </div>
-                    <div class="col-md-2">
+                    <div class="col-md-3">
                         <label class="form-label">Discount Type</label>
                         <select name="discount_type" id="discount_type" class="form-select" required>
                             <option value="percent">Percentage (%)</option>
@@ -163,11 +188,7 @@ $discount_codes = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
                         <input type="number" name="max_uses" id="max_uses"
                             class="form-control" min="1" placeholder="Số lượng sử dụng tối đa">
                     </div>
-                    <div class="col-md-2">
-                        <label class="form-label">Minimum Order Amount</label>
-                        <input type="number" name="min_order_amount" id="min_order_amount"
-                            class="form-control" min="0" step="1000" value="0" required>
-                    </div>
+                   
                 </div>
                 <div class="row mb-3">
                     <div class="col-md-3">
@@ -180,8 +201,13 @@ $discount_codes = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
                         <input type="datetime-local" name="valid_until" id="valid_until"
                             class="form-control" required>
                     </div>
+                     <div class="col-md-3">
+                        <label class="form-label">Minimum Order Amount</label>
+                        <input type="number" name="min_order_amount" id="min_order_amount"
+                            class="form-control" min="0" step="1000" value="0" required>
+                    </div>
                 </div>
-                <button type="submit" name="submit" class="btn btn-primary">Save Discount Code</button>
+                <button type="submit" name="submit" class="btn" style="background-color: #8c7e71;">Save Discount Code</button>
                 <button type="button" onclick="resetForm()" class="btn btn-secondary">Reset</button>
             </form>
         </div>
@@ -252,8 +278,7 @@ $discount_codes = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
                                     onclick='editCode(<?= json_encode($code) ?>)'>
                                     Edit
                                 </button>
-                                <form method="POST" class="d-inline"
-                                    onsubmit="return confirm('Are you sure you want to delete this discount code?');">
+                                <form method="POST" class="d-inline">
                                     <input type="hidden" name="delete" value="<?= $code['code_id'] ?>">
                                     <button type="submit" class="btn btn-sm btn-danger">Delete</button>
                                 </form>

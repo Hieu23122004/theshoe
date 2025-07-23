@@ -35,7 +35,7 @@ if (isset($_SESSION['message'])) {
 // Handle GET messages
 if (empty($message) && $_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['msg'])) {
     if ($_GET['msg'] === 'success') $message = showAlert('Product saved successfully!');
-    if ($_GET['msg'] === 'deleted') $message = showAlert('Product deleted successfully!');
+    // Remove the deleted message handling
 }
 // Get all categories with hierarchy information
 $categories_result = $conn->query("
@@ -252,11 +252,13 @@ if (isset($_POST['delete'])) {
         $stmt->bind_param("i", $id);
         $stmt->execute();
         $conn->commit();
-        header('Location: ' . $_SERVER['PHP_SELF'] . '?msg=deleted');
+        // Remove redirect, just output JSON response
+        echo json_encode(['success' => true]);
         exit();
     } catch (Exception $e) {
         $conn->rollback();
-        $message = showAlert($e->getMessage(), 'danger');
+        echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+        exit();
     }
 }
 // Fetch all products with category names (including parent category info)
@@ -317,10 +319,44 @@ include '../../includes/header_ad.php';
 </head>
 
 <body>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var msg = <?= json_encode(strip_tags($message)) ?>;
+        if (msg) {
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: msg.toLowerCase().includes('success') ? 'success' : (msg.toLowerCase().includes('error') ? 'error' : 'info'),
+                title: msg,
+                showConfirmButton: false,
+                timer: 2000,
+                background: '#fff',
+                color: '#8c7e71',
+                customClass: {popup: 'swal2-toast-custom'}
+            });
+        }
+    });
+    </script>
+    <style>
+    .swal2-toast-custom {
+        border-radius: 0.75rem !important;
+        box-shadow: 0 0.2rem 1.5rem 0 rgba(140,126,113,0.12) !important;
+        font-size: 1rem;
+        width: 600px !important;
+        height: 80px !important;
+        padding: 1.5rem 2rem !important;
+        text-align: left !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        display: flex !important;
+        align-items: center !important;
+    }
+    </style>
     <div class="container-fluid px-2" style="margin-top: 110px;">
-        <?= $message ?>
         <div class="card mb-4">
-            <div class="card-header bg-primary"><strong>Add / Edit Product</strong></div>
+            <div class="card-header" style="background-color: #8c7e71;"><strong>Add / Edit Product</strong></div>
             <div class="card-body">
                 <form method="POST" id="productForm">
                     <input type="hidden" name="product_id" id="edit_id">
@@ -469,7 +505,7 @@ include '../../includes/header_ad.php';
                     <!-- Hidden inputs for form data -->
                     <input type="hidden" name="size_stock" id="size_stock_data">
                     <input type="hidden" name="image_urls" id="image_urls">
-                    <button type="submit" name="submit" class="btn btn-primary">Save Product</button>
+                    <button type="submit" name="submit" class="btn btn" style="background-color: #8c7e71;" >Save Product</button>
                     <button type="button" onclick="resetForm()" class="btn btn-secondary">Reset</button>
                 </form>
             </div>
@@ -530,9 +566,9 @@ include '../../includes/header_ad.php';
                                 </td>
                                 <td class="text-center">
                                     <button class="btn btn-sm btn-warning" onclick='editProduct(<?= json_encode($product) ?>)'>Edit</button>
-                                    <form method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this product?');">
+                                    <form method="POST" class="d-inline delete-form">
                                         <input type="hidden" name="delete" value="<?= $product['product_id'] ?>">
-                                        <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                                        <button type="button" class="btn btn-sm btn-danger delete-btn" data-product-id="<?= $product['product_id'] ?>" data-product-name="<?= htmlspecialchars($product['name']) ?>">Delete</button>
                                     </form>
                                 </td>
                             </tr>
@@ -546,6 +582,65 @@ include '../../includes/header_ad.php';
     <script>
         // Category data from PHP
         const childCategories = <?= json_encode($child_categories) ?>;
+
+        // Delete confirmation with SweetAlert2
+        document.addEventListener('DOMContentLoaded', function() {
+            // Handle delete button clicks
+            document.querySelectorAll('.delete-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const productId = this.getAttribute('data-product-id');
+                    const formData = new FormData();
+                    formData.append('delete', productId);
+
+                    fetch(window.location.href, {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            this.closest('tr').remove();
+                            Swal.fire({
+                                toast: true,
+                                position: 'top-end',
+                                icon: 'success',
+                                title: 'Product deleted successfully!',
+                                showConfirmButton: false,
+                                timer: 2000,
+                                background: '#fff',
+                                color: '#8c7e71',
+                                customClass: {popup: 'swal2-toast-custom'}
+                            });
+                        } else {
+                            Swal.fire({
+                                toast: true,
+                                position: 'top-end',
+                                icon: 'error',
+                                title: data.error || 'Error deleting product',
+                                showConfirmButton: false,
+                                timer: 2000,
+                                background: '#fff',
+                                color: '#8c7e71',
+                                customClass: {popup: 'swal2-toast-custom'}
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        Swal.fire({
+                            toast: true,
+                            position: 'top-end',
+                            icon: 'error',
+                            title: 'Error deleting product',
+                            showConfirmButton: false,
+                            timer: 2000,
+                            background: '#fff',
+                            color: '#8c7e71',
+                            customClass: {popup: 'swal2-toast-custom'}
+                        });
+                    });
+                });
+            });
+        });
 
         function loadChildCategories() {
             const parentId = document.getElementById('parent_category').value;

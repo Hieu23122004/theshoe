@@ -1,7 +1,11 @@
 ﻿<?php
+date_default_timezone_set('Asia/Ho_Chi_Minh');
 include '../../includes/auth.php';
 include '../../includes/database.php';
 include '../../includes/header_ad.php';
+?>
+
+<?php
 function formatCurrency($amount)
 {
     return number_format($amount, 0, ',', '.') . ' VND';
@@ -179,75 +183,77 @@ try {
     $message = "<div class='alert alert-danger'>Error loading dashboard data: " . $e->getMessage() . "</div>";
 }
 ?>
-<div class="container-fluid px-3" style="margin-top:110px;">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+<link rel="stylesheet" href="../../assets/css/dashboard.css">
+<div class="container-fluid px-3 pt-5 dashboard-bg" style="margin-top: 80px;">
     <?= $message ?>
     <!-- Page Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="text-primary"><i class="bi bi-speedometer2"></i> Dashboard Overview</h2>
-        <small class="text-muted">Last updated: <?= date('M d, Y H:i') ?></small>
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4 dashboard-header animate__animated animate__fadeInDown">
+        <h2 class="mb-2 mb-md-0" style="color:#8c7e71"><i class="bi bi-speedometer2"></i> Dashboard Overview</h2>
+        <small class="text-muted"><i class="bi bi-clock-history"></i> Last updated: <?= date('M d, Y H:i', time()) ?></small>
     </div>
     <!-- Quick Stats Cards -->
-    <div class="row mb-4">
-        <div class="col-xl-3 col-md-6 mb-3">
-            <div class="card border-left-primary shadow h-100">
+    <div class="row g-4 mb-4 align-items-stretch">
+        <div class="col-xl-3 col-md-6 d-flex">
+            <div class="card border-left-primary shadow w-100 h-100">
                 <div class="card-body">
                     <div class="row align-items-center">
                         <div class="col">
                             <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Revenue</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800"><?= formatCurrency($stats['total_revenue']) ?></div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800"><?= formatCurrency($stats['total_revenue']) ?> <span class="desc">VND</span></div>
                         </div>
                         <div class="col-auto">
-                            <i class="bi bi-currency-dollar fa-2x text-primary"></i>
+            <i class="bi bi-currency-dollar fa-2x" style="color:#8c7e71"></i>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col-xl-3 col-md-6 mb-3">
-            <div class="card border-left-success shadow h-100">
+        <div class="col-xl-3 col-md-6 d-flex">
+            <div class="card border-left-success shadow w-100 h-100">
                 <div class="card-body">
                     <div class="row align-items-center">
                         <div class="col">
                             <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Monthly Revenue</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800"><?= formatCurrency($stats['recent_revenue']) ?></div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800"><?= formatCurrency($stats['recent_revenue']) ?> <span class="desc">VND</span></div>
                         </div>
                         <div class="col-auto">
-                            <i class="bi bi-graph-up fa-2x text-success"></i>
+            <i class="bi bi-graph-up fa-2x" style="color:#8c7e71"></i>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col-xl-3 col-md-6 mb-3">
-            <div class="card border-left-info shadow h-100">
+        <div class="col-xl-3 col-md-6 d-flex">
+            <div class="card border-left-info shadow w-100 h-100">
                 <div class="card-body">
                     <div class="row align-items-center">
                         <div class="col">
                             <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Total Product Quantities</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800"><?= formatNumber($stats['total_cart_items'] + $stats['recent_ordered_items']) ?></div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800"><?= formatNumber($stats['total_cart_items'] + $stats['recent_ordered_items']) ?> <span class="desc">items</span></div>
                             <small class="text-muted">
                                 In Cart: <?= formatNumber($stats['total_cart_items']) ?> |
-                                Ordered This Month: <?= formatNumber($stats['recent_ordered_items']) ?>
+                                Ordered Month: <?= formatNumber($stats['recent_ordered_items']) ?>
                             </small>
                         </div>
                         <div class="col-auto">
-                            <i class="bi bi-box-seam fa-2x text-info"></i>
+            <i class="bi bi-box-seam fa-2x" style="color:#8c7e71"></i>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col-xl-3 col-md-6 mb-3">
-            <div class="card border-left-warning shadow h-100">
+        <div class="col-xl-3 col-md-6 d-flex">
+            <div class="card border-left-warning shadow w-100 h-100">
                 <div class="card-body">
                     <div class="row align-items-center">
                         <div class="col">
                             <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Total Users</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800"><?= formatNumber($stats['total_users']) ?></div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800"><?= formatNumber($stats['total_users']) ?> <span class="desc">users</span></div>
                             <small class="text-muted"><?= formatNumber($stats['new_users']) ?> new this month</small>
                         </div>
                         <div class="col-auto">
-                            <i class="bi bi-people fa-2x text-warning"></i>
+            <i class="bi bi-people fa-2x" style="color:#8c7e71"></i>
                         </div>
                     </div>
                 </div>
@@ -255,74 +261,70 @@ try {
         </div>
     </div>
     <!-- Secondary Stats -->
-    <div class="row mb-4">
-        <div class="col-xl-3 col-md-6 mb-3">
-            <div class="card border-left-secondary shadow h-100">
+    <div class="row g-4 mb-4 align-items-stretch">
+        <div class="col-xl-3 col-md-6 d-flex">
+            <div class="card border-left-secondary shadow w-100 h-100">
                 <div class="card-body">
                     <div class="row align-items-center">
                         <div class="col">
                             <div class="text-xs font-weight-bold text-secondary text-uppercase mb-1">Total Orders</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800"><?= formatNumber($stats['total_orders']) ?></div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800"><?= formatNumber($stats['total_orders']) ?> <span class="desc">orders</span></div>
                             <small class="text-muted"><?= formatNumber($stats['recent_orders']) ?> new this month</small>
                         </div>
                         <div class="col-auto">
-                            <i class="bi bi-receipt fa-2x text-secondary"></i>
+            <i class="bi bi-receipt fa-2x" style="color:#8c7e71"></i>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col-xl-3 col-md-6 mb-3">
-            <div class="card border-left-secondary shadow h-100">
+        <div class="col-xl-3 col-md-6 d-flex">
+            <div class="card border-left-secondary shadow w-100 h-100">
                 <div class="card-body">
                     <div class="row align-items-center">
                         <div class="col">
                             <div class="text-xs font-weight-bold text-secondary text-uppercase mb-1">Total Products</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800"><?= formatNumber($stats['total_products']) ?></div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800"><?= formatNumber($stats['total_products']) ?> <span class="desc">products</span></div>
                         </div>
                         <div class="col-auto">
-                            <i class="bi bi-box fa-2x text-secondary"></i>
+            <i class="bi bi-box fa-2x" style="color:#8c7e71"></i>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col-xl-3 col-md-6 mb-3">
-            <div class="card border-left-danger shadow h-100">
+        <div class="col-xl-3 col-md-6 d-flex">
+            <div class="card border-left-danger shadow w-100 h-100">
                 <div class="card-body">
                     <div class="row align-items-center">
                         <div class="col">
                             <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">Low Stock Items</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800"><?= formatNumber($stats['low_stock']) ?></div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800"><?= formatNumber($stats['low_stock']) ?> <span class="desc">items</span></div>
                             <small class="text-muted">Less than 50 items</small>
                         </div>
                         <div class="col-auto">
-                            <i class="bi bi-exclamation-triangle fa-2x text-danger"></i>
+            <i class="bi bi-exclamation-triangle fa-2x" style="color:#8c7e71"></i>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col-xl-3 col-md-6 mb-3">
-            <div class="card border-left-info shadow h-100">
+        <div class="col-xl-3 col-md-6 d-flex">
+            <div class="card border-left-info shadow w-100 h-100">
                 <div class="card-body">
                     <div class="row align-items-center">
                         <div class="col">
-                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Order Status Distribution</div>
+                            <div class="text-xs font-weight-bold text-uppercase mb-1">Order Status Distribution</div>
                             <div class="h5 mb-0 font-weight-bold text-gray-800">
                                 <?php
                                 $total_status_count = array_sum(array_column($stats['order_status'], 'count'));
                                 echo formatNumber($total_status_count);
-                                ?>
+                                ?> <span class="desc">statuses</span>
                             </div>
-                            <small class="text-muted">
-                                <?php foreach ($stats['order_status'] as $status): ?>
-                                    <?= ucfirst($status['status']) ?>: <?= $status['count'] ?><?= !end($stats['order_status']) ? ' | ' : '' ?>
-                                <?php endforeach; ?>
-                            </small>
+                            <!-- Đã bỏ chi tiết trạng thái, chỉ giữ tổng số -->
                         </div>
                         <div class="col-auto">
-                            <i class="bi bi-bar-chart fa-2x text-info"></i>
+            <i class="bi bi-bar-chart fa-2x" style="color:#8c7e71"></i>
                         </div>
                     </div>
                 </div>
@@ -335,13 +337,13 @@ try {
         <div class="col-12">
             <div class="card shadow">
                 <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Order Status Distribution</h6>
+                    <h6 class="m-0 font-weight-bold text-dark">Order Status Distribution</h6>
                 </div>
                 <div class="card-body">
-                    <div class="row">
+                    <div class="row justify-content-center">
                         <?php foreach ($stats['order_status'] as $index => $status): ?>
-                            <div class="col-6 col-md-3 col-lg-2 text-center mb-3">
-                                <div class="border rounded p-3 h-100">
+                            <div class="col-12 col-sm-6 col-md-3 text-center mb-3 d-flex">
+                                <div class="border rounded p-3 w-100 h-100 mx-auto">
                                     <div class="text-xs font-weight-bold text-uppercase mb-2 text-<?= getStatusColor($status['status']) ?>">
                                         <?= ucfirst($status['status']) ?>
                                     </div>
@@ -365,8 +367,8 @@ try {
         <div class="col-xl-4 col-lg-6">
             <div class="card shadow mb-4">
                 <div class="card-header py-3 d-flex justify-content-between align-items-center">
-                    <h6 class="m-0 font-weight-bold text-primary">Best Selling Products</h6>
-                    <a href="products.php" class="btn btn-sm btn-outline-primary">View All</a>
+                    <h6 class="m-0 font-weight-bold text-dark">Best Selling Products</h6>
+                    <a href="products.php" class="btn btn-sm btn-outline-dark">View All</a>
                 </div>
                 <div class="card-body">
                     <?php if (!empty($stats['bestsellers'])): ?>
@@ -394,8 +396,8 @@ try {
         <div class="col-xl-4 col-lg-6">
             <div class="card shadow mb-4">
                 <div class="card-header py-3 d-flex justify-content-between align-items-center">
-                    <h6 class="m-0 font-weight-bold text-danger">Most Favorited Products</h6>
-                    <a href="products.php" class="btn btn-sm btn-outline-danger">View All</a>
+                    <h6 class="m-0 font-weight-bold text-dark">Most Favorited Products</h6>
+                    <a href="products.php" class="btn btn-sm btn-outline-dark">View All</a>
                 </div>
                 <div class="card-body">
                     <?php if (!empty($stats['most_favorited'])): ?>
@@ -425,8 +427,8 @@ try {
         <div class="col-xl-4 col-lg-6">
             <div class="card shadow mb-4">
                 <div class="card-header py-3 d-flex justify-content-between align-items-center">
-                    <h6 class="m-0 font-weight-bold text-primary">Most Reviewed Products</h6>
-                    <a href="reviews.php" class="btn btn-sm btn-outline-primary">View All</a>
+                    <h6 class="m-0 font-weight-bold text-dark">Most Reviewed Products</h6>
+                    <a href="reviews.php" class="btn btn-sm btn-outline-dark">View All</a>
                 </div>
                 <div class="card-body">
                     <?php if (!empty($stats['top_reviewed'])): ?>
@@ -458,7 +460,7 @@ try {
         <div class="col-12">
             <div class="card shadow mb-4">
                 <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Monthly Revenue Trend (Last 6 Months)</h6>
+                    <h6 class="m-0 font-weight-bold text-dark">Monthly Revenue Trend (Last 6 Months)</h6>
                 </div>
                 <div class="card-body">
                     <?php if (!empty($stats['monthly_revenue'])): ?>
@@ -492,62 +494,5 @@ try {
         </div>
     </div>
 </div>
-<!-- Custom CSS for border-left cards -->
-<style>
-    .border-left-primary {
-        border-left: 0.25rem solid #4e73df !important;
-    }
-
-    .border-left-success {
-        border-left: 0.25rem solid #1cc88a !important;
-    }
-
-    .border-left-info {
-        border-left: 0.25rem solid #36b9cc !important;
-    }
-
-    .border-left-warning {
-        border-left: 0.25rem solid #f6c23e !important;
-    }
-
-    .border-left-danger {
-        border-left: 0.25rem solid #e74a3b !important;
-    }
-
-    .border-left-secondary {
-        border-left: 0.25rem solid #858796 !important;
-    }
-
-    .text-gray-800 {
-        color: #5a5c69 !important;
-    }
-
-    .fa-2x {
-        font-size: 2em;
-    }
-
-    .text-xs {
-        font-size: 0.7rem;
-    }
-
-    .shadow {
-        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15) !important;
-    }
-
-    .card-body {
-        padding: 1.25rem;
-    }
-
-    .h5 {
-        font-size: 1.25rem;
-    }
-
-    .mb-0 {
-        margin-bottom: 0 !important;
-    }
-
-    .mb-1 {
-        margin-bottom: 0.25rem !important;
-    }
-</style>
+<!-- Hiệu ứng và style đã chuyển sang dashboard.css, không cần style nội tuyến ở đây -->
 <?php include '../../includes/footer.php'; ?>

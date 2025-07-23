@@ -216,16 +216,31 @@ body::-webkit-scrollbar {
   line-height: 1.3em;
 }
 
-/* Đảm bảo newsRow luôn chỉ có 4 bài trên 1 hàng, không wrap */
-/* Marquee effect for newsRow */
+/* Responsive container for full width marquee */
+.container-fluid.my-3 {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+  max-width: none !important;
+}
+
+/* Ensure full width sections */
+.container.my-3 {
+  max-width: none !important;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+/* Marquee effect for newsRow - Full width display */
 .news-marquee-wrapper {
   display: flex;
   width: max-content;
-  animation: news-marquee 30s linear infinite;
+  animation: news-marquee 45s linear infinite;
   gap: 20px;
   overflow: visible !important;
   scrollbar-width: none;
   -ms-overflow-style: none;
+  padding: 0 20px;
+  transform: translateX(0);
 }
 .news-marquee-wrapper::-webkit-scrollbar {
   display: none;
@@ -233,16 +248,18 @@ body::-webkit-scrollbar {
 
 @keyframes news-marquee {
   0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
+  100% { transform: translateX(-100%); }
 }
 
 #newsRow, #featuredRow {
   overflow: hidden !important;
-  width: 100%;
+  width: 100vw !important;
   flex-wrap: nowrap !important;
   display: block !important;
   scrollbar-width: none !important;
   -ms-overflow-style: none !important;
+  margin-left: calc(-50vw + 50%);
+  position: relative;
 }
 
 #newsRow::-webkit-scrollbar, 
@@ -552,35 +569,489 @@ body::-webkit-scrollbar {
   }
 }
 
+/* Enhanced sections for homepage */
+.brand-values-card {
+  transition: all 0.5s cubic-bezier(0.23, 1, 0.320, 1);
+  position: relative;
+  overflow: hidden;
+  border: 2px solid #f0f0f0 !important;
+  background: #fff !important;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+}
+
+.brand-values-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, rgba(0,0,0,0.02) 0%, rgba(0,0,0,0.05) 100%);
+  opacity: 0;
+  transition: all 0.3s ease;
+  z-index: 1;
+}
+
+.brand-values-card:hover {
+  transform: translateY(-20px) scale(1.02);
+  box-shadow: 0 25px 50px rgba(0,0,0,0.15) !important;
+  border-color: #000 !important;
+}
+
+.brand-values-card:hover::before {
+  opacity: 1;
+}
+
+.brand-values-card:hover .d-inline-flex {
+  background: linear-gradient(135deg, #000 0%, #333 100%) !important;
+  transform: scale(1.1) rotate(10deg);
+  border-color: #000 !important;
+}
+
+.brand-values-card:hover .d-inline-flex i {
+  color: white !important;
+  transform: scale(1.1);
+}
+
+.brand-values-card:hover .d-inline-flex .border {
+  border-color: #000 !important;
+}
+
+.brand-values-card .d-inline-flex {
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.brand-values-card .d-inline-flex i {
+  transition: all 0.3s ease;
+}
+
+.brand-values-card .d-inline-flex .border {
+  transition: all 0.4s ease;
+}
+
+/* Remove old hover effects */
+.brand-values-card .icon-wrapper {
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.brand-values-card .icon-wrapper i {
+  transition: all 0.3s ease;
+}
+
+/* Pulse animation for icons */
+@keyframes iconPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.brand-values-card:hover .d-inline-flex i {
+  animation: iconPulse 1.5s ease-in-out infinite;
+}
+
+/* Floating animation - remove conflicting animations */
+.brand-values-card {
+  animation: none;
+}
+
+/* Add subtle entrance animation */
+@keyframes cardFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.brand-values-card.fade-in-up {
+  animation: cardFadeIn 0.8s ease forwards;
+}
+
+.testimonial-card {
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  position: relative;
+  overflow: hidden;
+  border: 1px solid #e9ecef;
+  background: linear-gradient(135deg, #ffffff 0%, #fafafa 100%) !important;
+}
+
+.testimonial-card::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(140, 126, 113, 0.04) 0%, transparent 70%);
+  transform: scale(0);
+  transition: transform 0.6s ease;
+}
+
+.testimonial-card:hover {
+  transform: translateY(-6px) scale(1.01);
+  box-shadow: 0 12px 30px rgba(140, 126, 113, 0.2) !important;
+  border-color: #8c7e71;
+  background: linear-gradient(135deg, #ffffff 0%, #fcfcfc 100%) !important;
+}
+
+.testimonial-card:hover::after {
+  transform: scale(1);
+}
+
+.testimonial-card:hover .mb-3 i {
+  animation: starPulse 0.6s ease-in-out;
+  color: #8c7e71 !important;
+}
+
+@keyframes starPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+.store-location-card {
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.store-location-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(45deg, rgba(139, 69, 19, 0.05), rgba(210, 105, 30, 0.05));
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.store-location-card:hover {
+  background: #fff !important;
+  box-shadow: 0 12px 35px rgba(139, 69, 19, 0.15);
+  border-left: 5px solid #D2691E !important;
+  transform: translateY(-5px) scale(1.02);
+}
+
+.store-location-card:hover::before {
+  opacity: 1;
+}
+
+.store-location-card:hover .mb-3 {
+  animation: locationBounce 0.6s ease-in-out;
+}
+
+@keyframes locationBounce {
+  0%, 100% { transform: translateY(0); }
+  25% { transform: translateY(-5px); }
+  50% { transform: translateY(-2px); }
+  75% { transform: translateY(-3px); }
+}
+
+/* Brand Story Section Enhancements */
+.brand-story-section {
+  position: relative;
+  overflow: hidden;
+}
+
+.brand-story-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #8B4513 0%, #8c7e71 50%, #CD853F 100%);
+  animation: gradientShift 8s ease-in-out infinite;
+  z-index: 1;
+  pointer-events: none;
+}
+
+@keyframes gradientShift {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.9; }
+}
+
+.brand-story-content {
+  position: relative;
+  z-index: 10;
+}
+
+.brand-story-emoji {
+  transition: all 0.6s ease;
+  display: inline-block;
+}
+
+.brand-story-section:hover .brand-story-emoji {
+  transform: rotateY(180deg) scale(1.1);
+}
+
+/* Follow Section Enhancements */
+.follow-title {
+  position: relative;
+  display: inline-block;
+}
+
+.follow-title::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  width: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #8B4513, #D2691E);
+  transition: all 0.4s ease;
+  transform: translateX(-50%);
+}
+
+.follow-title:hover::after {
+  width: 100%;
+}
+
+/* Banner Carousel Enhancements */
+#bannerCarousel .carousel-item img {
+  transition: transform 0.8s ease;
+}
+
+#bannerCarousel:hover .carousel-item.active img {
+  transform: scale(1.05);
+}
+
+/* Section Title Enhancements */
+.section-title {
+  position: relative;
+  display: inline-block;
+  color: #000 !important;
+  text-align: center;
+  width: 100%;
+}
+
+.section-title::before {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: 50%;
+  width: 60px;
+  height: 3px;
+  background: linear-gradient(90deg, #000, #333);
+  transform: translateX(-50%);
+  border-radius: 2px;
+}
+
+/* Global Animation Classes */
+.fade-in-up {
+  opacity: 0;
+  transform: translateY(30px);
+  animation: fadeInUp 0.8s ease forwards;
+}
+
+@keyframes fadeInUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.scale-on-hover {
+  transition: transform 0.3s ease;
+}
+
+.scale-on-hover:hover {
+  transform: scale(1.05);
+}
+
+/* Button Enhancements */
+.btn-brand {
+  background: linear-gradient(45deg, #8c7e71, #a68b7a) !important;
+  border: none;
+  color: white !important;
+  font-weight: 600;
+  padding: 12px 30px;
+  border-radius: 50px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  text-decoration: none !important;
+}
+
+.btn-brand::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.6s ease;
+}
+
+.btn-brand:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(140, 126, 113, 0.4) !important;
+  color: white !important;
+  text-decoration: none !important;
+}
+
+.btn-brand:hover::before {
+  left: 100%;
+}
+
+/* Simple and reliable Story button */
+.btn-outline-light {
+  transition: all 0.2s ease !important;
+  position: relative !important;
+  z-index: 1000 !important;
+  cursor: pointer !important;
+  pointer-events: auto !important;
+}
+
+.btn-outline-light:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  border-color: #fff !important;
+  color: #fff !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* Ensure button container doesn't block clicks */
+.brand-story-content .text-left {
+  position: relative;
+  z-index: 1000;
+  pointer-events: auto;
+}
+
+/* Enhanced News Cards */
 .news-card-item {
-  transition: box-shadow 0.45s cubic-bezier(0.22,1,0.36,1), transform 0.45s cubic-bezier(0.22,1,0.36,1);
+  transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   will-change: transform, box-shadow;
   pointer-events: auto;
   z-index: 1;
   backface-visibility: hidden;
+  position: relative;
 }
+
+.news-card-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at center, rgba(139, 69, 19, 0.05) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  border-radius: 14px;
+  z-index: -1;
+}
+
 .news-card-item:hover {
   z-index: 20;
+  transform: translateY(-12px) scale(1.03);
 }
+
+.news-card-item:hover::before {
+  opacity: 1;
+}
+
 .news-card-item:hover .promotion-card {
-  box-shadow: 0 12px 32px 0 rgba(0,0,0,0.16);
-  transform: translateY(-8px) scale(1.025);
+  box-shadow: 0 20px 40px 0 rgba(139, 69, 19, 0.25);
+  transform: translateY(0) scale(1);
   z-index: 21;
-  transition: box-shadow 0.45s cubic-bezier(0.22,1,0.36,1), transform 0.45s cubic-bezier(0.22,1,0.36,1);
+  transition: box-shadow 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   pointer-events: auto;
   backface-visibility: hidden;
+  border: 2px solid rgba(139, 69, 19, 0.1);
 }
+
 .promotion-card {
-  transition: box-shadow 0.45s cubic-bezier(0.22,1,0.36,1), transform 0.45s cubic-bezier(0.22,1,0.36,1);
+  transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   will-change: transform, box-shadow;
   pointer-events: auto;
   z-index: 1;
   backface-visibility: hidden;
+  position: relative;
+  overflow: hidden;
 }
+
+.promotion-card::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(45deg, transparent 30%, rgba(139, 69, 19, 0.05) 50%, transparent 70%);
+  transform: rotate(-45deg) translateX(-100%);
+  transition: transform 0.6s ease;
+}
+
 .promotion-card:hover {
-  box-shadow: 0 12px 32px 0 rgba(0,0,0,0.16);
-  transform: translateY(-8px) scale(1.025);
+  box-shadow: 0 20px 40px 0 rgba(139, 69, 19, 0.25);
+  transform: translateY(0) scale(1);
   z-index: 21;
+  border: 2px solid rgba(139, 69, 19, 0.1);
+}
+
+.promotion-card:hover::after {
+  transform: rotate(-45deg) translateX(100%);
+}
+
+.promotion-card:hover .promotion-img-fixed {
+  transform: scale(1.08);
+  transition: transform 0.5s ease;
+}
+
+/* Featured Product Cards Enhancement */
+.featured-product-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.featured-product-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, rgba(139, 69, 19, 0.05) 0%, transparent 50%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  z-index: 1;
+}
+
+.featured-product-card:hover::before {
+  opacity: 1;
+}
+
+.featured-product-card:hover .featured-product-img {
+  transform: scale(1.08) rotate(1deg);
+}
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+  .brand-story-section {
+    padding: 3rem 0 !important;
+  }
+  
+  .brand-story-section h2 {
+    font-size: 1.5rem !important;
+  }
+  
+  .brand-story-section p {
+    font-size: 1rem !important;
+  }
+  
+  .news-card-item:hover {
+    transform: translateY(-8px) scale(1.02);
+  }
+  
+  .brand-values-card:hover {
+    transform: translateY(-5px) scale(1.01);
+  }
 }
 
 

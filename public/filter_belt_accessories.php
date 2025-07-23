@@ -25,7 +25,7 @@ $color = isset($_GET['color']) ? $_GET['color'] : 'all';
 $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
 $selected_category = isset($_GET['category']) ? (int)$_GET['category'] : 0;
 
-$items_per_page = 8;
+$items_per_page = 12;
 $offset = ($page - 1) * $items_per_page;
 
 // Lấy danh sách category_id có parent_id = 3 từ database

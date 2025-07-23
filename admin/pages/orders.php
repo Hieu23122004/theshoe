@@ -1,8 +1,8 @@
 ﻿<?php
-
+include '../../includes/auth.php';
 include '../../includes/database.php';
 $status_filter = isset($_GET['status']) ? $_GET['status'] : '';
-$message = isset($_GET['message']) && !empty($_GET['message']) ? $_GET['message'] : null;
+$message = isset($_GET['message']) && !empty($_GET['message']) ? $_GET['message'] : '';
 $query = "SELECT o.order_id, u.fullname, u.email, u.phone, o.total_amount, o.status, 
           o.created_at, o.order_details, o.shipping_address, o.payment_method
           FROM orders o
@@ -16,23 +16,38 @@ include '../../includes/header_ad.php';
 ?>
 <!-- Begin Page Content -->
 <div class="container-fluid px-2" style="margin-top: 110px;">
-    <?php if (isset($message)): ?>
-        <div class="alert alert-success alert-dismissible fade show" role="alert" id="statusAlert">
-            <strong>Thông báo:</strong> <?= $message ?>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-        <script>
-            setTimeout(function() {
-                const alert = document.getElementById('statusAlert');
-                if (alert) {
-                    const bsAlert = new bootstrap.Alert(alert);
-                    bsAlert.close();
-                }
-            }, 1000);
-        </script>
-    <?php endif; ?>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var msg = <?= json_encode($message) ?>;
+        if (msg) {
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: msg,
+                showConfirmButton: false,
+                timer: 2000,
+                background: '#fff',
+                color: '#8c7e71',
+                customClass: {popup: 'swal2-toast-custom'}
+            });
+        }
+    });
+    </script>
+    <style>
+    .swal2-toast-custom {
+        border-radius: 0.75rem !important;
+        box-shadow: 0 0.2rem 1.5rem 0 rgba(140,126,113,0.12) !important;
+        font-size: 1rem;
+        width: 500px !important;
+        height: 80px !important;
+        padding: 1.5rem 2rem !important;
+        text-align: center !important;
+    }
+    </style>
     <div class="card mb-4">
-        <div class="card-header d-flex justify-content-between align-items-cente bg-primary">
+        <div class="card-header d-flex justify-content-between align-items-center" style="background-color: #8c7e71;">
             <strong>Orders management</strong>
         </div>
         <select name="status" class="form-select w-25 m-3" onchange="window.location.href='?status='+this.value">

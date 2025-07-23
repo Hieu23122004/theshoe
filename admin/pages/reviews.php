@@ -59,26 +59,38 @@ include '../../includes/header_ad.php';
 ?>
 
 <div class="container-fluid px-2" style="margin-top: 110px;">
-    <?php if (!empty($message)): ?>
-        <?php
-        $alertType = (isset($_GET['deleted']) && $_GET['deleted'] == 'success') ? 'success' : 'danger';
-        ?>
-        <div class="alert alert-<?= $alertType ?> alert-dismissible fade show" role="alert" id="statusAlert">
-            <strong>Notification:</strong> <?= $message ?>
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-        <script>
-            setTimeout(function() {
-                const alert = document.getElementById('statusAlert');
-                if (alert) {
-                    const bsAlert = new bootstrap.Alert(alert);
-                    bsAlert.close();
-                }
-            }, 3000);
-        </script>
-    <?php endif; ?>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var msg = <?= json_encode($message) ?>;
+        if (msg) {
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: msg.toLowerCase().includes('success') ? 'success' : (msg.toLowerCase().includes('error') ? 'error' : 'info'),
+                title: msg,
+                showConfirmButton: false,
+                timer: 2000,
+                background: '#fff',
+                color: '#8c7e71',
+                customClass: {popup: 'swal2-toast-custom'}
+            });
+        }
+    });
+    </script>
+    <style>
+    .swal2-toast-custom {
+        border-radius: 0.75rem !important;
+        box-shadow: 0 0.2rem 1.5rem 0 rgba(140,126,113,0.12) !important;
+        font-size: 1.35rem !important;
+        width: 420px !important;
+        height: 70px !important;
+        padding: 1.5rem 2.5rem !important;
+        text-align: center !important;
+    }
+    </style>
     <div class="card mb-4">
-        <div class="card-header bg-primary"><strong>Filter Product Reviews</strong></div>
+        <div class="card-header" style="background-color: #8c7e71;"><strong>Filter Product Reviews</strong></div>
         <div class="card-body">
             <form method="GET" id="filterForm" class="row g-3">
                 <div class="col-md-3">

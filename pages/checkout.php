@@ -159,7 +159,7 @@ include '../includes/header.php';
 ?>
 <!-- Thêm div thông báo khi không có sản phẩm được chọn -->
 
-<div class="container-fluid" style="margin-top:20px;padding:0;">
+<div class="container-fluid" style="margin-top:80px;padding:0;">
     <div class="row g-0 bg-white" style="min-height:100vh;">
         <div class="col-md-7 p-5" style="min-height:100vh;">
 
@@ -390,5 +390,3 @@ include '../includes/header.php';
         }
     });
 </script>
-<!-- Bootstrap 5 CSS -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
