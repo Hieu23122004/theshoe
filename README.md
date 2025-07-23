@@ -11,14 +11,7 @@ composer install
 ```
 
 ## 3. Tạo file `.env`
-Tạo file `.env` ở thư mục gốc dự án (cùng cấp với `composer.json`) với nội dung ví dụ:
-
-```
-DB_HOST=localhost
-DB_NAME=your_db_name
-DB_USER=root
-DB_PASS=your_password
-```
+Tạo file `.env` ở thư mục gốc dự án (cùng cấp với `.env.example`) với nội dung từ .env.example:
 
 - Thay giá trị các biến cho phù hợp với cấu hình database của bạn.
 
@@ -44,7 +37,7 @@ DB_PASS=your_password
    ```
 
 ### Lấy code mới nhất từ nhóm về máy
-1. Chuyển về nhánh chính (thường là `main` hoặc `master`):
+1. Chuyển về nhánh chính (thường là `main`):
    ```
    git checkout main
    ```
