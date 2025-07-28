@@ -2,3 +2,4 @@
 .env
 /vendor/
 db.txt
+/chatbot/debug.log

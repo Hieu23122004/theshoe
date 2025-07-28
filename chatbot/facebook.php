@@ -1,18 +1,4 @@
 <?php
-if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['hub_mode']) && $_GET['hub_mode'] === 'subscribe') {
-    $verify_token = $_GET['hub_verify_token'];
-    $challenge = $_GET['hub_challenge'];
-
-    if ($verify_token === 'theshoe') {
-        echo $challenge;
-        exit;
-    } else {
-        echo 'Token không hợp lệ';
-        http_response_code(403);
-        exit;
-    }
-}
-
 require 'config.php';
 
 $input = json_decode(file_get_contents('php://input'), true);
@@ -262,7 +248,7 @@ function logFileReceived($senderId, $attachments) {
     }
 
     $logData = json_decode(file_get_contents($logFile), true);
-    
+
     foreach ($attachments as $attachment) {
         $logEntry = [
             'senderId' => $senderId,
@@ -273,7 +259,7 @@ function logFileReceived($senderId, $attachments) {
         ];
         $logData[] = $logEntry;
     }
-    
+
     file_put_contents($logFile, json_encode($logData, JSON_PRETTY_PRINT));
 }
 
