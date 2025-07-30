@@ -3,3 +3,4 @@
 /vendor/
 db.txt
 /chatbot/debug.log
+composer.lock
