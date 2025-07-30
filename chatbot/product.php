@@ -1,4 +1,7 @@
 <?php
+// =============================
+// 1. Khởi tạo & cấu hình môi trường
+// =============================
 require_once __DIR__ . '/../vendor/autoload.php';
 use Dotenv\Dotenv;
 
@@ -23,7 +26,9 @@ try {
     exit;
 }
 
-// Nhận dữ liệu từ JSON body
+// =============================
+// 2. Nhận & kiểm tra dữ liệu đầu vào từ client
+// =============================
 $input = file_get_contents('php://input');
 if (empty($input)) {
     ob_clean();
@@ -38,8 +43,9 @@ if (json_last_error() !== JSON_ERROR_NONE) {
     exit;
 }
 
-
-
+// =============================
+// 3. Chuẩn hóa & lấy các trường dữ liệu cần thiết
+// =============================
 $category = array_key_exists('category', $data) ? $data['category'] : null;
 $product_name = array_key_exists('product_name', $data) ? $data['product_name'] : null;
 $color = array_key_exists('color', $data) ? $data['color'] : null;
@@ -68,7 +74,9 @@ if (is_array($size)) {
     $size = count($size) > 0 ? $size[0] : null;
 }
 
-// Kết nối PDO
+// =============================
+// 4. Kết nối database bằng PDO
+// =============================
 try {
     $pdo = new PDO(
         "mysql:host={$_ENV['DB_HOST']};dbname={$_ENV['DB_NAME']};charset=utf8mb4",
@@ -86,10 +94,13 @@ try {
     exit;
 }
 
-// Xây dựng SQL
+// =============================
+// 5. Xử lý logic truy vấn sản phẩm & mã giảm giá
+// =============================
 try {
 
-// Kiểm tra nếu chỉ muốn mã giảm giá mà không có thông tin sản phẩm khác
+// --- Trường hợp chỉ hỏi mã giảm giá ---
+// Nếu chỉ muốn mã giảm giá mà không có thông tin sản phẩm khác
 if ($wants_discount_code && empty($product_name) && empty($category) && $min_price === null && $max_price === null && empty($color) && empty($size) && $discount_percent === false && $is_featured === false) {
     // Lấy 1 mã giảm giá ngẫu nhiên (bất kể loại nào)
     $discount_codes = [];
@@ -125,7 +136,7 @@ if ($wants_discount_code && empty($product_name) && empty($category) && $min_pri
         ];
         
         $formatted_response[] = 
-            "Đây là thông tin Voucher dành cho bạn:\n" .
+            "Voucher dành cho bạn, Xem thêm tại theshoe.com:\n" .
             "🎟️ Mã: " . $code['code'] . "\n" .
             "💰 Giảm: " . $discount_text . $min_order_text . "\n" .
             "📅 Hết hạn: " . date('d/m/Y H:i', strtotime($code['valid_until']));
@@ -144,11 +155,12 @@ if ($wants_discount_code && empty($product_name) && empty($category) && $min_pri
     exit;
 }
 
+// --- Truy vấn sản phẩm theo nhiều tiêu chí ---
 // Universal Product Query Builder - Xử lý tất cả 127 tổ hợp có thể
 $sql = "SELECT p.*, c.name as category_name FROM products p LEFT JOIN categories c ON p.category_id = c.category_id WHERE 1=1";
 $params = [];
 
-// Debug: Log the search criteria
+// Debug: Log các tiêu chí tìm kiếm
 error_log("=== PRODUCT SEARCH DEBUG ===");
 error_log("category: " . ($category ?? 'null'));
 error_log("product_name: " . ($product_name ?? 'null'));
@@ -159,14 +171,14 @@ error_log("max_price: " . ($max_price ?? 'null'));
 error_log("discount_percent: " . ($discount_percent ? 'true' : 'false'));
 error_log("is_featured: " . ($is_featured ? 'true' : 'false'));
 
-// 1. Product Name Filter
+// 1. Lọc theo tên sản phẩm
 if (!empty($product_name)) {
     $sql .= " AND LOWER(p.name) LIKE ?";
     $params[] = '%' . strtolower($product_name) . '%';
     error_log("Added product_name filter: " . $product_name);
 }
 
-// 2. Category Filter (parent và child categories)
+// 2. Lọc theo category (cha và con)
 if (!empty($category)) {
     $sql .= " AND (c.name = ? OR c.category_id IN (
         SELECT category_id FROM categories WHERE parent_id IN (
@@ -178,20 +190,20 @@ if (!empty($category)) {
     error_log("Added category filter: " . $category);
 }
 
-// 3. Color Filter
+// 3. Lọc theo màu sắc
 if (!empty($color)) {
     $sql .= " AND JSON_CONTAINS(LOWER(JSON_EXTRACT(p.color_options, '$[*]')), LOWER(?), '$')";
     $params[] = "\"$color\"";
     error_log("Added color filter: " . $color);
 }
 
-// 4. Size Filter
+// 4. Lọc theo size
 if (!empty($size)) {
     $sql .= " AND JSON_CONTAINS_PATH(p.size_stock, 'one', '$.\"$size\"')";
     error_log("Added size filter: " . $size);
 }
 
-// 5. Price Range Filters
+// 5. Lọc theo khoảng giá
 if ($min_price !== null && $max_price !== null) {
     $sql .= " AND p.price >= ? AND p.price <= ?";
     $params[] = $min_price;
@@ -207,19 +219,19 @@ if ($min_price !== null && $max_price !== null) {
     error_log("Added max_price filter: " . $max_price);
 }
 
-// 6. Discount Percent Filter
+// 6. Lọc theo sản phẩm có khuyến mãi
 if ($discount_percent === true) {
     $sql .= " AND p.discount_percent > 0";
     error_log("Added discount_percent filter: > 0");
 }
 
-// 7. Featured Product Filter
+// 7. Lọc theo sản phẩm nổi bật
 if ($is_featured === true) {
     $sql .= " AND p.is_featured = 1";
     error_log("Added is_featured filter: = 1");
 }
 
-// Ordering Strategy - Ưu tiên theo product_name nếu có, nếu không thì random
+// Sắp xếp kết quả: ưu tiên theo product_name nếu có, nếu không thì random
 if (!empty($product_name)) {
     $sql .= " ORDER BY ABS(LENGTH(p.name) - LENGTH(?)) ASC, RAND() LIMIT 1";
     $params[] = $product_name;
@@ -230,7 +242,7 @@ if (!empty($product_name)) {
 error_log("Final SQL: " . $sql);
 error_log("Parameters: " . json_encode($params));
 
-// Execute query
+// Thực thi truy vấn
 $stmt = $pdo->prepare($sql);
 $stmt->execute($params);
 $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -242,7 +254,7 @@ if (count($products) > 0) {
     error_log("No products found matching criteria");
 }
 
-// Handle discount code for Priority 4 (Product + Discount)
+// --- Xử lý mã giảm giá cho trường hợp có sản phẩm ---
 $discount_result = null;
 $discount_formatted = "";
 if ($wants_discount_code && (!empty($product_name) || !empty($category) || $min_price !== null || $max_price !== null || !empty($color) || !empty($size) || $discount_percent === true || $is_featured === true)) {
@@ -274,8 +286,9 @@ if ($wants_discount_code && (!empty($product_name) || !empty($category) || $min_
     }
 }
 
-
-// Trả về kết quả chuẩn hóa
+// =============================
+// 6. Chuẩn hóa & trả về kết quả cho client
+// =============================
 $result = [];
 $formatted_response = [];
 
@@ -310,7 +323,7 @@ foreach ($products as $p) {
         "- 👟 Sản phẩm: " . $p['name'] . "\n" .
         "- 💸 Giá: " . number_format($p['price'], 0, ',', '.') . " VNĐ\n" .
         "- 📏 Size: " . implode(', ', $sizes) . "\n" .
-        "- 🔗 Chi tiết: https://b2c41a722a50.ngrok-free.app/pages/detail_products.php?id=" . $p['product_id'];
+        "- 🔗 Chi tiết: http://localhost:3000/pages/detail_products.php?id=" . $p['product_id'];
 }
 
 // Nếu có cả sản phẩm và muốn mã giảm giá (Priority 4)
@@ -329,8 +342,6 @@ if ($wants_discount_code && (!empty($product_name) || !empty($category) || $min_
     ]);
     exit;
 }
-
-
 
 // Đảm bảo không có output thừa
 if (ob_get_length()) ob_clean();

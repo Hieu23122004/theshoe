@@ -10,5 +10,4 @@ if (file_exists(__DIR__ . '/../.env')) {
 
 define('VERIFY_TOKEN', getenv('VERIFY_TOKEN'));
 define('PAGE_ACCESS_TOKEN', getenv('PAGE_ACCESS_TOKEN'));
-define('GEMINI_API_KEY', getenv('GEMINI_API_KEY'));
 define('N8N_WEBHOOK_URL', getenv('N8N_WEBHOOK_URL'));

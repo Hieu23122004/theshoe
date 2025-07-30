@@ -3,27 +3,55 @@ require 'config.php';
 
 $input = json_decode(file_get_contents('php://input'), true);
 
+// =============================
 // Log toàn bộ input từ Facebook để debug
+// =============================
 logDebug('Facebook Input', $input);
 
-// === 1. Facebook gửi tin nhắn đến === //
-if (isset($input['entry'][0]['messaging'][0])) {
-    $message = $input['entry'][0]['messaging'][0];
-    $senderId = $message['sender']['id'];
-    $pageId = $message['recipient']['id'];
+// =============================
+// 1. Xử lý tin nhắn gửi đến từ Facebook
+// =============================
 
-    if (isset($message['message']['is_echo']) && $message['message']['is_echo'] === true) {
-        return;
+if (
+    isset($input['entry']) &&
+    is_array($input['entry']) &&
+    isset($input['entry'][0]) &&
+    isset($input['entry'][0]['messaging']) &&
+    is_array($input['entry'][0]['messaging']) &&
+    isset($input['entry'][0]['messaging'][0])
+) {
+    $message = $input['entry'][0]['messaging'][0];
+    $senderId = $message['sender']['id'] ?? null;
+    $pageId = $message['recipient']['id'] ?? null;
+
+    logDebug('Message Init', [
+        'senderId' => $senderId,
+        'pageId' => $pageId,
+        'rawMessage' => $message
+    ]);
+
+    // Nếu thiếu ID thì bỏ qua
+    if (!$senderId || !$pageId) {
+        logDebug('Thiếu senderId hoặc pageId. Bỏ qua.', []);
+        http_response_code(200);
+        exit;
     }
 
+    // Bỏ qua tin nhắn echo hoặc gửi từ chính page
+    if (isset($message['message']['is_echo']) && $message['message']['is_echo'] === true) {
+        logDebug('Bỏ qua is_echo message', []);
+        http_response_code(200);
+        return;
+    }
     if ($senderId === $pageId) {
+        logDebug('Bỏ qua tin nhắn từ chính page gửi', []);
+        http_response_code(200);
         return;
     }
 
     $userMessage = $message['message']['text'] ?? '';
     $attachments = $message['message']['attachments'] ?? [];
 
-    // Log chi tiết message và attachments
     logDebug('Message Details', [
         'senderId' => $senderId,
         'userMessage' => $userMessage,
@@ -31,34 +59,31 @@ if (isset($input['entry'][0]['messaging'][0])) {
         'hasAttachments' => !empty($attachments)
     ]);
 
-    // Gửi lời chào nếu là người dùng mới
     if (isNewUser($senderId)) {
         sendMessage($senderId, "Chào bạn! Tôi là trợ lý ảo của Fanpage.");
         sendMessage($senderId, "Bạn cần hỗ trợ gì hôm nay? Gõ bất kỳ để bắt đầu nhé!");
         saveNewUser($senderId);
     }
 
-    // ✅ Gửi message sang n8n webhook để xử lý AI, NLP, DB, v.v.
     forwardToN8N($senderId, $userMessage, $attachments);
 
-    // ✅ Log file nếu có attachments
     if (!empty($attachments)) {
         logFileReceived($senderId, $attachments);
     }
 
-    // ✅ Gửi phản hồi dựa trên loại message
-    if (!empty($attachments)) {
-        $botReply = "Cảm ơn bạn đã gửi file! Chúng tôi sẽ xem xét và phản hồi sớm.";
-    } else {
-        $botReply = "Cảm ơn bạn đã nhắn tin! Bạn vui lòng để lại câu hỏi, chúng tôi sẽ phản hồi sớm.";
-    }
+    $botReply = !empty($attachments)
+        ? "Cảm ơn bạn đã gửi file! Chúng tôi sẽ xem xét và phản hồi sớm."
+        : "Cảm ơn bạn đã nhắn tin! Bạn vui lòng để lại câu hỏi, chúng tôi sẽ phản hồi sớm.";
+
     sendMessage($senderId, $botReply);
 
     http_response_code(200);
     exit;
 }
 
-// === 2. Dữ liệu gửi từ N8N trả về để gửi lại Facebook === //
+// =============================
+// 2. Xử lý dữ liệu trả về từ N8N để gửi lại Facebook
+// =============================
 elseif (
     isset($input['message']) &&
     isset($input['senderId']) &&
@@ -67,17 +92,14 @@ elseif (
 ) {
     $userMessage = $input['message'];
     $senderId = $input['senderId'];
-    $imageUrl = $input['imageUrl'] ?? null; // URL ảnh nếu có
+    $imageUrl = $input['imageUrl'] ?? null;
 
-    // Log dữ liệu từ N8N
     logDebug('N8N Response Data', $input);
 
-    // Gửi text message
     if (!empty($userMessage)) {
         sendMessage($senderId, $userMessage);
     }
 
-    // Gửi ảnh nếu có
     if (!empty($imageUrl)) {
         sendImageMessage($senderId, $imageUrl);
     }
@@ -91,11 +113,15 @@ elseif (
     exit;
 }
 
-// === Mặc định === //
+// =============================
+// 3. Mặc định: trả về 200 OK nếu không khớp trường hợp nào
+// =============================
+logDebug('Không xử lý được payload này', $input);
 http_response_code(200);
 
-
-// ====== Các hàm ====== //
+// =============================
+// Các hàm chức năng
+// =============================
 
 function sendMessage($recipientId, $messageText) {
     $url = "https://graph.facebook.com/v23.0/me/messages?access_token=" . PAGE_ACCESS_TOKEN;
@@ -117,7 +143,6 @@ function sendMessage($recipientId, $messageText) {
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
     
-    // Log response để debug
     logDebug('Send Message Response', [
         'recipientId' => $recipientId,
         'messageText' => $messageText,
@@ -154,7 +179,6 @@ function sendImageMessage($recipientId, $imageUrl) {
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     curl_close($ch);
     
-    // Log response để debug
     logDebug('Send Image Response', [
         'recipientId' => $recipientId,
         'imageUrl' => $imageUrl,
@@ -172,32 +196,30 @@ function forwardToN8N($senderId, $messageText, $attachments = []) {
         'hasAttachments' => !empty($attachments)
     ];
 
-    // Nếu có attachments, xử lý thông tin file
     if (!empty($attachments)) {
         $data['attachments'] = $attachments;
         $fileData = [];
-        
+
         foreach ($attachments as $attachment) {
             if (isset($attachment['type']) && isset($attachment['payload']['url'])) {
                 $fileInfo = [
                     'type' => $attachment['type'],
                     'url' => $attachment['payload']['url'],
-                    'name' => 'data'  // Tên file mặc định là 'data'
+                    'name' => 'data'
                 ];
-                
-                // Nếu là image, thêm thông tin chi tiết
+
                 if ($attachment['type'] === 'image') {
                     $fileInfo['mime_type'] = 'image/jpeg';
                     $fileInfo['extension'] = 'jpg';
                 }
-                
+
                 $fileData[] = $fileInfo;
             }
         }
-        $data['data'] = $fileData; // Sử dụng key 'data' như trong ảnh
+
+        $data['data'] = $fileData;
     }
 
-    // Log data để debug
     logDebug('N8N Request Data', $data);
 
     $ch = curl_init($n8nWebhookUrl);
@@ -211,16 +233,13 @@ function forwardToN8N($senderId, $messageText, $attachments = []) {
 
     $response = curl_exec($ch);
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    
-    // Log response để debug
     logDebug('N8N Response', [
         'httpCode' => $httpCode,
         'response' => $response,
         'error' => curl_error($ch)
     ]);
-    
+
     curl_close($ch);
-    
     return $response;
 }
 
